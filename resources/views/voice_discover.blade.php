@@ -38,7 +38,7 @@
 					</a>
 				</div>
 
-				<div class="announce">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
+				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
 
 				<div class="input">
 					<h2 class="h2_input">&#9632;性別</h2>
@@ -51,10 +51,11 @@
 
 				@foreach ($wanderer_list as $article)
 				<input class="profile_id" type="hidden" id="profile_id" value="{{ @$article->profile_id }}"></input>
+				<input type="hidden" id="{{ @$article->profile_id }}" value="{{ @$article->wanderer_name }}"></input>
 				@endforeach
 
-				<div class="block_txt mt2">
-					<p>登録がある方です！近くの交番にお連れしてください。</p>
+				<div class="block_txt mt2" id="exe_result">
+					<p>貴方の声を認識し、<br>どなたか特定します。</p>
 				</div>
 			</div>
 		</div>
@@ -104,6 +105,11 @@
 		// URLリンクによってプルダウンの初期値変更
 		var pulldown = document.getElementById('pulldown');
 		pulldown.selectedIndex = url_link;
+
+		if (pulldown.value == 0) {
+			document.getElementById('result').innerHTML = "<p>性別を選択してください。</p>";
+			document.getElementById('exe_result').innerHTML = "<p>性別を選択して、<br>音声認識を始めてください。</p>";
+		}
 
 		window.addEventListener('load', function() {
 			// プルダウン変更時に遷移

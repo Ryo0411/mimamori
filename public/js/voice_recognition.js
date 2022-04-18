@@ -7,8 +7,8 @@ var serviceRegion = "westus";
 
 profile_id = document.querySelectorAll(".profile_id");
 profile_count = profile_id.length;
+// 音声認識をかける件数
 console.log(profile_id.length);
-console.log(profile_id[0].defaultValue);
 var SpeechSDK;
 var speechConfig;
 var ansrate = 0;
@@ -27,16 +27,20 @@ var profile = new Array(profile_count);
 verificationVoiceRecordButton = document.getElementById("verificationVoiceRecordButton");
 verificationDownload = document.getElementById("verificationDownload");
 
+// 録音ボタンをタップした際の処理。
 rec_img.addEventListener("click", function () {
     high_score = 0;
 
+    // プルダウンの性別が選択しているか確認。
     if (pulldown.value != "0") {
+        // 音声の録音開始。
         if (!isRecording) {
             console.log("認識用音声録音中...");
             startRecording(function () {
                 rec_img.src = "../../img/rec.gif";
             });
         } else {
+            // 音声認識開始
             stopRecording(function (file) {
                 console.log("認識用音声録音完了");
                 console.log("音声認識中...");
@@ -90,60 +94,63 @@ rec_img.addEventListener("click", function () {
                                     if (high_score < onsei_score[i]) {
                                         console.log("(判別) hiスコア: " + high_score + "getscore:" + onsei_score[i]);
 
+                                        // 認識率の高いユーザーを保持
+                                        profileId = result.profileId;
                                         high_score = onsei_score[i];
                                         high_score_no = i + 1;
                                     }
-
                                     ansspno = high_score_no;
                                     ansrate = high_score;
                                 }
-                                var now = new Date();	//現在日時取得
-                                var nYear = now.getFullYear();
-                                var nMonth = now.getMonth() + 1;
-                                var nDate = now.getDate();
-                                var nHour = now.getHours();
-                                var nMin = now.getMinutes();
-                                var nSec = now.getSeconds();
-                                var nowdt = ('0000' + nYear).slice(-4) + ('00' + nMonth).slice(-2) + ('00' + nDate).slice(-2) + " " + ('00' + nHour).slice(-2) + ":" + ('00' + nMin).slice(-2) + ":" + ('00' + nSec).slice(-2);
-
                                 select_user = i;
                                 console.log("ナンバー" + result_count);
                                 console.log("音声ナンバー" + onsei_score);
                                 console.log("ハイナンバー" + high_score);
-                                console.log("ユーザーナンバー" + select_user);
+                                console.log("ユーザー名" + select_user);
+                                // 一番最後、結果の表示処理
                                 if (result_count >= profile_count) {
                                     // 最後に結果を表示
-                                    if (high_score_no == select_user) {
-                                        //onseiscore.innerHTML = "正解：ユーザ" + select_user + "選択中。" + (Math.floor(high_score * 100))　+ "%の確率でユーザ" + high_score_no + "と一致しました。";
-                                        console.log((Math.floor(high_score * 100)) + "%の確率でユーザ" + high_score_no + "と一致しました。");
-                                        ans = 1;
+                                    console.log((Math.floor(high_score * 100)) + "%の確率でユーザ" + high_score_no + "と一致しました。");
+                                    console.log(profileId + "一番認識率の高いユーザー");
 
-                                    } else {
-                                        //onseiscore.innerHTML = "不正解：ユーザ" + select_user + "選択中。" + (Math.floor(high_score * 100))　+ "%の確率でユーザ" + high_score_no + "と一致しました。";
-                                        console.log((Math.floor(high_score * 100)) + "%の確率でユーザ" + high_score_no + "と一致しました。");
-                                        ans = 0;
-
-                                    }
-                                    //ポップアップメニュー個別ユーザーリセット
-                                    if (high_score_no == select_user) {
-                                        // alert("認識結果 : " + "正解" + "\n" + "認識率："　+ (Math.floor(high_score * 100)) + "%");
+                                    if (onsei_score[select_user - 1] != null) {
+                                        userscore = (Math.floor(onsei_score[select_user - 1] * 100)) + "%";
+                                        var profileId_exe = document.getElementById(profileId);
+                                        console.log(profileId_exe.value);
+                                        document.getElementById("exe_result").innerHTML = "<p>認識結果、" + (Math.floor(high_score * 100)) + "%<br>の確率で" + profileId_exe.value + "である可能性が高いです。";
                                         location.href = '#modal_d';
-                                        document.getElementById("result_pop").innerText = "認識結果 : " + "正解";
+                                        document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                                         document.getElementById("probability").innerText = "認識率：" + (Math.floor(high_score * 100)) + "%";
                                     } else {
-                                        if (onsei_score[select_user - 1] != null) {
-                                            userscore = (Math.floor(onsei_score[select_user - 1] * 100)) + "%";
-                                            location.href = '#modal_d';
-                                            document.getElementById("result_pop").innerText = "認識結果 : " + "不正解";
-                                            document.getElementById("probability").innerText = "認識率：" + userscore;;
-                                        } else {
-                                            // userscore = "スコアなし";
-                                            // location.href = '#modal_d';
-                                            // document.getElementById("result_pop").innerText = "認識結果 : " + "不正解";;
-                                            // document.getElementById("probability").innerText = "認識率："　+ userscore;;
-                                            // alert("認識結果 : " + "不正解" + "\n" + "認識率："　+ userscore);
-                                        }
+                                        userscore = "スコアなし";
+                                        location.href = '#modal_d';
+                                        document.getElementById("result_pop").innerText = "認識結果 : " + "失敗";;
+                                        document.getElementById("probability").innerText = "認識率：" + "音声認識に失敗しました。";
+                                        // alert("認識結果 : " + "失敗" + "\n" + "認識率：" + userscore);
                                     }
+
+                                    //ポップアップメニュー個別ユーザーリセット
+                                    // if (high_score_no == select_user) {
+                                    //     // ログインユーザーの徘徊者だ合った場合。
+                                    //     // alert("認識結果 : " + "正解" + "\n" + "認識率："　+ (Math.floor(high_score * 100)) + "%");
+                                    //     location.href = '#modal_d';
+                                    //     document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
+                                    //     document.getElementById("probability").innerText = "認識率：" + (Math.floor(high_score * 100)) + "%";
+                                    // } else {
+                                    //     // ログインユーザー以外徘徊者だ合った場合。
+                                    //     if (onsei_score[select_user - 1] != null) {
+                                    //         userscore = (Math.floor(onsei_score[select_user - 1] * 100)) + "%";
+                                    //         location.href = '#modal_d';
+                                    //         document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
+                                    //         document.getElementById("probability").innerText = "認識率：" + userscore;;
+                                    //     } else {
+                                    //         userscore = "スコアなし";
+                                    //         location.href = '#modal_d';
+                                    //         document.getElementById("result_pop").innerText = "認識結果 : " + "失敗";;
+                                    //         document.getElementById("probability").innerText = "認識率：" + "音声認識に失敗しました。";
+                                    //         // alert("認識結果 : " + "失敗" + "\n" + "認識率：" + userscore);
+                                    //     }
+                                    // }
                                 }
                             },
                             function (err) {
@@ -154,7 +161,6 @@ rec_img.addEventListener("click", function () {
                                 document.getElementById("errorresult").innerHTML = "ERROR: " + err;
                                 // alert("ERROR: " + err);
                             });
-                        console.log("aaa" + ansrate);
                         rec_img.src = "../../img/rec_on.png";
                         var myURL = window.URL || window.webkitURL;
                         // verificationDownload.innerHTML = "<a href='" + myURL.createObjectURL(file) + "' target='_blank'>ダウンロード</a>";

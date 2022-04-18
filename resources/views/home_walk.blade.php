@@ -28,7 +28,7 @@
 		<div class="inner">
 			<h2 class="sectTit">ご家族情報</h2>
 			<div class="block_txt">
-				<p>発見されました！</p>
+				<p>{{ $exe }}</p>
 			</div>
 		</div>
 	</section>
@@ -45,6 +45,7 @@
 				<div class="btn" {{$status}}>
 					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">徘徊！</button>
 				</div>
+				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ $exe }}"></input>
 			</div>
 		</div>
 	</section>

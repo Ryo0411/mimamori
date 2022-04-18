@@ -1,12 +1,14 @@
 // 音声登録をしていない時のみ音声登録ボタンの表示。
 var voiceprint_flg = document.getElementById("voiceprint_flg");
+var result = document.getElementById("result");
 
 // 初回表示のみ空なので０を代入。
-if (voiceprint_flg.value == "" ) {
+if (voiceprint_flg.value == "") {
     voiceprint_flg.value = "0";
 };
 if (voiceprint_flg.value != "0") {
     document.querySelector('.block_rec').style.display = 'none';
+    result.style.display = 'none';
 };
 
 // AzureSpeech APIキー
@@ -34,7 +36,7 @@ if (value_profile_id.value == 0) {
         function (result) {
             new_profile_id = result;
             // profileId作成時にERRORがないか確認、あった場合はERRORの表示
-            if ( result.profileId )	{
+            if (result.profileId) {
 
                 // HTMLに新しいprofile_idをセット
                 value_profile_id.value = result.profileId;
@@ -49,17 +51,17 @@ if (value_profile_id.value == 0) {
                 // localStorage.setItem("profile_lcnt1", profile_lcnt[0]);
                 // profile_lcnt[0] = 0;
             } else {
-            window.console.log("ERROR(プロファイル作成)");
-            console.log("ERROR(プロファイル作成): ProfileIDエラー");
-            console.log("サーバに負荷が掛かっています。1分ほど経ってから、ユーザを選択くしてください。");
-            alert("サーバに負荷が掛かっています。1分ほど経ってから、ユーザを選択くしてください。");
+                window.console.log("ERROR(プロファイル作成)");
+                console.log("ERROR(プロファイル作成): ProfileIDエラー");
+                console.log("サーバに負荷が掛かっています。1分ほど経ってから、ユーザを選択くしてください。");
+                alert("サーバに負荷が掛かっています。1分ほど経ってから、ユーザを選択くしてください。");
+                window.location.href = '/home'; // 通常の遷移
+            }
+        },
+        function (err) {
+            window.console.log(err);
+            console.log("ERROR(プロファイル作成): " + err);
+            alert("ERROR(プロファイル作成): " + err);
             window.location.href = '/home'; // 通常の遷移
-        }
-    },
-    function (err) {
-        window.console.log(err);
-        console.log("ERROR(プロファイル作成): " + err);
-        alert("ERROR(プロファイル作成): " + err);
-        window.location.href = '/home'; // 通常の遷移
-    });
+        });
 }

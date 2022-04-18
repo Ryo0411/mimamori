@@ -43,7 +43,7 @@
 				<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
 				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
 
-				<div class="block_rec" id="voiceprint_flg">
+				<div class="block_rec" id="voiceprint_btn">
 					<a id="exe_recording" class="btn_rec">
 						<img id="rec_img" src="{{ asset('img/rec_on.png') }}" class="img_rec" alt="録音">
 					</a>
@@ -53,7 +53,7 @@
 					<button type="submit" id="button" class="btn-red">登録</button>
 				</div>
 
-				<div class="announce">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
+				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
 			</form>
 		</div>
 		<div id="dialog-confirm" title="タイトル" class="remodal" data-remodal-id="modal_a">

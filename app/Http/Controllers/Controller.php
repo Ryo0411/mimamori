@@ -56,7 +56,7 @@ class Controller extends BaseController
     // 徘徊者声掛けページにて性別を選択したときユーザを選定する処理。
     public function voiceSelect($sex)
     {
-        $wanderer_list = Wanderers::whereSex($sex)->where('wandering_flg', '=', 1)->get();
+        $wanderer_list = Wanderers::whereSex($sex)->where('wandering_flg', '!=', 0)->get();
 
         // dd($wanderer_list->profile_id);
 
@@ -76,13 +76,29 @@ class Controller extends BaseController
             ->first();
         if (empty($wanderer_list)) {
             $status = "hidden";
+            $exe = "";
             // dd("ssss");
         } else {
             $status = "";
+            $user_id = Auth::user()->id;
+            $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+            // 音声登録があるかを判定。ない場合はそのままreturn
+            if ($wanderer_list['voiceprint_flg'] >= 0) {
+                // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+                if ($wanderer_list['wandering_flg'] == 0) {
+                    $exe = "捜索対象外です。";
+                } else if ($wanderer_list['wandering_flg'] == 1) {
+                    $exe = "捜索対象に選択中です。";
+                } else {
+                    $exe = "発見されました！";
+                }
+            } else {
+                $exe = "";
+            }
         }
 
         // dd([$status]);
-        return view('home_walk')->with('status', $status);
+        return view('home_walk')->with(['status' => $status, 'exe' => $exe]);
     }
     //徘徊者ホーム、情報未登録の場合ボタン非表示
     public function wandererFlg()
@@ -90,8 +106,9 @@ class Controller extends BaseController
         $user_id = Auth::user()->id;
         $wanderer_list = Wanderers::whereUser_id($user_id)->first();
         $id = Auth::user()->id;
-        // dd($wanderer_list['voiceprint_flg']);
+        // 音声登録があるかを判定。ない場合はそのままreturn
         if ($wanderer_list['voiceprint_flg'] >= 0) {
+            // 徘徊フラグが立っていない場合、徘徊フラグを立てる
             if ($wanderer_list['wandering_flg'] == 0) {
                 try {
                     //ユーザ情報更新処理
@@ -100,12 +117,14 @@ class Controller extends BaseController
                         'wandering_flg' => 1,
                     ]);
                     $status = "";
+                    $exe = "捜索対象に選択中です。";
                     $userupdate->save();
                     \DB::commit();
                 } catch (\Throwable $e) {
                     \DB::rollback();
                     abort(500);
                 };
+                // 徘徊フラグが立っている場合、徘徊フラグを下げる
             } else {
                 try {
                     //ユーザ情報更新処理
@@ -114,6 +133,7 @@ class Controller extends BaseController
                         'wandering_flg' => 0,
                     ]);
                     $status = "";
+                    $exe = "捜索対象外です。";
                     $userupdate->save();
                     \DB::commit();
                 } catch (\Throwable $e) {
@@ -124,11 +144,12 @@ class Controller extends BaseController
             }
         } else {
             $status = "";
-            return view('home_walk')->with('status', $status);
+            $exe = "";
+            return view('home_walk')->with(['status' => $status, 'exe' => $exe]);
         }
 
         // dd([$status]);
-        return view('home_walk')->with('status', $status);
+        return view('home_walk')->with(['status' => $status, 'exe' => $exe]);
     }
 
     //ユーザ情報更新処理

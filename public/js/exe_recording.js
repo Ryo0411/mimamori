@@ -2,6 +2,7 @@ exe_recording = document.getElementById("exe_recording");
 profile_id = document.getElementById("profile_id");
 enrollmentDownload = document.getElementById("enrollmentDownload");
 voiceprint_flg = document.getElementById("voiceprint_flg");
+voiceprint_btn = document.getElementById("voiceprint_btn");
 rec_img = document.getElementById("rec_img");
 button = document.getElementById("button");
 // APIに投げて処理するときにJSON形式の為、privProfileTypeは２で固定。
