@@ -279,6 +279,7 @@ ul li {
 }
 
 .block_txt p {
+	margin: 0;
   font-size: 1.2rem;
   font-weight: bold;
   color: #FF0000;
@@ -287,7 +288,7 @@ ul li {
 .logo_fujita {
   position: absolute;
   /*←絶対位置*/
-  bottom: 100px;
+  bottom: 80px;
   width: 90%;
   max-width: 390px;
   margin: 0 auto;
@@ -324,13 +325,13 @@ ul li {
   font-weight: bold;
 }
 
-.btn_dl a::before {
+/*.btn_dl a::before {
   content: "";
   padding: 0 2rem 0 0;
   background: url(../img/btn_dl.png) no-repeat;
   background-position: left center;
   background-size: 75%;
-}
+}*/
 
 .btn-discover {
   width: 90%;

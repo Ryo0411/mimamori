@@ -22,7 +22,7 @@
 
 	<section>
 		<div class="inner">
-			<div class="block_40vh">
+			<div class="block_50vh">
                 <!-- ログイン成功時のアラート表示 -->
 				<x-alert type="success" :session="session('login_success')"/>
                 <!-- @if (session('login_success'))
@@ -30,7 +30,7 @@
                         {{ session('login_success') }}
                     </div>
                 @endif -->
-				<div class="btn mb4">
+				<div class="btn">
 					<button id="button" class="btn-walk" onclick="location.href='/home_walk'">徘徊者</button>
 				</div>
 				<div class="btn">
