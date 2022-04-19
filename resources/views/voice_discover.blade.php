@@ -99,6 +99,7 @@
 		} else {
 			rec_img.src = "./img/rec_off.png";
 		}
+
 		if (url_link == "#") {
 			rec_img.src = "../../img/rec_off.png";
 		}

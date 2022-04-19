@@ -1,12 +1,10 @@
 exe_recording = document.getElementById("exe_recording");
-profile_id = document.getElementById("profile_id");
 enrollmentDownload = document.getElementById("enrollmentDownload");
 voiceprint_flg = document.getElementById("voiceprint_flg");
 voiceprint_btn = document.getElementById("voiceprint_btn");
 rec_img = document.getElementById("rec_img");
 button = document.getElementById("button");
-// APIに投げて処理するときにJSON形式の為、privProfileTypeは２で固定。
-profile_information = { "privId": profile_id.value, "privProfileType": 2, "profileId": profile_id.value }
+
 
 // AzureSpeech APIキー
 var subscriptionKey = "b3b1966bbaf6480cb49c0e296b6f74f6";
@@ -30,10 +28,15 @@ document.getElementById("exe_recording").onclick = function () {
             console.log("音声サンプル録音終了");
             console.log("音声サンプル学習確認中...");
 
+            console.log(profile_id.value);
+
             // 録音した音声データの再生ボタン
             var myURL = window.URL || window.webkitURL;
             enrollmentDownload.innerHTML = "<a href='" + myURL.createObjectURL(file) + "' target='_blank'>再生</a>";
 
+            profile_id = document.getElementById("profile_id");
+            // APIに投げて処理するときにJSON形式の為、privProfileTypeは２で固定。
+            profile_information = { "privId": profile_id.value, "privProfileType": 2, "profileId": profile_id.value };
             //ポップアップウィンドウの表示
             location.href = '#modal_a';
 

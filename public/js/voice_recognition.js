@@ -32,7 +32,7 @@ rec_img.addEventListener("click", function () {
     high_score = 0;
 
     // プルダウンの性別が選択しているか確認。
-    if (pulldown.value != "0") {
+    if (pulldown.value != "0" && profile_id.length != 0) {
         // 音声の録音開始。
         if (!isRecording) {
             console.log("認識用音声録音中...");
@@ -56,7 +56,7 @@ rec_img.addEventListener("click", function () {
                         // profile = 'profile' + [i];
                         // window.console.log("lcnt no=" + SpeechSDK);
                         profile[i] = { "privId": profile_id[i].defaultValue, "privProfileType": 2, "profileId": profile_id[i].defaultValue };
-                        window.console.log("lcnt no=" + profile);
+                        console.log("lcnt no=" + profile);
 
                         // AzureSpeech APIに接続
                         speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
@@ -169,6 +169,7 @@ rec_img.addEventListener("click", function () {
             });
         }
     } else {
+        rec_img.src = "../../img/rec_off.png";
         console.log("性別を選択してください。");
     }
 });
