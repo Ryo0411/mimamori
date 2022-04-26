@@ -115,12 +115,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(4);
+var Exports_2 = __webpack_require__(6);
 // Common.Storage.SetLocalStorage(new Common.Browser.LocalStorage());
 // Common.Storage.SetSessionStorage(new Common.Browser.SessionStorage());
-Exports_2.Events.instance.attachListener(new Exports_1.ConsoleLoggingListener());
+Exports_2.Events.instance.attachConsoleListener(new Exports_1.ConsoleLoggingListener());
 // Speech SDK API
-__exportStar(__webpack_require__(61), exports);
+__exportStar(__webpack_require__(64), exports);
 
 
 
@@ -144,16 +144,16 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(__webpack_require__(3), exports);
-__exportStar(__webpack_require__(51), exports);
-__exportStar(__webpack_require__(52), exports);
-__exportStar(__webpack_require__(233), exports);
-__exportStar(__webpack_require__(234), exports);
-__exportStar(__webpack_require__(235), exports);
-__exportStar(__webpack_require__(236), exports);
-__exportStar(__webpack_require__(249), exports);
-__exportStar(__webpack_require__(250), exports);
-__exportStar(__webpack_require__(251), exports);
-__exportStar(__webpack_require__(210), exports);
+__exportStar(__webpack_require__(54), exports);
+__exportStar(__webpack_require__(55), exports);
+__exportStar(__webpack_require__(239), exports);
+__exportStar(__webpack_require__(240), exports);
+__exportStar(__webpack_require__(241), exports);
+__exportStar(__webpack_require__(242), exports);
+__exportStar(__webpack_require__(252), exports);
+__exportStar(__webpack_require__(253), exports);
+__exportStar(__webpack_require__(254), exports);
+__exportStar(__webpack_require__(216), exports);
 
 
 
@@ -163,69 +163,104 @@ __exportStar(__webpack_require__(210), exports);
 
 "use strict";
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConsoleLoggingListener = void 0;
-var Exports_1 = __webpack_require__(4);
+var fs = __importStar(__webpack_require__(4));
+var LogLevel_1 = __webpack_require__(5);
+var Contracts_1 = __webpack_require__(53);
 var ConsoleLoggingListener = /** @class */ (function () {
     function ConsoleLoggingListener(logLevelFilter) {
-        var _this = this;
-        if (logLevelFilter === void 0) { logLevelFilter = Exports_1.EventType.Warning; }
-        this.onEvent = function (event) {
-            if (event.eventType >= _this.privLogLevelFilter) {
-                var log = _this.toString(event);
-                switch (event.eventType) {
-                    case Exports_1.EventType.Debug:
-                        // tslint:disable-next-line:no-console
-                        console.debug(log);
-                        break;
-                    case Exports_1.EventType.Info:
-                        // tslint:disable-next-line:no-console
-                        console.info(log);
-                        break;
-                    case Exports_1.EventType.Warning:
-                        // tslint:disable-next-line:no-console
-                        console.warn(log);
-                        break;
-                    case Exports_1.EventType.Error:
-                        // tslint:disable-next-line:no-console
-                        console.error(log);
-                        break;
-                    default:
-                        // tslint:disable-next-line:no-console
-                        console.log(log);
-                        break;
-                }
-            }
-        };
-        this.toString = function (event) {
-            var logFragments = [
-                "" + event.EventTime,
-                "" + event.Name,
-            ];
-            for (var prop in event) {
-                if (prop && event.hasOwnProperty(prop) &&
-                    prop !== "eventTime" && prop !== "eventType" &&
-                    prop !== "eventId" && prop !== "name" &&
-                    prop !== "constructor") {
-                    var value = event[prop];
-                    var valueToLog = "<NULL>";
-                    if (value !== undefined && value !== null) {
-                        if (typeof (value) === "number" || typeof (value) === "string") {
-                            valueToLog = value.toString();
-                        }
-                        else {
-                            valueToLog = JSON.stringify(value);
-                        }
-                    }
-                    logFragments.push(prop + ": " + valueToLog);
-                }
-            }
-            return logFragments.join(" | ");
-        };
+        if (logLevelFilter === void 0) { logLevelFilter = LogLevel_1.LogLevel.None; }
+        this.privLogPath = undefined;
         this.privLogLevelFilter = logLevelFilter;
     }
+    Object.defineProperty(ConsoleLoggingListener.prototype, "logPath", {
+        set: function (path) {
+            Contracts_1.Contracts.throwIfNullOrUndefined(fs.openSync, "\nFile System access not available");
+            this.privLogPath = path;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    ConsoleLoggingListener.prototype.onEvent = function (event) {
+        if (event.eventType >= this.privLogLevelFilter) {
+            var log = this.toString(event);
+            if (!!this.privLogPath) {
+                fs.writeFileSync(this.privLogPath, log + "\n", { flag: "a+" });
+            }
+            switch (event.eventType) {
+                case LogLevel_1.LogLevel.Debug:
+                    // eslint-disable-next-line no-console
+                    console.debug(log);
+                    break;
+                case LogLevel_1.LogLevel.Info:
+                    // eslint-disable-next-line no-console
+                    console.info(log);
+                    break;
+                case LogLevel_1.LogLevel.Warning:
+                    // eslint-disable-next-line no-console
+                    console.warn(log);
+                    break;
+                case LogLevel_1.LogLevel.Error:
+                    // eslint-disable-next-line no-console
+                    console.error(log);
+                    break;
+                default:
+                    // eslint-disable-next-line no-console
+                    console.log(log);
+                    break;
+            }
+        }
+    };
+    ConsoleLoggingListener.prototype.toString = function (event) {
+        var logFragments = [
+            "" + event.eventTime,
+            "" + event.name,
+        ];
+        var e = event;
+        for (var prop in e) {
+            if (prop && event.hasOwnProperty(prop) &&
+                prop !== "eventTime" && prop !== "eventType" &&
+                prop !== "eventId" && prop !== "name" &&
+                prop !== "constructor") {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                var value = e[prop];
+                var valueToLog = "<NULL>";
+                if (value !== undefined && value !== null) {
+                    if (typeof (value) === "number" || typeof (value) === "string") {
+                        valueToLog = value.toString();
+                    }
+                    else {
+                        valueToLog = JSON.stringify(value);
+                    }
+                }
+                logFragments.push(prop + ": " + valueToLog);
+            }
+        }
+        return logFragments.join(" | ");
+    };
     return ConsoleLoggingListener;
 }());
 exports.ConsoleLoggingListener = ConsoleLoggingListener;
@@ -234,6 +269,27 @@ exports.ConsoleLoggingListener = ConsoleLoggingListener;
 
 /***/ }),
 /* 4 */
+/***/ (function(module, exports) {
+
+/* (ignored) */
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LogLevel = void 0;
+var Exports_1 = __webpack_require__(6);
+Object.defineProperty(exports, "LogLevel", { enumerable: true, get: function () { return Exports_1.EventType; } });
+
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -251,17 +307,15 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(__webpack_require__(5), exports);
-__exportStar(__webpack_require__(23), exports);
-__exportStar(__webpack_require__(24), exports);
-__exportStar(__webpack_require__(26), exports);
-__exportStar(__webpack_require__(27), exports);
+__exportStar(__webpack_require__(7), exports);
 __exportStar(__webpack_require__(25), exports);
+__exportStar(__webpack_require__(26), exports);
 __exportStar(__webpack_require__(28), exports);
 __exportStar(__webpack_require__(29), exports);
-__exportStar(__webpack_require__(7), exports);
+__exportStar(__webpack_require__(27), exports);
 __exportStar(__webpack_require__(30), exports);
 __exportStar(__webpack_require__(31), exports);
+__exportStar(__webpack_require__(9), exports);
 __exportStar(__webpack_require__(32), exports);
 __exportStar(__webpack_require__(33), exports);
 __exportStar(__webpack_require__(34), exports);
@@ -270,24 +324,26 @@ __exportStar(__webpack_require__(36), exports);
 __exportStar(__webpack_require__(37), exports);
 __exportStar(__webpack_require__(38), exports);
 __exportStar(__webpack_require__(39), exports);
-__exportStar(__webpack_require__(6), exports);
 __exportStar(__webpack_require__(40), exports);
 __exportStar(__webpack_require__(41), exports);
+__exportStar(__webpack_require__(8), exports);
 __exportStar(__webpack_require__(42), exports);
 __exportStar(__webpack_require__(43), exports);
 __exportStar(__webpack_require__(44), exports);
-var TranslationStatus_1 = __webpack_require__(45);
-Object.defineProperty(exports, "TranslationStatus", { enumerable: true, get: function () { return TranslationStatus_1.TranslationStatus; } });
+__exportStar(__webpack_require__(45), exports);
 __exportStar(__webpack_require__(46), exports);
-__exportStar(__webpack_require__(47), exports);
+var TranslationStatus_1 = __webpack_require__(47);
+Object.defineProperty(exports, "TranslationStatus", { enumerable: true, get: function () { return TranslationStatus_1.TranslationStatus; } });
 __exportStar(__webpack_require__(48), exports);
 __exportStar(__webpack_require__(49), exports);
 __exportStar(__webpack_require__(50), exports);
+__exportStar(__webpack_require__(51), exports);
+__exportStar(__webpack_require__(52), exports);
 
 
 
 /***/ }),
-/* 5 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -309,8 +365,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioStreamNodeErrorEvent = exports.AudioStreamNodeDetachedEvent = exports.AudioStreamNodeAttachedEvent = exports.AudioStreamNodeAttachingEvent = exports.AudioStreamNodeEvent = exports.AudioSourceErrorEvent = exports.AudioSourceOffEvent = exports.AudioSourceReadyEvent = exports.AudioSourceInitializingEvent = exports.AudioSourceEvent = void 0;
-// tslint:disable:max-classes-per-file
-var PlatformEvent_1 = __webpack_require__(6);
+/* eslint-disable max-classes-per-file */
+var PlatformEvent_1 = __webpack_require__(8);
 var AudioSourceEvent = /** @class */ (function (_super) {
     __extends(AudioSourceEvent, _super);
     function AudioSourceEvent(eventName, audioSourceId, eventType) {
@@ -432,7 +488,7 @@ exports.AudioStreamNodeErrorEvent = AudioStreamNodeErrorEvent;
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -441,13 +497,14 @@ exports.AudioStreamNodeErrorEvent = AudioStreamNodeErrorEvent;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlatformEvent = exports.EventType = void 0;
-var Guid_1 = __webpack_require__(7);
+var Guid_1 = __webpack_require__(9);
 var EventType;
 (function (EventType) {
     EventType[EventType["Debug"] = 0] = "Debug";
     EventType[EventType["Info"] = 1] = "Info";
     EventType[EventType["Warning"] = 2] = "Warning";
     EventType[EventType["Error"] = 3] = "Error";
+    EventType[EventType["None"] = 4] = "None";
 })(EventType = exports.EventType || (exports.EventType = {}));
 var PlatformEvent = /** @class */ (function () {
     function PlatformEvent(eventName, eventType) {
@@ -499,7 +556,7 @@ exports.PlatformEvent = PlatformEvent;
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -508,49 +565,45 @@ exports.PlatformEvent = PlatformEvent;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createNoDashGuid = exports.createGuid = void 0;
-var uuid_1 = __webpack_require__(8);
-var createGuid = function () {
-    return uuid_1.v4();
-};
+var uuid_1 = __webpack_require__(10);
+var createGuid = function () { return uuid_1.v4(); };
 exports.createGuid = createGuid;
-var createNoDashGuid = function () {
-    return createGuid().replace(new RegExp("-", "g"), "").toUpperCase();
-};
+var createNoDashGuid = function () { return createGuid().replace(new RegExp("-", "g"), "").toUpperCase(); };
 exports.createNoDashGuid = createNoDashGuid;
 
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _v1_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9);
+/* harmony import */ var _v1_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(11);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v1", function() { return _v1_js__WEBPACK_IMPORTED_MODULE_0__["default"]; });
 
-/* harmony import */ var _v3_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(14);
+/* harmony import */ var _v3_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(16);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v3", function() { return _v3_js__WEBPACK_IMPORTED_MODULE_1__["default"]; });
 
-/* harmony import */ var _v4_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(18);
+/* harmony import */ var _v4_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(20);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v4", function() { return _v4_js__WEBPACK_IMPORTED_MODULE_2__["default"]; });
 
-/* harmony import */ var _v5_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(19);
+/* harmony import */ var _v5_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(21);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "v5", function() { return _v5_js__WEBPACK_IMPORTED_MODULE_3__["default"]; });
 
-/* harmony import */ var _nil_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(21);
+/* harmony import */ var _nil_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(23);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NIL", function() { return _nil_js__WEBPACK_IMPORTED_MODULE_4__["default"]; });
 
-/* harmony import */ var _version_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(22);
+/* harmony import */ var _version_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(24);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "version", function() { return _version_js__WEBPACK_IMPORTED_MODULE_5__["default"]; });
 
-/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(12);
+/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(14);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "validate", function() { return _validate_js__WEBPACK_IMPORTED_MODULE_6__["default"]; });
 
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(11);
+/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(13);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "stringify", function() { return _stringify_js__WEBPACK_IMPORTED_MODULE_7__["default"]; });
 
-/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(16);
+/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(18);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "parse", function() { return _parse_js__WEBPACK_IMPORTED_MODULE_8__["default"]; });
 
 
@@ -564,13 +617,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(10);
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(11);
+/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
+/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(13);
 
  // **`v1()` - Generate time-based UUID**
 //
@@ -668,7 +721,7 @@ function v1(options, buf, offset) {
 /* harmony default export */ __webpack_exports__["default"] = (v1);
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -695,12 +748,12 @@ function rng() {
 }
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
+/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(14);
 
 /**
  * Convert array of 16 byte values to UUID string format of the form:
@@ -733,12 +786,12 @@ function stringify(arr) {
 /* harmony default export */ __webpack_exports__["default"] = (stringify);
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _regex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(13);
+/* harmony import */ var _regex_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(15);
 
 
 function validate(uuid) {
@@ -748,7 +801,7 @@ function validate(uuid) {
 /* harmony default export */ __webpack_exports__["default"] = (validate);
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -756,28 +809,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = (/^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i);
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(15);
-/* harmony import */ var _md5_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(17);
+/* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(17);
+/* harmony import */ var _md5_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(19);
 
 
 var v3 = Object(_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v3', 0x30, _md5_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
 /* harmony default export */ __webpack_exports__["default"] = (v3);
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DNS", function() { return DNS; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "URL", function() { return URL; });
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(11);
-/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(16);
+/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(13);
+/* harmony import */ var _parse_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(18);
 
 
 
@@ -844,12 +897,12 @@ var URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
 });
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
+/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(14);
 
 
 function parse(uuid) {
@@ -887,7 +940,7 @@ function parse(uuid) {
 /* harmony default export */ __webpack_exports__["default"] = (parse);
 
 /***/ }),
-/* 17 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1109,13 +1162,13 @@ function md5ii(a, b, c, d, x, s, t) {
 /* harmony default export */ __webpack_exports__["default"] = (md5);
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(10);
-/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(11);
+/* harmony import */ var _rng_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
+/* harmony import */ var _stringify_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(13);
 
 
 
@@ -1142,20 +1195,20 @@ function v4(options, buf, offset) {
 /* harmony default export */ __webpack_exports__["default"] = (v4);
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(15);
-/* harmony import */ var _sha1_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(20);
+/* harmony import */ var _v35_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(17);
+/* harmony import */ var _sha1_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(22);
 
 
 var v5 = Object(_v35_js__WEBPACK_IMPORTED_MODULE_0__["default"])('v5', 0x50, _sha1_js__WEBPACK_IMPORTED_MODULE_1__["default"]);
 /* harmony default export */ __webpack_exports__["default"] = (v5);
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1258,7 +1311,7 @@ function sha1(bytes) {
 /* harmony default export */ __webpack_exports__["default"] = (sha1);
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1266,12 +1319,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ('00000000-0000-0000-0000-000000000000');
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
+/* harmony import */ var _validate_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(14);
 
 
 function version(uuid) {
@@ -1285,7 +1338,7 @@ function version(uuid) {
 /* harmony default export */ __webpack_exports__["default"] = (version);
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1307,7 +1360,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConnectionMessageSentEvent = exports.ConnectionMessageReceivedEvent = exports.ConnectionEstablishErrorEvent = exports.ConnectionErrorEvent = exports.ConnectionClosedEvent = exports.ConnectionEstablishedEvent = exports.ConnectionStartEvent = exports.ConnectionEvent = exports.ServiceEvent = void 0;
-var PlatformEvent_1 = __webpack_require__(6);
+var PlatformEvent_1 = __webpack_require__(8);
 var ServiceEvent = /** @class */ (function (_super) {
     __extends(ServiceEvent, _super);
     function ServiceEvent(eventName, jsonstring, eventType) {
@@ -1371,7 +1424,7 @@ var ConnectionStartEvent = /** @class */ (function (_super) {
 exports.ConnectionStartEvent = ConnectionStartEvent;
 var ConnectionEstablishedEvent = /** @class */ (function (_super) {
     __extends(ConnectionEstablishedEvent, _super);
-    function ConnectionEstablishedEvent(connectionId, metadata) {
+    function ConnectionEstablishedEvent(connectionId) {
         return _super.call(this, "ConnectionEstablishedEvent", connectionId) || this;
     }
     return ConnectionEstablishedEvent;
@@ -1506,17 +1559,18 @@ exports.ConnectionMessageSentEvent = ConnectionMessageSentEvent;
 
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConnectionMessage = exports.MessageType = void 0;
-var Error_1 = __webpack_require__(25);
-var Guid_1 = __webpack_require__(7);
+var Error_1 = __webpack_require__(27);
+var Guid_1 = __webpack_require__(9);
 var MessageType;
 (function (MessageType) {
     MessageType[MessageType["Text"] = 0] = "Text";
@@ -1532,6 +1586,7 @@ var ConnectionMessage = /** @class */ (function () {
             throw new Error_1.InvalidOperationError("Payload must be ArrayBuffer");
         }
         this.privMessageType = messageType;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.privBody = body;
         this.privHeaders = headers ? headers : {};
         this.privId = id ? id : Guid_1.createNoDashGuid();
@@ -1598,7 +1653,7 @@ exports.ConnectionMessage = ConnectionMessage;
 
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1620,7 +1675,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObjectDisposedError = exports.InvalidOperationError = exports.ArgumentNullError = void 0;
-// tslint:disable:max-classes-per-file
+/* eslint-disable max-classes-per-file */
 /**
  * The error that is thrown when an argument passed in is null.
  *
@@ -1678,7 +1733,6 @@ exports.InvalidOperationError = InvalidOperationError;
  * @class ObjectDisposedError
  * @extends {Error}
  */
-// tslint:disable-next-line:max-classes-per-file
 var ObjectDisposedError = /** @class */ (function (_super) {
     __extends(ObjectDisposedError, _super);
     /**
@@ -1702,7 +1756,7 @@ exports.ObjectDisposedError = ObjectDisposedError;
 
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1737,7 +1791,7 @@ exports.ConnectionOpenResponse = ConnectionOpenResponse;
 
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1759,7 +1813,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SendingAgentContextMessageEvent = exports.DialogEvent = void 0;
-var PlatformEvent_1 = __webpack_require__(6);
+var PlatformEvent_1 = __webpack_require__(8);
 var DialogEvent = /** @class */ (function (_super) {
     __extends(DialogEvent, _super);
     function DialogEvent(eventName, eventType) {
@@ -1790,114 +1844,6 @@ exports.SendingAgentContextMessageEvent = SendingAgentContextMessageEvent;
 
 
 /***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Events = void 0;
-var Error_1 = __webpack_require__(25);
-var EventSource_1 = __webpack_require__(29);
-var Events = /** @class */ (function () {
-    function Events() {
-    }
-    Object.defineProperty(Events, "instance", {
-        get: function () {
-            return Events.privInstance;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Events.privInstance = new EventSource_1.EventSource();
-    Events.setEventSource = function (eventSource) {
-        if (!eventSource) {
-            throw new Error_1.ArgumentNullError("eventSource");
-        }
-        Events.privInstance = eventSource;
-    };
-    return Events;
-}());
-exports.Events = Events;
-
-
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.EventSource = void 0;
-var Error_1 = __webpack_require__(25);
-var Guid_1 = __webpack_require__(7);
-var EventSource = /** @class */ (function () {
-    function EventSource(metadata) {
-        var _this = this;
-        this.privEventListeners = {};
-        this.privIsDisposed = false;
-        this.onEvent = function (event) {
-            if (_this.isDisposed()) {
-                throw (new Error_1.ObjectDisposedError("EventSource"));
-            }
-            if (_this.metadata) {
-                for (var paramName in _this.metadata) {
-                    if (paramName) {
-                        if (event.metadata) {
-                            if (!event.metadata[paramName]) {
-                                event.metadata[paramName] = _this.metadata[paramName];
-                            }
-                        }
-                    }
-                }
-            }
-            for (var eventId in _this.privEventListeners) {
-                if (eventId && _this.privEventListeners[eventId]) {
-                    _this.privEventListeners[eventId](event);
-                }
-            }
-        };
-        this.attach = function (onEventCallback) {
-            var id = Guid_1.createNoDashGuid();
-            _this.privEventListeners[id] = onEventCallback;
-            return {
-                detach: function () {
-                    delete _this.privEventListeners[id];
-                    return Promise.resolve();
-                },
-            };
-        };
-        this.attachListener = function (listener) {
-            return _this.attach(listener.onEvent);
-        };
-        this.isDisposed = function () {
-            return _this.privIsDisposed;
-        };
-        this.dispose = function () {
-            _this.privEventListeners = null;
-            _this.privIsDisposed = true;
-        };
-        this.privMetadata = metadata;
-    }
-    Object.defineProperty(EventSource.prototype, "metadata", {
-        get: function () {
-            return this.privMetadata;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    return EventSource;
-}());
-exports.EventSource = EventSource;
-
-
-
-/***/ }),
 /* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1906,6 +1852,29 @@ exports.EventSource = EventSource;
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Events = void 0;
+var Error_1 = __webpack_require__(27);
+var EventSource_1 = __webpack_require__(31);
+var Events = /** @class */ (function () {
+    function Events() {
+    }
+    Events.setEventSource = function (eventSource) {
+        if (!eventSource) {
+            throw new Error_1.ArgumentNullError("eventSource");
+        }
+        Events.privInstance = eventSource;
+    };
+    Object.defineProperty(Events, "instance", {
+        get: function () {
+            return Events.privInstance;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Events.privInstance = new EventSource_1.EventSource();
+    return Events;
+}());
+exports.Events = Events;
 
 
 
@@ -1918,14 +1887,75 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ConnectionState = void 0;
-var ConnectionState;
-(function (ConnectionState) {
-    ConnectionState[ConnectionState["None"] = 0] = "None";
-    ConnectionState[ConnectionState["Connected"] = 1] = "Connected";
-    ConnectionState[ConnectionState["Connecting"] = 2] = "Connecting";
-    ConnectionState[ConnectionState["Disconnected"] = 3] = "Disconnected";
-})(ConnectionState = exports.ConnectionState || (exports.ConnectionState = {}));
+exports.EventSource = void 0;
+var Error_1 = __webpack_require__(27);
+var Guid_1 = __webpack_require__(9);
+var EventSource = /** @class */ (function () {
+    function EventSource(metadata) {
+        this.privEventListeners = {};
+        this.privIsDisposed = false;
+        this.privConsoleListener = undefined;
+        this.privMetadata = metadata;
+    }
+    EventSource.prototype.onEvent = function (event) {
+        if (this.isDisposed()) {
+            throw (new Error_1.ObjectDisposedError("EventSource"));
+        }
+        if (this.metadata) {
+            for (var paramName in this.metadata) {
+                if (paramName) {
+                    if (event.metadata) {
+                        if (!event.metadata[paramName]) {
+                            event.metadata[paramName] = this.metadata[paramName];
+                        }
+                    }
+                }
+            }
+        }
+        for (var eventId in this.privEventListeners) {
+            if (eventId && this.privEventListeners[eventId]) {
+                this.privEventListeners[eventId](event);
+            }
+        }
+    };
+    EventSource.prototype.attach = function (onEventCallback) {
+        var _this = this;
+        var id = Guid_1.createNoDashGuid();
+        this.privEventListeners[id] = onEventCallback;
+        return {
+            detach: function () {
+                delete _this.privEventListeners[id];
+                return Promise.resolve();
+            },
+        };
+    };
+    EventSource.prototype.attachListener = function (listener) {
+        return this.attach(function (e) { return listener.onEvent(e); });
+    };
+    EventSource.prototype.attachConsoleListener = function (listener) {
+        if (!!this.privConsoleListener) {
+            void this.privConsoleListener.detach(); // Detach implementation for eventListeners is synchronous
+        }
+        this.privConsoleListener = this.attach(function (e) { return listener.onEvent(e); });
+        return this.privConsoleListener;
+    };
+    EventSource.prototype.isDisposed = function () {
+        return this.privIsDisposed;
+    };
+    EventSource.prototype.dispose = function () {
+        this.privEventListeners = null;
+        this.privIsDisposed = true;
+    };
+    Object.defineProperty(EventSource.prototype, "metadata", {
+        get: function () {
+            return this.privMetadata;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    return EventSource;
+}());
+exports.EventSource = EventSource;
 
 
 
@@ -1950,6 +1980,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ConnectionState = void 0;
+var ConnectionState;
+(function (ConnectionState) {
+    ConnectionState[ConnectionState["None"] = 0] = "None";
+    ConnectionState[ConnectionState["Connected"] = 1] = "Connected";
+    ConnectionState[ConnectionState["Connecting"] = 2] = "Connecting";
+    ConnectionState[ConnectionState["Disconnected"] = 3] = "Disconnected";
+})(ConnectionState = exports.ConnectionState || (exports.ConnectionState = {}));
 
 
 
@@ -1983,6 +2021,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 "use strict";
 
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -2005,8 +2045,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 "use strict";
 
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 
 
@@ -2020,210 +2058,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.List = void 0;
-var Error_1 = __webpack_require__(25);
-var List = /** @class */ (function () {
-    function List(list) {
-        var _this = this;
-        this.privSubscriptionIdCounter = 0;
-        this.privAddSubscriptions = {};
-        this.privRemoveSubscriptions = {};
-        this.privDisposedSubscriptions = {};
-        this.privDisposeReason = null;
-        this.get = function (itemIndex) {
-            _this.throwIfDisposed();
-            return _this.privList[itemIndex];
-        };
-        this.first = function () {
-            return _this.get(0);
-        };
-        this.last = function () {
-            return _this.get(_this.length() - 1);
-        };
-        this.add = function (item) {
-            _this.throwIfDisposed();
-            _this.insertAt(_this.privList.length, item);
-        };
-        this.insertAt = function (index, item) {
-            _this.throwIfDisposed();
-            if (index === 0) {
-                _this.privList.unshift(item);
-            }
-            else if (index === _this.privList.length) {
-                _this.privList.push(item);
-            }
-            else {
-                _this.privList.splice(index, 0, item);
-            }
-            _this.triggerSubscriptions(_this.privAddSubscriptions);
-        };
-        this.removeFirst = function () {
-            _this.throwIfDisposed();
-            return _this.removeAt(0);
-        };
-        this.removeLast = function () {
-            _this.throwIfDisposed();
-            return _this.removeAt(_this.length() - 1);
-        };
-        this.removeAt = function (index) {
-            _this.throwIfDisposed();
-            return _this.remove(index, 1)[0];
-        };
-        this.remove = function (index, count) {
-            _this.throwIfDisposed();
-            var removedElements = _this.privList.splice(index, count);
-            _this.triggerSubscriptions(_this.privRemoveSubscriptions);
-            return removedElements;
-        };
-        this.clear = function () {
-            _this.throwIfDisposed();
-            _this.remove(0, _this.length());
-        };
-        this.length = function () {
-            _this.throwIfDisposed();
-            return _this.privList.length;
-        };
-        this.onAdded = function (addedCallback) {
-            _this.throwIfDisposed();
-            var subscriptionId = _this.privSubscriptionIdCounter++;
-            _this.privAddSubscriptions[subscriptionId] = addedCallback;
-            return {
-                detach: function () {
-                    delete _this.privAddSubscriptions[subscriptionId];
-                    return Promise.resolve();
-                },
-            };
-        };
-        this.onRemoved = function (removedCallback) {
-            _this.throwIfDisposed();
-            var subscriptionId = _this.privSubscriptionIdCounter++;
-            _this.privRemoveSubscriptions[subscriptionId] = removedCallback;
-            return {
-                detach: function () {
-                    delete _this.privRemoveSubscriptions[subscriptionId];
-                    return Promise.resolve();
-                },
-            };
-        };
-        this.onDisposed = function (disposedCallback) {
-            _this.throwIfDisposed();
-            var subscriptionId = _this.privSubscriptionIdCounter++;
-            _this.privDisposedSubscriptions[subscriptionId] = disposedCallback;
-            return {
-                detach: function () {
-                    delete _this.privDisposedSubscriptions[subscriptionId];
-                    return Promise.resolve();
-                },
-            };
-        };
-        this.join = function (seperator) {
-            _this.throwIfDisposed();
-            return _this.privList.join(seperator);
-        };
-        this.toArray = function () {
-            var cloneCopy = Array();
-            _this.privList.forEach(function (val) {
-                cloneCopy.push(val);
-            });
-            return cloneCopy;
-        };
-        this.any = function (callback) {
-            _this.throwIfDisposed();
-            if (callback) {
-                return _this.where(callback).length() > 0;
-            }
-            else {
-                return _this.length() > 0;
-            }
-        };
-        this.all = function (callback) {
-            _this.throwIfDisposed();
-            return _this.where(callback).length() === _this.length();
-        };
-        this.forEach = function (callback) {
-            _this.throwIfDisposed();
-            for (var i = 0; i < _this.length(); i++) {
-                callback(_this.privList[i], i);
-            }
-        };
-        this.select = function (callback) {
-            _this.throwIfDisposed();
-            var selectList = [];
-            for (var i = 0; i < _this.privList.length; i++) {
-                selectList.push(callback(_this.privList[i], i));
-            }
-            return new List(selectList);
-        };
-        this.where = function (callback) {
-            _this.throwIfDisposed();
-            var filteredList = new List();
-            for (var i = 0; i < _this.privList.length; i++) {
-                if (callback(_this.privList[i], i)) {
-                    filteredList.add(_this.privList[i]);
-                }
-            }
-            return filteredList;
-        };
-        this.orderBy = function (compareFn) {
-            _this.throwIfDisposed();
-            var clonedArray = _this.toArray();
-            var orderedArray = clonedArray.sort(compareFn);
-            return new List(orderedArray);
-        };
-        this.orderByDesc = function (compareFn) {
-            _this.throwIfDisposed();
-            return _this.orderBy(function (a, b) { return compareFn(b, a); });
-        };
-        this.clone = function () {
-            _this.throwIfDisposed();
-            return new List(_this.toArray());
-        };
-        this.concat = function (list) {
-            _this.throwIfDisposed();
-            return new List(_this.privList.concat(list.toArray()));
-        };
-        this.concatArray = function (array) {
-            _this.throwIfDisposed();
-            return new List(_this.privList.concat(array));
-        };
-        this.isDisposed = function () {
-            return _this.privList == null;
-        };
-        this.dispose = function (reason) {
-            if (!_this.isDisposed()) {
-                _this.privDisposeReason = reason;
-                _this.privList = null;
-                _this.privAddSubscriptions = null;
-                _this.privRemoveSubscriptions = null;
-                _this.triggerSubscriptions(_this.privDisposedSubscriptions);
-            }
-        };
-        this.throwIfDisposed = function () {
-            if (_this.isDisposed()) {
-                throw new Error_1.ObjectDisposedError("List", _this.privDisposeReason);
-            }
-        };
-        this.triggerSubscriptions = function (subscriptions) {
-            if (subscriptions) {
-                for (var subscriptionId in subscriptions) {
-                    if (subscriptionId) {
-                        subscriptions[subscriptionId]();
-                    }
-                }
-            }
-        };
-        this.privList = [];
-        // copy the list rather than taking as is.
-        if (list) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var item = list_1[_i];
-                this.privList.push(item);
-            }
-        }
-    }
-    return List;
-}());
-exports.List = List;
 
 
 
@@ -2236,7 +2070,238 @@ exports.List = List;
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
+
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.List = void 0;
+var Error_1 = __webpack_require__(27);
+var List = /** @class */ (function () {
+    function List(list) {
+        this.privSubscriptionIdCounter = 0;
+        this.privAddSubscriptions = {};
+        this.privRemoveSubscriptions = {};
+        this.privDisposedSubscriptions = {};
+        this.privDisposeReason = null;
+        this.privList = [];
+        // copy the list rather than taking as is.
+        if (list) {
+            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+                var item = list_1[_i];
+                this.privList.push(item);
+            }
+        }
+    }
+    List.prototype.get = function (itemIndex) {
+        this.throwIfDisposed();
+        return this.privList[itemIndex];
+    };
+    List.prototype.first = function () {
+        return this.get(0);
+    };
+    List.prototype.last = function () {
+        return this.get(this.length() - 1);
+    };
+    List.prototype.add = function (item) {
+        this.throwIfDisposed();
+        this.insertAt(this.privList.length, item);
+    };
+    List.prototype.insertAt = function (index, item) {
+        this.throwIfDisposed();
+        if (index === 0) {
+            this.privList.unshift(item);
+        }
+        else if (index === this.privList.length) {
+            this.privList.push(item);
+        }
+        else {
+            this.privList.splice(index, 0, item);
+        }
+        this.triggerSubscriptions(this.privAddSubscriptions);
+    };
+    List.prototype.removeFirst = function () {
+        this.throwIfDisposed();
+        return this.removeAt(0);
+    };
+    List.prototype.removeLast = function () {
+        this.throwIfDisposed();
+        return this.removeAt(this.length() - 1);
+    };
+    List.prototype.removeAt = function (index) {
+        this.throwIfDisposed();
+        return this.remove(index, 1)[0];
+    };
+    List.prototype.remove = function (index, count) {
+        this.throwIfDisposed();
+        var removedElements = this.privList.splice(index, count);
+        this.triggerSubscriptions(this.privRemoveSubscriptions);
+        return removedElements;
+    };
+    List.prototype.clear = function () {
+        this.throwIfDisposed();
+        this.remove(0, this.length());
+    };
+    List.prototype.length = function () {
+        this.throwIfDisposed();
+        return this.privList.length;
+    };
+    List.prototype.onAdded = function (addedCallback) {
+        var _this = this;
+        this.throwIfDisposed();
+        var subscriptionId = this.privSubscriptionIdCounter++;
+        this.privAddSubscriptions[subscriptionId] = addedCallback;
+        return {
+            detach: function () {
+                delete _this.privAddSubscriptions[subscriptionId];
+                return Promise.resolve();
+            },
+        };
+    };
+    List.prototype.onRemoved = function (removedCallback) {
+        var _this = this;
+        this.throwIfDisposed();
+        var subscriptionId = this.privSubscriptionIdCounter++;
+        this.privRemoveSubscriptions[subscriptionId] = removedCallback;
+        return {
+            detach: function () {
+                delete _this.privRemoveSubscriptions[subscriptionId];
+                return Promise.resolve();
+            },
+        };
+    };
+    List.prototype.onDisposed = function (disposedCallback) {
+        var _this = this;
+        this.throwIfDisposed();
+        var subscriptionId = this.privSubscriptionIdCounter++;
+        this.privDisposedSubscriptions[subscriptionId] = disposedCallback;
+        return {
+            detach: function () {
+                delete _this.privDisposedSubscriptions[subscriptionId];
+                return Promise.resolve();
+            },
+        };
+    };
+    List.prototype.join = function (seperator) {
+        this.throwIfDisposed();
+        return this.privList.join(seperator);
+    };
+    List.prototype.toArray = function () {
+        var cloneCopy = Array();
+        this.privList.forEach(function (val) {
+            cloneCopy.push(val);
+        });
+        return cloneCopy;
+    };
+    List.prototype.any = function (callback) {
+        this.throwIfDisposed();
+        if (callback) {
+            return this.where(callback).length() > 0;
+        }
+        else {
+            return this.length() > 0;
+        }
+    };
+    List.prototype.all = function (callback) {
+        this.throwIfDisposed();
+        return this.where(callback).length() === this.length();
+    };
+    List.prototype.forEach = function (callback) {
+        this.throwIfDisposed();
+        for (var i = 0; i < this.length(); i++) {
+            callback(this.privList[i], i);
+        }
+    };
+    List.prototype.select = function (callback) {
+        this.throwIfDisposed();
+        var selectList = [];
+        for (var i = 0; i < this.privList.length; i++) {
+            selectList.push(callback(this.privList[i], i));
+        }
+        return new List(selectList);
+    };
+    List.prototype.where = function (callback) {
+        this.throwIfDisposed();
+        var filteredList = new List();
+        for (var i = 0; i < this.privList.length; i++) {
+            if (callback(this.privList[i], i)) {
+                filteredList.add(this.privList[i]);
+            }
+        }
+        return filteredList;
+    };
+    List.prototype.orderBy = function (compareFn) {
+        this.throwIfDisposed();
+        var clonedArray = this.toArray();
+        var orderedArray = clonedArray.sort(compareFn);
+        return new List(orderedArray);
+    };
+    List.prototype.orderByDesc = function (compareFn) {
+        this.throwIfDisposed();
+        return this.orderBy(function (a, b) { return compareFn(b, a); });
+    };
+    List.prototype.clone = function () {
+        this.throwIfDisposed();
+        return new List(this.toArray());
+    };
+    List.prototype.concat = function (list) {
+        this.throwIfDisposed();
+        return new List(this.privList.concat(list.toArray()));
+    };
+    List.prototype.concatArray = function (array) {
+        this.throwIfDisposed();
+        return new List(this.privList.concat(array));
+    };
+    List.prototype.isDisposed = function () {
+        return this.privList == null;
+    };
+    List.prototype.dispose = function (reason) {
+        if (!this.isDisposed()) {
+            this.privDisposeReason = reason;
+            this.privList = null;
+            this.privAddSubscriptions = null;
+            this.privRemoveSubscriptions = null;
+            this.triggerSubscriptions(this.privDisposedSubscriptions);
+        }
+    };
+    List.prototype.throwIfDisposed = function () {
+        if (this.isDisposed()) {
+            throw new Error_1.ObjectDisposedError("List", this.privDisposeReason);
+        }
+    };
+    List.prototype.triggerSubscriptions = function (subscriptions) {
+        if (subscriptions) {
+            for (var subscriptionId in subscriptions) {
+                if (subscriptionId) {
+                    subscriptions[subscriptionId]();
+                }
+            }
+        }
+    };
+    return List;
+}());
+exports.List = List;
+
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.marshalPromiseToCallbacks = exports.Sink = exports.Deferred = exports.PromiseResultEventSource = exports.PromiseResult = exports.PromiseState = void 0;
+/* eslint-disable max-classes-per-file, @typescript-eslint/typedef */
 var PromiseState;
 (function (PromiseState) {
     PromiseState[PromiseState["None"] = 0] = "None";
@@ -2324,6 +2389,7 @@ var Deferred = /** @class */ (function () {
             _this.privReject(error);
             return _this;
         };
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
         this.privPromise = new Promise(function (resolve, reject) {
             _this.privResolve = resolve;
             _this.privReject = reject;
@@ -2341,78 +2407,11 @@ var Deferred = /** @class */ (function () {
 exports.Deferred = Deferred;
 var Sink = /** @class */ (function () {
     function Sink() {
-        var _this = this;
         this.privState = PromiseState.None;
         this.privPromiseResult = null;
         this.privPromiseResultEvents = null;
         this.privSuccessHandlers = [];
         this.privErrorHandlers = [];
-        this.resolve = function (result) {
-            if (_this.privState !== PromiseState.None) {
-                throw new Error("'Cannot resolve a completed promise'");
-            }
-            _this.privState = PromiseState.Resolved;
-            _this.privPromiseResultEvents.setResult(result);
-            for (var i = 0; i < _this.privSuccessHandlers.length; i++) {
-                _this.executeSuccessCallback(result, _this.privSuccessHandlers[i], _this.privErrorHandlers[i]);
-            }
-            _this.detachHandlers();
-        };
-        this.reject = function (error) {
-            if (_this.privState !== PromiseState.None) {
-                throw new Error("'Cannot reject a completed promise'");
-            }
-            _this.privState = PromiseState.Rejected;
-            _this.privPromiseResultEvents.setError(error);
-            for (var _i = 0, _a = _this.privErrorHandlers; _i < _a.length; _i++) {
-                var errorHandler = _a[_i];
-                _this.executeErrorCallback(error, errorHandler);
-            }
-            _this.detachHandlers();
-        };
-        this.on = function (successCallback, errorCallback) {
-            if (successCallback == null) {
-                successCallback = function (r) { return; };
-            }
-            if (_this.privState === PromiseState.None) {
-                _this.privSuccessHandlers.push(successCallback);
-                _this.privErrorHandlers.push(errorCallback);
-            }
-            else {
-                if (_this.privState === PromiseState.Resolved) {
-                    _this.executeSuccessCallback(_this.privPromiseResult.result, successCallback, errorCallback);
-                }
-                else if (_this.privState === PromiseState.Rejected) {
-                    _this.executeErrorCallback(_this.privPromiseResult.error, errorCallback);
-                }
-                _this.detachHandlers();
-            }
-        };
-        this.executeSuccessCallback = function (result, successCallback, errorCallback) {
-            try {
-                successCallback(result);
-            }
-            catch (e) {
-                _this.executeErrorCallback("'Unhandled callback error: " + e + "'", errorCallback);
-            }
-        };
-        this.executeErrorCallback = function (error, errorCallback) {
-            if (errorCallback) {
-                try {
-                    errorCallback(error);
-                }
-                catch (e) {
-                    throw new Error("'Unhandled callback error: " + e + ". InnerError: " + error + "'");
-                }
-            }
-            else {
-                throw new Error("'Unhandled error: " + error + "'");
-            }
-        };
-        this.detachHandlers = function () {
-            _this.privErrorHandlers = [];
-            _this.privSuccessHandlers = [];
-        };
         this.privPromiseResultEvents = new PromiseResultEventSource();
         this.privPromiseResult = new PromiseResult(this.privPromiseResultEvents);
     }
@@ -2430,9 +2429,77 @@ var Sink = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Sink.prototype.resolve = function (result) {
+        if (this.privState !== PromiseState.None) {
+            throw new Error("'Cannot resolve a completed promise'");
+        }
+        this.privState = PromiseState.Resolved;
+        this.privPromiseResultEvents.setResult(result);
+        for (var i = 0; i < this.privSuccessHandlers.length; i++) {
+            this.executeSuccessCallback(result, this.privSuccessHandlers[i], this.privErrorHandlers[i]);
+        }
+        this.detachHandlers();
+    };
+    Sink.prototype.reject = function (error) {
+        if (this.privState !== PromiseState.None) {
+            throw new Error("'Cannot reject a completed promise'");
+        }
+        this.privState = PromiseState.Rejected;
+        this.privPromiseResultEvents.setError(error);
+        for (var _i = 0, _a = this.privErrorHandlers; _i < _a.length; _i++) {
+            var errorHandler = _a[_i];
+            this.executeErrorCallback(error, errorHandler);
+        }
+        this.detachHandlers();
+    };
+    Sink.prototype.on = function (successCallback, errorCallback) {
+        if (successCallback == null) {
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            successCallback = function () { };
+        }
+        if (this.privState === PromiseState.None) {
+            this.privSuccessHandlers.push(successCallback);
+            this.privErrorHandlers.push(errorCallback);
+        }
+        else {
+            if (this.privState === PromiseState.Resolved) {
+                this.executeSuccessCallback(this.privPromiseResult.result, successCallback, errorCallback);
+            }
+            else if (this.privState === PromiseState.Rejected) {
+                this.executeErrorCallback(this.privPromiseResult.error, errorCallback);
+            }
+            this.detachHandlers();
+        }
+    };
+    Sink.prototype.executeSuccessCallback = function (result, successCallback, errorCallback) {
+        try {
+            successCallback(result);
+        }
+        catch (e) {
+            this.executeErrorCallback("'Unhandled callback error: " + e + "'", errorCallback);
+        }
+    };
+    Sink.prototype.executeErrorCallback = function (error, errorCallback) {
+        if (errorCallback) {
+            try {
+                errorCallback(error);
+            }
+            catch (e) {
+                throw new Error("'Unhandled callback error: " + e + ". InnerError: " + error + "'");
+            }
+        }
+        else {
+            throw new Error("'Unhandled error: " + error + "'");
+        }
+    };
+    Sink.prototype.detachHandlers = function () {
+        this.privErrorHandlers = [];
+        this.privSuccessHandlers = [];
+    };
     return Sink;
 }());
 exports.Sink = Sink;
+// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 function marshalPromiseToCallbacks(promise, cb, err) {
     promise.then(function (val) {
         try {
@@ -2450,7 +2517,7 @@ function marshalPromiseToCallbacks(promise, cb, err) {
                     else {
                         err(error);
                     }
-                    /* tslint:disable:no-empty */
+                    // eslint-disable-next-line no-empty
                 }
                 catch (error) { }
             }
@@ -2465,7 +2532,7 @@ function marshalPromiseToCallbacks(promise, cb, err) {
                 else {
                     err(error);
                 }
-                /* tslint:disable:no-empty */
+                // eslint-disable-next-line no-empty
             }
             catch (error) { }
         }
@@ -2476,7 +2543,7 @@ exports.marshalPromiseToCallbacks = marshalPromiseToCallbacks;
 
 
 /***/ }),
-/* 41 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2521,9 +2588,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Queue = void 0;
-var Error_1 = __webpack_require__(25);
-var List_1 = __webpack_require__(39);
-var Promise_1 = __webpack_require__(40);
+var Error_1 = __webpack_require__(27);
+var List_1 = __webpack_require__(41);
+var Promise_1 = __webpack_require__(42);
 var SubscriberType;
 (function (SubscriberType) {
     SubscriberType[SubscriberType["Dequeue"] = 0] = "Dequeue";
@@ -2536,103 +2603,49 @@ var Queue = /** @class */ (function () {
         this.privIsDrainInProgress = false;
         this.privIsDisposing = false;
         this.privDisposeReason = null;
-        this.enqueue = function (item) {
-            _this.throwIfDispose();
-            _this.enqueueFromPromise(new Promise(function (resolve, reject) { resolve(item); }));
-        };
-        this.enqueueFromPromise = function (promise) {
-            _this.throwIfDispose();
-            promise.then(function (val) {
-                _this.privList.add(val);
-                /* tslint:disable:no-empty */
-            }, function (error) { });
-        };
-        this.dequeue = function () {
-            _this.throwIfDispose();
-            var deferredSubscriber = new Promise_1.Deferred();
-            if (_this.privSubscribers) {
-                _this.privSubscribers.add({ deferral: deferredSubscriber, type: SubscriberType.Dequeue });
-                _this.drain();
-            }
-            return deferredSubscriber.promise;
-        };
-        this.peek = function () {
-            _this.throwIfDispose();
-            var deferredSubscriber = new Promise_1.Deferred();
-            var subs = _this.privSubscribers;
-            if (subs) {
-                _this.privSubscribers.add({ deferral: deferredSubscriber, type: SubscriberType.Peek });
-                _this.drain();
-            }
-            return deferredSubscriber.promise;
-        };
-        this.length = function () {
-            _this.throwIfDispose();
-            return _this.privList.length();
-        };
-        this.isDisposed = function () {
-            return _this.privSubscribers == null;
-        };
-        this.drain = function () {
-            if (!_this.privIsDrainInProgress && !_this.privIsDisposing) {
-                _this.privIsDrainInProgress = true;
-                var subs = _this.privSubscribers;
-                var lists = _this.privList;
-                if (subs && lists) {
-                    while (lists.length() > 0 && subs.length() > 0 && !_this.privIsDisposing) {
-                        var subscriber = subs.removeFirst();
-                        if (subscriber.type === SubscriberType.Peek) {
-                            subscriber.deferral.resolve(lists.first());
-                        }
-                        else {
-                            var dequeuedItem = lists.removeFirst();
-                            subscriber.deferral.resolve(dequeuedItem);
-                        }
-                    }
-                    // note: this block assumes cooperative multitasking, i.e.,
-                    // between the if-statement and the assignment there are no
-                    // thread switches.
-                    // Reason is that between the initial const = this.; and this
-                    // point there is the derral.resolve() operation that might have
-                    // caused recursive calls to the Queue, especially, calling
-                    // Dispose() on the queue alredy (which would reset the var
-                    // here to null!).
-                    // That should generally hold true for javascript...
-                    if (_this.privSubscribers === subs) {
-                        _this.privSubscribers = subs;
-                    }
-                    // note: this block assumes cooperative multitasking, i.e.,
-                    // between the if-statement and the assignment there are no
-                    // thread switches.
-                    // Reason is that between the initial const = this.; and this
-                    // point there is the derral.resolve() operation that might have
-                    // caused recursive calls to the Queue, especially, calling
-                    // Dispose() on the queue alredy (which would reset the var
-                    // here to null!).
-                    // That should generally hold true for javascript...
-                    if (_this.privList === lists) {
-                        _this.privList = lists;
-                    }
-                }
-                _this.privIsDrainInProgress = false;
-            }
-        };
-        this.throwIfDispose = function () {
-            if (_this.isDisposed()) {
-                if (_this.privDisposeReason) {
-                    throw new Error_1.InvalidOperationError(_this.privDisposeReason);
-                }
-                throw new Error_1.ObjectDisposedError("Queue");
-            }
-            else if (_this.privIsDisposing) {
-                throw new Error_1.InvalidOperationError("Queue disposing");
-            }
-        };
         this.privList = list ? list : new List_1.List();
         this.privDetachables = [];
         this.privSubscribers = new List_1.List();
-        this.privDetachables.push(this.privList.onAdded(this.drain));
+        this.privDetachables.push(this.privList.onAdded(function () { return _this.drain(); }));
     }
+    Queue.prototype.enqueue = function (item) {
+        this.throwIfDispose();
+        this.enqueueFromPromise(new Promise(function (resolve) { return resolve(item); }));
+    };
+    Queue.prototype.enqueueFromPromise = function (promise) {
+        var _this = this;
+        this.throwIfDispose();
+        promise.then(function (val) {
+            _this.privList.add(val);
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+        }, function () { });
+    };
+    Queue.prototype.dequeue = function () {
+        this.throwIfDispose();
+        var deferredSubscriber = new Promise_1.Deferred();
+        if (this.privSubscribers) {
+            this.privSubscribers.add({ deferral: deferredSubscriber, type: SubscriberType.Dequeue });
+            this.drain();
+        }
+        return deferredSubscriber.promise;
+    };
+    Queue.prototype.peek = function () {
+        this.throwIfDispose();
+        var deferredSubscriber = new Promise_1.Deferred();
+        var subs = this.privSubscribers;
+        if (subs) {
+            this.privSubscribers.add({ deferral: deferredSubscriber, type: SubscriberType.Peek });
+            this.drain();
+        }
+        return deferredSubscriber.promise;
+    };
+    Queue.prototype.length = function () {
+        this.throwIfDispose();
+        return this.privList.length();
+    };
+    Queue.prototype.isDisposed = function () {
+        return this.privSubscribers == null;
+    };
     Queue.prototype.drainAndDispose = function (pendingItemProcessor, reason) {
         return __awaiter(this, void 0, void 0, function () {
             var subs, subscriber, _i, _a, detachable, promiseArray_1;
@@ -2684,7 +2697,7 @@ var Queue = /** @class */ (function () {
                             });
                             return [2 /*return*/, Promise.all(promiseArray_1).finally(function () {
                                     _this.privSubscribers = null;
-                                    _this.privList.forEach(function (item, index) {
+                                    _this.privList.forEach(function (item) {
                                         pendingItemProcessor(item);
                                     });
                                     _this.privList = null;
@@ -2713,6 +2726,61 @@ var Queue = /** @class */ (function () {
             });
         });
     };
+    Queue.prototype.drain = function () {
+        if (!this.privIsDrainInProgress && !this.privIsDisposing) {
+            this.privIsDrainInProgress = true;
+            var subs = this.privSubscribers;
+            var lists = this.privList;
+            if (subs && lists) {
+                while (lists.length() > 0 && subs.length() > 0 && !this.privIsDisposing) {
+                    var subscriber = subs.removeFirst();
+                    if (subscriber.type === SubscriberType.Peek) {
+                        subscriber.deferral.resolve(lists.first());
+                    }
+                    else {
+                        var dequeuedItem = lists.removeFirst();
+                        subscriber.deferral.resolve(dequeuedItem);
+                    }
+                }
+                // note: this block assumes cooperative multitasking, i.e.,
+                // between the if-statement and the assignment there are no
+                // thread switches.
+                // Reason is that between the initial const = this.; and this
+                // point there is the derral.resolve() operation that might have
+                // caused recursive calls to the Queue, especially, calling
+                // Dispose() on the queue alredy (which would reset the var
+                // here to null!).
+                // That should generally hold true for javascript...
+                if (this.privSubscribers === subs) {
+                    this.privSubscribers = subs;
+                }
+                // note: this block assumes cooperative multitasking, i.e.,
+                // between the if-statement and the assignment there are no
+                // thread switches.
+                // Reason is that between the initial const = this.; and this
+                // point there is the derral.resolve() operation that might have
+                // caused recursive calls to the Queue, especially, calling
+                // Dispose() on the queue alredy (which would reset the var
+                // here to null!).
+                // That should generally hold true for javascript...
+                if (this.privList === lists) {
+                    this.privList = lists;
+                }
+            }
+            this.privIsDrainInProgress = false;
+        }
+    };
+    Queue.prototype.throwIfDispose = function () {
+        if (this.isDisposed()) {
+            if (this.privDisposeReason) {
+                throw new Error_1.InvalidOperationError(this.privDisposeReason);
+            }
+            throw new Error_1.ObjectDisposedError("Queue");
+        }
+        else if (this.privIsDisposing) {
+            throw new Error_1.InvalidOperationError("Queue disposing");
+        }
+    };
     return Queue;
 }());
 exports.Queue = Queue;
@@ -2720,24 +2788,26 @@ exports.Queue = Queue;
 
 
 /***/ }),
-/* 42 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RawWebsocketMessage = void 0;
-var ConnectionMessage_1 = __webpack_require__(24);
-var Error_1 = __webpack_require__(25);
-var Guid_1 = __webpack_require__(7);
+var ConnectionMessage_1 = __webpack_require__(26);
+var Error_1 = __webpack_require__(27);
+var Guid_1 = __webpack_require__(9);
 var RawWebsocketMessage = /** @class */ (function () {
     function RawWebsocketMessage(messageType, payload, id) {
         this.privPayload = null;
         if (!payload) {
             throw new Error_1.ArgumentNullError("payload");
         }
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         if (messageType === ConnectionMessage_1.MessageType.Binary && payload.__proto__.constructor.name !== "ArrayBuffer") {
             throw new Error_1.InvalidOperationError("Payload must be ArrayBuffer");
         }
@@ -2757,6 +2827,7 @@ var RawWebsocketMessage = /** @class */ (function () {
     });
     Object.defineProperty(RawWebsocketMessage.prototype, "payload", {
         get: function () {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return this.privPayload;
         },
         enumerable: false,
@@ -2796,7 +2867,7 @@ exports.RawWebsocketMessage = RawWebsocketMessage;
 
 
 /***/ }),
-/* 43 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2807,56 +2878,55 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RiffPcmEncoder = void 0;
 var RiffPcmEncoder = /** @class */ (function () {
     function RiffPcmEncoder(actualSampleRate, desiredSampleRate) {
-        var _this = this;
-        this.encode = function (actualAudioFrame) {
-            var audioFrame = _this.downSampleAudioFrame(actualAudioFrame, _this.privActualSampleRate, _this.privDesiredSampleRate);
-            if (!audioFrame) {
-                return null;
-            }
-            var audioLength = audioFrame.length * 2;
-            var buffer = new ArrayBuffer(audioLength);
-            var view = new DataView(buffer);
-            _this.floatTo16BitPCM(view, 0, audioFrame);
-            return buffer;
-        };
-        this.setString = function (view, offset, str) {
-            for (var i = 0; i < str.length; i++) {
-                view.setUint8(offset + i, str.charCodeAt(i));
-            }
-        };
-        this.floatTo16BitPCM = function (view, offset, input) {
-            for (var i = 0; i < input.length; i++, offset += 2) {
-                var s = Math.max(-1, Math.min(1, input[i]));
-                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-            }
-        };
-        this.downSampleAudioFrame = function (srcFrame, srcRate, dstRate) {
-            if (!srcFrame) {
-                return null;
-            }
-            if (dstRate === srcRate || dstRate > srcRate) {
-                return srcFrame;
-            }
-            var ratio = srcRate / dstRate;
-            var dstLength = Math.round(srcFrame.length / ratio);
-            var dstFrame = new Float32Array(dstLength);
-            var srcOffset = 0;
-            var dstOffset = 0;
-            while (dstOffset < dstLength) {
-                var nextSrcOffset = Math.round((dstOffset + 1) * ratio);
-                var accum = 0;
-                var count = 0;
-                while (srcOffset < nextSrcOffset && srcOffset < srcFrame.length) {
-                    accum += srcFrame[srcOffset++];
-                    count++;
-                }
-                dstFrame[dstOffset++] = accum / count;
-            }
-            return dstFrame;
-        };
         this.privActualSampleRate = actualSampleRate;
         this.privDesiredSampleRate = desiredSampleRate;
     }
+    RiffPcmEncoder.prototype.encode = function (actualAudioFrame) {
+        var audioFrame = this.downSampleAudioFrame(actualAudioFrame, this.privActualSampleRate, this.privDesiredSampleRate);
+        if (!audioFrame) {
+            return null;
+        }
+        var audioLength = audioFrame.length * 2;
+        var buffer = new ArrayBuffer(audioLength);
+        var view = new DataView(buffer);
+        this.floatTo16BitPCM(view, 0, audioFrame);
+        return buffer;
+    };
+    RiffPcmEncoder.prototype.setString = function (view, offset, str) {
+        for (var i = 0; i < str.length; i++) {
+            view.setUint8(offset + i, str.charCodeAt(i));
+        }
+    };
+    RiffPcmEncoder.prototype.floatTo16BitPCM = function (view, offset, input) {
+        for (var i = 0; i < input.length; i++, offset += 2) {
+            var s = Math.max(-1, Math.min(1, input[i]));
+            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        }
+    };
+    RiffPcmEncoder.prototype.downSampleAudioFrame = function (srcFrame, srcRate, dstRate) {
+        if (!srcFrame) {
+            return null;
+        }
+        if (dstRate === srcRate || dstRate > srcRate) {
+            return srcFrame;
+        }
+        var ratio = srcRate / dstRate;
+        var dstLength = Math.round(srcFrame.length / ratio);
+        var dstFrame = new Float32Array(dstLength);
+        var srcOffset = 0;
+        var dstOffset = 0;
+        while (dstOffset < dstLength) {
+            var nextSrcOffset = Math.round((dstOffset + 1) * ratio);
+            var accum = 0;
+            var count = 0;
+            while (srcOffset < nextSrcOffset && srcOffset < srcFrame.length) {
+                accum += srcFrame[srcOffset++];
+                count++;
+            }
+            dstFrame[dstOffset++] = accum / count;
+        }
+        return dstFrame;
+    };
     return RiffPcmEncoder;
 }());
 exports.RiffPcmEncoder = RiffPcmEncoder;
@@ -2864,7 +2934,7 @@ exports.RiffPcmEncoder = RiffPcmEncoder;
 
 
 /***/ }),
-/* 44 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2909,45 +2979,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Stream = void 0;
-var Error_1 = __webpack_require__(25);
-var Guid_1 = __webpack_require__(7);
-var Queue_1 = __webpack_require__(41);
+var Error_1 = __webpack_require__(27);
+var Guid_1 = __webpack_require__(9);
+var Queue_1 = __webpack_require__(43);
 var Stream = /** @class */ (function () {
     function Stream(streamId) {
-        var _this = this;
         this.privIsWriteEnded = false;
         this.privIsReadEnded = false;
-        this.read = function () {
-            if (_this.privIsReadEnded) {
-                throw new Error_1.InvalidOperationError("Stream read has already finished");
-            }
-            return _this.privReaderQueue
-                .dequeue()
-                .then(function (streamChunk) { return __awaiter(_this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (!(streamChunk === undefined || streamChunk.isEnd)) return [3 /*break*/, 2];
-                            return [4 /*yield*/, this.privReaderQueue.dispose("End of stream reached")];
-                        case 1:
-                            _a.sent();
-                            _a.label = 2;
-                        case 2: return [2 /*return*/, streamChunk];
-                    }
-                });
-            }); });
-        };
-        this.readEnded = function () {
-            if (!_this.privIsReadEnded) {
-                _this.privIsReadEnded = true;
-                _this.privReaderQueue = new Queue_1.Queue();
-            }
-        };
-        this.throwIfClosed = function () {
-            if (_this.privIsWriteEnded) {
-                throw new Error_1.InvalidOperationError("Stream closed");
-            }
-        };
         this.privId = streamId ? streamId : Guid_1.createNoDashGuid();
         this.privReaderQueue = new Queue_1.Queue();
     }
@@ -2993,6 +3031,38 @@ var Stream = /** @class */ (function () {
             }
         }
     };
+    Stream.prototype.read = function () {
+        var _this = this;
+        if (this.privIsReadEnded) {
+            throw new Error_1.InvalidOperationError("Stream read has already finished");
+        }
+        return this.privReaderQueue
+            .dequeue()
+            .then(function (streamChunk) { return __awaiter(_this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(streamChunk === undefined || streamChunk.isEnd)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.privReaderQueue.dispose("End of stream reached")];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2: return [2 /*return*/, streamChunk];
+                }
+            });
+        }); });
+    };
+    Stream.prototype.readEnded = function () {
+        if (!this.privIsReadEnded) {
+            this.privIsReadEnded = true;
+            this.privReaderQueue = new Queue_1.Queue();
+        }
+    };
+    Stream.prototype.throwIfClosed = function () {
+        if (this.privIsWriteEnded) {
+            throw new Error_1.InvalidOperationError("Stream closed");
+        }
+    };
     return Stream;
 }());
 exports.Stream = Stream;
@@ -3000,7 +3070,7 @@ exports.Stream = Stream;
 
 
 /***/ }),
-/* 45 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3028,7 +3098,7 @@ var TranslationStatus;
 
 
 /***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3050,7 +3120,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChunkedArrayBufferStream = void 0;
-var Exports_1 = __webpack_require__(4);
+var Exports_1 = __webpack_require__(6);
 var ChunkedArrayBufferStream = /** @class */ (function (_super) {
     __extends(ChunkedArrayBufferStream, _super);
     function ChunkedArrayBufferStream(targetChunkSize, streamId) {
@@ -3110,7 +3180,7 @@ exports.ChunkedArrayBufferStream = ChunkedArrayBufferStream;
 
 
 /***/ }),
-/* 47 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3122,7 +3192,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 /***/ }),
-/* 48 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3134,12 +3204,9 @@ exports.Timeout = void 0;
 var Timeout = /** @class */ (function () {
     function Timeout() {
     }
-    Timeout.workerTimers = null;
-    Timeout.clearTimeout = function (timerId) { return Timeout.timers().clearTimeout(timerId); };
-    Timeout.setTimeout = function (func, delay) { return Timeout.timers().setTimeout(func, delay); };
     Timeout.load = function (url) {
         // Prefilling the Maps with a function indexed by zero is necessary to be compliant with the specification.
-        var scheduledTimeoutFunctions = new Map([[0, function () { }]]); // tslint:disable-line no-empty
+        var scheduledTimeoutFunctions = new Map([[0, function () { }]]); // eslint-disable-line @typescript-eslint/no-empty-function
         var unhandledRequests = new Map();
         var worker = new Worker(url);
         worker.addEventListener("message", function (_a) {
@@ -3207,7 +3274,8 @@ var Timeout = /** @class */ (function () {
         };
     };
     Timeout.loadWorkerTimers = function () {
-        var worker = "!function(e){var t={};function n(r){if(t[r])return t[r].exports;var o=t[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}n.m=e,n.c=t,n.d=function(e,t,r){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:r})},n.r=function(e){\"undefined\"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:\"Module\"}),Object.defineProperty(e,\"__esModule\",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&\"object\"==typeof e&&e&&e.__esModule)return e;var r=Object.create(null);if(n.r(r),Object.defineProperty(r,\"default\",{enumerable:!0,value:e}),2&t&&\"string\"!=typeof e)for(var o in e)n.d(r,o,function(t){return e[t]}.bind(null,o));return r},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,\"a\",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p=\"\",n(n.s=14)}([function(e,t,n){\"use strict\";n.d(t,\"a\",(function(){return i})),n.d(t,\"b\",(function(){return u})),n.d(t,\"c\",(function(){return a})),n.d(t,\"d\",(function(){return d}));const r=new Map,o=new Map,i=e=>{const t=r.get(e);if(void 0===t)throw new Error('There is no interval scheduled with the given id \"'.concat(e,'\".'));clearTimeout(t),r.delete(e)},u=e=>{const t=o.get(e);if(void 0===t)throw new Error('There is no timeout scheduled with the given id \"'.concat(e,'\".'));clearTimeout(t),o.delete(e)},f=(e,t)=>{let n,r;if(\"performance\"in self){const o=performance.now();n=o,r=e-Math.max(0,o-t)}else n=Date.now(),r=e;return{expected:n+r,remainingDelay:r}},c=(e,t,n,r)=>{const o=\"performance\"in self?performance.now():Date.now();o>n?postMessage({id:null,method:\"call\",params:{timerId:t}}):e.set(t,setTimeout(c,n-o,e,t,n))},a=(e,t,n)=>{const{expected:o,remainingDelay:i}=f(e,n);r.set(t,setTimeout(c,i,r,t,o))},d=(e,t,n)=>{const{expected:r,remainingDelay:i}=f(e,n);o.set(t,setTimeout(c,i,o,t,r))}},function(e,t,n){\"use strict\";n.r(t);var r=n(2);for(var o in r)\"default\"!==o&&function(e){n.d(t,e,(function(){return r[e]}))}(o);var i=n(3);for(var o in i)\"default\"!==o&&function(e){n.d(t,e,(function(){return i[e]}))}(o);var u=n(4);for(var o in u)\"default\"!==o&&function(e){n.d(t,e,(function(){return u[e]}))}(o);var f=n(5);for(var o in f)\"default\"!==o&&function(e){n.d(t,e,(function(){return f[e]}))}(o);var c=n(6);for(var o in c)\"default\"!==o&&function(e){n.d(t,e,(function(){return c[e]}))}(o);var a=n(7);for(var o in a)\"default\"!==o&&function(e){n.d(t,e,(function(){return a[e]}))}(o);var d=n(8);for(var o in d)\"default\"!==o&&function(e){n.d(t,e,(function(){return d[e]}))}(o);var s=n(9);for(var o in s)\"default\"!==o&&function(e){n.d(t,e,(function(){return s[e]}))}(o)},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t,n){\"use strict\";n.r(t);var r=n(11);for(var o in r)\"default\"!==o&&function(e){n.d(t,e,(function(){return r[e]}))}(o);var i=n(12);for(var o in i)\"default\"!==o&&function(e){n.d(t,e,(function(){return i[e]}))}(o);var u=n(13);for(var o in u)\"default\"!==o&&function(e){n.d(t,e,(function(){return u[e]}))}(o)},function(e,t){},function(e,t){},function(e,t){},function(e,t,n){\"use strict\";n.r(t);var r=n(0),o=n(1);for(var i in o)\"default\"!==i&&function(e){n.d(t,e,(function(){return o[e]}))}(i);var u=n(10);for(var i in u)\"default\"!==i&&function(e){n.d(t,e,(function(){return u[e]}))}(i);addEventListener(\"message\",({data:e})=>{try{if(\"clear\"===e.method){const{id:t,params:{timerId:n}}=e;Object(r.b)(n),postMessage({error:null,id:t})}else{if(\"set\"!==e.method)throw new Error('The given method \"'.concat(e.method,'\" is not supported'));{const{params:{delay:t,now:n,timerId:o}}=e;Object(r.d)(t,o,n)}}}catch(t){postMessage({error:{message:t.message},id:e.id,result:null})}})}]);"; // tslint:disable-line:max-line-length
+        // eslint-disable-next-line
+        var worker = "!function(e){var t={};function n(r){if(t[r])return t[r].exports;var o=t[r]={i:r,l:!1,exports:{}};return e[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}n.m=e,n.c=t,n.d=function(e,t,r){n.o(e,t)||Object.defineProperty(e,t,{enumerable:!0,get:r})},n.r=function(e){\"undefined\"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:\"Module\"}),Object.defineProperty(e,\"__esModule\",{value:!0})},n.t=function(e,t){if(1&t&&(e=n(e)),8&t)return e;if(4&t&&\"object\"==typeof e&&e&&e.__esModule)return e;var r=Object.create(null);if(n.r(r),Object.defineProperty(r,\"default\",{enumerable:!0,value:e}),2&t&&\"string\"!=typeof e)for(var o in e)n.d(r,o,function(t){return e[t]}.bind(null,o));return r},n.n=function(e){var t=e&&e.__esModule?function(){return e.default}:function(){return e};return n.d(t,\"a\",t),t},n.o=function(e,t){return Object.prototype.hasOwnProperty.call(e,t)},n.p=\"\",n(n.s=14)}([function(e,t,n){\"use strict\";n.d(t,\"a\",(function(){return i})),n.d(t,\"b\",(function(){return u})),n.d(t,\"c\",(function(){return a})),n.d(t,\"d\",(function(){return d}));const r=new Map,o=new Map,i=e=>{const t=r.get(e);if(void 0===t)throw new Error('There is no interval scheduled with the given id \"'.concat(e,'\".'));clearTimeout(t),r.delete(e)},u=e=>{const t=o.get(e);if(void 0===t)throw new Error('There is no timeout scheduled with the given id \"'.concat(e,'\".'));clearTimeout(t),o.delete(e)},f=(e,t)=>{let n,r;if(\"performance\"in self){const o=performance.now();n=o,r=e-Math.max(0,o-t)}else n=Date.now(),r=e;return{expected:n+r,remainingDelay:r}},c=(e,t,n,r)=>{const o=\"performance\"in self?performance.now():Date.now();o>n?postMessage({id:null,method:\"call\",params:{timerId:t}}):e.set(t,setTimeout(c,n-o,e,t,n))},a=(e,t,n)=>{const{expected:o,remainingDelay:i}=f(e,n);r.set(t,setTimeout(c,i,r,t,o))},d=(e,t,n)=>{const{expected:r,remainingDelay:i}=f(e,n);o.set(t,setTimeout(c,i,o,t,r))}},function(e,t,n){\"use strict\";n.r(t);var r=n(2);for(var o in r)\"default\"!==o&&function(e){n.d(t,e,(function(){return r[e]}))}(o);var i=n(3);for(var o in i)\"default\"!==o&&function(e){n.d(t,e,(function(){return i[e]}))}(o);var u=n(4);for(var o in u)\"default\"!==o&&function(e){n.d(t,e,(function(){return u[e]}))}(o);var f=n(5);for(var o in f)\"default\"!==o&&function(e){n.d(t,e,(function(){return f[e]}))}(o);var c=n(6);for(var o in c)\"default\"!==o&&function(e){n.d(t,e,(function(){return c[e]}))}(o);var a=n(7);for(var o in a)\"default\"!==o&&function(e){n.d(t,e,(function(){return a[e]}))}(o);var d=n(8);for(var o in d)\"default\"!==o&&function(e){n.d(t,e,(function(){return d[e]}))}(o);var s=n(9);for(var o in s)\"default\"!==o&&function(e){n.d(t,e,(function(){return s[e]}))}(o)},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t){},function(e,t,n){\"use strict\";n.r(t);var r=n(11);for(var o in r)\"default\"!==o&&function(e){n.d(t,e,(function(){return r[e]}))}(o);var i=n(12);for(var o in i)\"default\"!==o&&function(e){n.d(t,e,(function(){return i[e]}))}(o);var u=n(13);for(var o in u)\"default\"!==o&&function(e){n.d(t,e,(function(){return u[e]}))}(o)},function(e,t){},function(e,t){},function(e,t){},function(e,t,n){\"use strict\";n.r(t);var r=n(0),o=n(1);for(var i in o)\"default\"!==i&&function(e){n.d(t,e,(function(){return o[e]}))}(i);var u=n(10);for(var i in u)\"default\"!==i&&function(e){n.d(t,e,(function(){return u[e]}))}(i);addEventListener(\"message\",({data:e})=>{try{if(\"clear\"===e.method){const{id:t,params:{timerId:n}}=e;Object(r.b)(n),postMessage({error:null,id:t})}else{if(\"set\"!==e.method)throw new Error('The given method \"'.concat(e.method,'\" is not supported'));{const{params:{delay:t,now:n,timerId:o}}=e;Object(r.d)(t,o,n)}}}catch(t){postMessage({error:{message:t.message},id:e.id,result:null})}})}]);";
         return function () {
             if (Timeout.workerTimers !== null) {
                 return Timeout.workerTimers;
@@ -3220,13 +3288,16 @@ var Timeout = /** @class */ (function () {
             return Timeout.workerTimers;
         };
     };
-    Timeout.timers = Timeout.loadWorkerTimers();
     Timeout.isCallNotification = function (message) {
         return message.method !== undefined && message.method === "call";
     };
     Timeout.isClearResponse = function (message) {
         return message.error === null && typeof message.id === "number";
     };
+    Timeout.workerTimers = null;
+    Timeout.clearTimeout = function (timerId) { return Timeout.timers().clearTimeout(timerId); };
+    Timeout.setTimeout = function (func, delay) { return Timeout.timers().setTimeout(func, delay); };
+    Timeout.timers = Timeout.loadWorkerTimers();
     return Timeout;
 }());
 exports.Timeout = Timeout;
@@ -3234,7 +3305,7 @@ exports.Timeout = Timeout;
 
 
 /***/ }),
-/* 49 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3256,8 +3327,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OCSPCacheUpdateErrorEvent = exports.OCSPResponseRetrievedEvent = exports.OCSPCacheFetchErrorEvent = exports.OCSPVerificationFailedEvent = exports.OCSPCacheHitEvent = exports.OCSPCacheEntryNeedsRefreshEvent = exports.OCSPCacheEntryExpiredEvent = exports.OCSPWSUpgradeStartedEvent = exports.OCSPStapleReceivedEvent = exports.OCSPCacheUpdateCompleteEvent = exports.OCSPDiskCacheStoreEvent = exports.OCSPMemoryCacheStoreEvent = exports.OCSPCacheUpdateNeededEvent = exports.OCSPDiskCacheHitEvent = exports.OCSPCacheMissEvent = exports.OCSPMemoryCacheHitEvent = exports.OCSPEvent = void 0;
-// tslint:disable:max-classes-per-file
-var PlatformEvent_1 = __webpack_require__(6);
+/* eslint-disable max-classes-per-file */
+var PlatformEvent_1 = __webpack_require__(8);
 var OCSPEvent = /** @class */ (function (_super) {
     __extends(OCSPEvent, _super);
     function OCSPEvent(eventName, eventType, signature) {
@@ -3416,7 +3487,7 @@ exports.OCSPCacheUpdateErrorEvent = OCSPCacheUpdateErrorEvent;
 
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3438,7 +3509,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BackgroundEvent = void 0;
-var Exports_1 = __webpack_require__(4);
+var Exports_1 = __webpack_require__(6);
 var BackgroundEvent = /** @class */ (function (_super) {
     __extends(BackgroundEvent, _super);
     function BackgroundEvent(error) {
@@ -3460,7 +3531,70 @@ exports.BackgroundEvent = BackgroundEvent;
 
 
 /***/ }),
-/* 51 */
+/* 53 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Contracts = void 0;
+/**
+ * @class Contracts
+ * @private
+ */
+var Contracts = /** @class */ (function () {
+    function Contracts() {
+    }
+    Contracts.throwIfNullOrUndefined = function (param, name) {
+        if (param === undefined || param === null) {
+            throw new Error("throwIfNullOrUndefined:" + name);
+        }
+    };
+    Contracts.throwIfNull = function (param, name) {
+        if (param === null) {
+            throw new Error("throwIfNull:" + name);
+        }
+    };
+    Contracts.throwIfNullOrWhitespace = function (param, name) {
+        Contracts.throwIfNullOrUndefined(param, name);
+        if (("" + param).trim().length < 1) {
+            throw new Error("throwIfNullOrWhitespace:" + name);
+        }
+    };
+    Contracts.throwIfDisposed = function (isDisposed) {
+        if (isDisposed) {
+            throw new Error("the object is already disposed");
+        }
+    };
+    Contracts.throwIfArrayEmptyOrWhitespace = function (array, name) {
+        Contracts.throwIfNullOrUndefined(array, name);
+        if (array.length === 0) {
+            throw new Error("throwIfArrayEmptyOrWhitespace:" + name);
+        }
+        for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
+            var item = array_1[_i];
+            Contracts.throwIfNullOrWhitespace(item, name);
+        }
+    };
+    Contracts.throwIfFileDoesNotExist = function (param, name) {
+        Contracts.throwIfNullOrWhitespace(param, name);
+        // TODO check for file existence.
+    };
+    Contracts.throwIfNotUndefined = function (param, name) {
+        if (param !== undefined) {
+            throw new Error("throwIfNotUndefined:" + name);
+        }
+    };
+    return Contracts;
+}());
+exports.Contracts = Contracts;
+
+
+
+/***/ }),
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3472,7 +3606,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 /***/ }),
-/* 52 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3517,149 +3651,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MicAudioSource = exports.AudioWorkletSourceURLPropertyName = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var AudioStreamFormat_1 = __webpack_require__(72);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var AudioStreamFormat_1 = __webpack_require__(74);
 exports.AudioWorkletSourceURLPropertyName = "MICROPHONE-WorkletSourceUrl";
 var MicAudioSource = /** @class */ (function () {
     function MicAudioSource(privRecorder, deviceId, audioSourceId, mediaStream) {
-        var _this = this;
         this.privRecorder = privRecorder;
         this.deviceId = deviceId;
         this.privStreams = {};
-        this.turnOn = function () {
-            if (_this.privInitializeDeferral) {
-                return _this.privInitializeDeferral.promise;
-            }
-            _this.privInitializeDeferral = new Exports_2.Deferred();
-            try {
-                _this.createAudioContext();
-            }
-            catch (error) {
-                if (error instanceof Error) {
-                    var typedError = error;
-                    _this.privInitializeDeferral.reject(typedError.name + ": " + typedError.message);
-                }
-                else {
-                    _this.privInitializeDeferral.reject(error);
-                }
-                return _this.privInitializeDeferral.promise;
-            }
-            var nav = window.navigator;
-            var getUserMedia = (nav.getUserMedia ||
-                nav.webkitGetUserMedia ||
-                nav.mozGetUserMedia ||
-                nav.msGetUserMedia);
-            if (!!nav.mediaDevices) {
-                getUserMedia = function (constraints, successCallback, errorCallback) {
-                    nav.mediaDevices
-                        .getUserMedia(constraints)
-                        .then(successCallback)
-                        .catch(errorCallback);
-                };
-            }
-            if (!getUserMedia) {
-                var errorMsg = "Browser does not support getUserMedia.";
-                _this.privInitializeDeferral.reject(errorMsg);
-                _this.onEvent(new Exports_2.AudioSourceErrorEvent(errorMsg, "")); // mic initialized error - no streamid at this point
-            }
-            else {
-                var next = function () {
-                    _this.onEvent(new Exports_2.AudioSourceInitializingEvent(_this.privId)); // no stream id
-                    if (_this.privMediaStream && _this.privMediaStream.active) {
-                        _this.onEvent(new Exports_2.AudioSourceReadyEvent(_this.privId));
-                        _this.privInitializeDeferral.resolve();
-                    }
-                    else {
-                        getUserMedia({ audio: _this.deviceId ? { deviceId: _this.deviceId } : true, video: false }, function (mediaStream) {
-                            _this.privMediaStream = mediaStream;
-                            _this.onEvent(new Exports_2.AudioSourceReadyEvent(_this.privId));
-                            _this.privInitializeDeferral.resolve();
-                        }, function (error) {
-                            var errorMsg = "Error occurred during microphone initialization: " + error;
-                            _this.privInitializeDeferral.reject(errorMsg);
-                            _this.onEvent(new Exports_2.AudioSourceErrorEvent(_this.privId, errorMsg));
-                        });
-                    }
-                };
-                if (_this.privContext.state === "suspended") {
-                    // NOTE: On iOS, the Web Audio API requires sounds to be triggered from an explicit user action.
-                    // https://github.com/WebAudio/web-audio-api/issues/790
-                    _this.privContext.resume()
-                        .then(next)
-                        .catch(function (reason) {
-                        _this.privInitializeDeferral.reject("Failed to initialize audio context: " + reason);
-                    });
-                }
-                else {
-                    next();
-                }
-            }
-            return _this.privInitializeDeferral.promise;
-        };
-        this.id = function () {
-            return _this.privId;
-        };
-        this.attach = function (audioNodeId) {
-            _this.onEvent(new Exports_2.AudioStreamNodeAttachingEvent(_this.privId, audioNodeId));
-            return _this.listen(audioNodeId).then(function (stream) {
-                _this.onEvent(new Exports_2.AudioStreamNodeAttachedEvent(_this.privId, audioNodeId));
-                return {
-                    detach: function () { return __awaiter(_this, void 0, void 0, function () {
-                        return __generator(this, function (_a) {
-                            stream.readEnded();
-                            delete this.privStreams[audioNodeId];
-                            this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(this.privId, audioNodeId));
-                            return [2 /*return*/, this.turnOff()];
-                        });
-                    }); },
-                    id: function () {
-                        return audioNodeId;
-                    },
-                    read: function () {
-                        return stream.read();
-                    },
-                };
-            });
-        };
-        this.detach = function (audioNodeId) {
-            if (audioNodeId && _this.privStreams[audioNodeId]) {
-                _this.privStreams[audioNodeId].close();
-                delete _this.privStreams[audioNodeId];
-                _this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(_this.privId, audioNodeId));
-            }
-        };
-        this.listen = function (audioNodeId) { return __awaiter(_this, void 0, void 0, function () {
-            var stream, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.turnOn()];
-                    case 1:
-                        _a.sent();
-                        stream = new Exports_2.ChunkedArrayBufferStream(this.privOutputChunkSize, audioNodeId);
-                        this.privStreams[audioNodeId] = stream;
-                        try {
-                            this.privRecorder.record(this.privContext, this.privMediaStream, stream);
-                        }
-                        catch (error) {
-                            this.onEvent(new Exports_2.AudioStreamNodeErrorEvent(this.privId, audioNodeId, error));
-                            throw error;
-                        }
-                        result = stream;
-                        return [2 /*return*/, result];
-                }
-            });
-        }); };
-        this.onEvent = function (event) {
-            _this.privEvents.onEvent(event);
-            Exports_2.Events.instance.onEvent(event);
-        };
-        this.createAudioContext = function () {
-            if (!!_this.privContext) {
-                return;
-            }
-            _this.privContext = AudioStreamFormat_1.AudioStreamFormatImpl.getAudioContext(MicAudioSource.AUDIOFORMAT.samplesPerSec);
-        };
         this.privOutputChunkSize = MicAudioSource.AUDIOFORMAT.avgBytesPerSec / 10;
         this.privId = audioSourceId ? audioSourceId : Exports_2.createNoDashGuid();
         this.privEvents = new Exports_2.EventSource();
@@ -3680,6 +3680,108 @@ var MicAudioSource = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    MicAudioSource.prototype.turnOn = function () {
+        var _this = this;
+        if (this.privInitializeDeferral) {
+            return this.privInitializeDeferral.promise;
+        }
+        this.privInitializeDeferral = new Exports_2.Deferred();
+        try {
+            this.createAudioContext();
+        }
+        catch (error) {
+            if (error instanceof Error) {
+                var typedError = error;
+                this.privInitializeDeferral.reject(typedError.name + ": " + typedError.message);
+            }
+            else {
+                this.privInitializeDeferral.reject(error);
+            }
+            return this.privInitializeDeferral.promise;
+        }
+        var nav = window.navigator;
+        var getUserMedia = (
+        // eslint-disable-next-line
+        nav.getUserMedia ||
+            nav.webkitGetUserMedia ||
+            nav.mozGetUserMedia ||
+            nav.msGetUserMedia);
+        if (!!nav.mediaDevices) {
+            getUserMedia = function (constraints, successCallback, errorCallback) {
+                nav.mediaDevices
+                    .getUserMedia(constraints)
+                    .then(successCallback)
+                    .catch(errorCallback);
+            };
+        }
+        if (!getUserMedia) {
+            var errorMsg = "Browser does not support getUserMedia.";
+            this.privInitializeDeferral.reject(errorMsg);
+            this.onEvent(new Exports_2.AudioSourceErrorEvent(errorMsg, "")); // mic initialized error - no streamid at this point
+        }
+        else {
+            var next = function () {
+                _this.onEvent(new Exports_2.AudioSourceInitializingEvent(_this.privId)); // no stream id
+                if (_this.privMediaStream && _this.privMediaStream.active) {
+                    _this.onEvent(new Exports_2.AudioSourceReadyEvent(_this.privId));
+                    _this.privInitializeDeferral.resolve();
+                }
+                else {
+                    getUserMedia({ audio: _this.deviceId ? { deviceId: _this.deviceId } : true, video: false }, function (mediaStream) {
+                        _this.privMediaStream = mediaStream;
+                        _this.onEvent(new Exports_2.AudioSourceReadyEvent(_this.privId));
+                        _this.privInitializeDeferral.resolve();
+                    }, function (error) {
+                        var errorMsg = "Error occurred during microphone initialization: " + error;
+                        _this.privInitializeDeferral.reject(errorMsg);
+                        _this.onEvent(new Exports_2.AudioSourceErrorEvent(_this.privId, errorMsg));
+                    });
+                }
+            };
+            if (this.privContext.state === "suspended") {
+                // NOTE: On iOS, the Web Audio API requires sounds to be triggered from an explicit user action.
+                // https://github.com/WebAudio/web-audio-api/issues/790
+                this.privContext.resume()
+                    .then(next)
+                    .catch(function (reason) {
+                    _this.privInitializeDeferral.reject("Failed to initialize audio context: " + reason);
+                });
+            }
+            else {
+                next();
+            }
+        }
+        return this.privInitializeDeferral.promise;
+    };
+    MicAudioSource.prototype.id = function () {
+        return this.privId;
+    };
+    MicAudioSource.prototype.attach = function (audioNodeId) {
+        var _this = this;
+        this.onEvent(new Exports_2.AudioStreamNodeAttachingEvent(this.privId, audioNodeId));
+        return this.listen(audioNodeId).then(function (stream) {
+            _this.onEvent(new Exports_2.AudioStreamNodeAttachedEvent(_this.privId, audioNodeId));
+            return {
+                detach: function () { return __awaiter(_this, void 0, void 0, function () {
+                    return __generator(this, function (_a) {
+                        stream.readEnded();
+                        delete this.privStreams[audioNodeId];
+                        this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(this.privId, audioNodeId));
+                        return [2 /*return*/, this.turnOff()];
+                    });
+                }); },
+                id: function () { return audioNodeId; },
+                read: function () { return stream.read(); },
+            };
+        });
+    };
+    MicAudioSource.prototype.detach = function (audioNodeId) {
+        if (audioNodeId && this.privStreams[audioNodeId]) {
+            this.privStreams[audioNodeId].close();
+            delete this.privStreams[audioNodeId];
+            this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(this.privId, audioNodeId));
+        }
+    };
     MicAudioSource.prototype.turnOff = function () {
         return __awaiter(this, void 0, void 0, function () {
             var streamId, stream;
@@ -3697,9 +3799,11 @@ var MicAudioSource = /** @class */ (function () {
                         this.onEvent(new Exports_2.AudioSourceOffEvent(this.privId)); // no stream now
                         if (!this.privInitializeDeferral) return [3 /*break*/, 2];
                         // Correctly handle when browser forces mic off before turnOn() completes
+                        // eslint-disable-next-line @typescript-eslint/await-thenable
                         return [4 /*yield*/, this.privInitializeDeferral];
                     case 1:
                         // Correctly handle when browser forces mic off before turnOn() completes
+                        // eslint-disable-next-line @typescript-eslint/await-thenable
                         _a.sent();
                         this.privInitializeDeferral = null;
                         _a.label = 2;
@@ -3720,17 +3824,15 @@ var MicAudioSource = /** @class */ (function () {
     });
     Object.defineProperty(MicAudioSource.prototype, "deviceInfo", {
         get: function () {
-            return this.getMicrophoneLabel().then(function (label) {
-                return {
-                    bitspersample: MicAudioSource.AUDIOFORMAT.bitsPerSample,
-                    channelcount: MicAudioSource.AUDIOFORMAT.channels,
-                    connectivity: Exports_1.connectivity.Unknown,
-                    manufacturer: "Speech SDK",
-                    model: label,
-                    samplerate: MicAudioSource.AUDIOFORMAT.samplesPerSec,
-                    type: Exports_1.type.Microphones,
-                };
-            });
+            return this.getMicrophoneLabel().then(function (label) { return ({
+                bitspersample: MicAudioSource.AUDIOFORMAT.bitsPerSample,
+                channelcount: MicAudioSource.AUDIOFORMAT.channels,
+                connectivity: Exports_1.connectivity.Unknown,
+                manufacturer: "Speech SDK",
+                model: label,
+                samplerate: MicAudioSource.AUDIOFORMAT.samplesPerSec,
+                type: Exports_1.type.Microphones,
+            }); });
         },
         enumerable: false,
         configurable: true
@@ -3776,6 +3878,39 @@ var MicAudioSource = /** @class */ (function () {
             deferred.resolve(_this.privMicrophoneLabel);
         }, function () { return deferred.resolve(_this.privMicrophoneLabel); });
         return deferred.promise;
+    };
+    MicAudioSource.prototype.listen = function (audioNodeId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var stream, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.turnOn()];
+                    case 1:
+                        _a.sent();
+                        stream = new Exports_2.ChunkedArrayBufferStream(this.privOutputChunkSize, audioNodeId);
+                        this.privStreams[audioNodeId] = stream;
+                        try {
+                            this.privRecorder.record(this.privContext, this.privMediaStream, stream);
+                        }
+                        catch (error) {
+                            this.onEvent(new Exports_2.AudioStreamNodeErrorEvent(this.privId, audioNodeId, error));
+                            throw error;
+                        }
+                        result = stream;
+                        return [2 /*return*/, result];
+                }
+            });
+        });
+    };
+    MicAudioSource.prototype.onEvent = function (event) {
+        this.privEvents.onEvent(event);
+        Exports_2.Events.instance.onEvent(event);
+    };
+    MicAudioSource.prototype.createAudioContext = function () {
+        if (!!this.privContext) {
+            return;
+        }
+        this.privContext = AudioStreamFormat_1.AudioStreamFormatImpl.getAudioContext(MicAudioSource.AUDIOFORMAT.samplesPerSec);
     };
     MicAudioSource.prototype.destroyAudioContext = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -3833,7 +3968,7 @@ exports.MicAudioSource = MicAudioSource;
 
 
 /***/ }),
-/* 53 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3854,20 +3989,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AutoDetectSourceLanguagesOpenRangeOptionName = exports.ForceDictationPropertyName = exports.ServicePropertiesPropertyName = exports.CancellationErrorCodePropertyName = exports.OutputFormatPropertyName = void 0;
 // Make sure not to export internal modules.
 //
-__exportStar(__webpack_require__(54), exports);
 __exportStar(__webpack_require__(57), exports);
-__exportStar(__webpack_require__(56), exports);
-__exportStar(__webpack_require__(58), exports);
-__exportStar(__webpack_require__(59), exports);
 __exportStar(__webpack_require__(60), exports);
-__exportStar(__webpack_require__(171), exports);
-__exportStar(__webpack_require__(172), exports);
-__exportStar(__webpack_require__(174), exports);
-__exportStar(__webpack_require__(175), exports);
-__exportStar(__webpack_require__(176), exports);
+__exportStar(__webpack_require__(59), exports);
+__exportStar(__webpack_require__(61), exports);
+__exportStar(__webpack_require__(62), exports);
+__exportStar(__webpack_require__(63), exports);
 __exportStar(__webpack_require__(177), exports);
 __exportStar(__webpack_require__(178), exports);
-__exportStar(__webpack_require__(179), exports);
 __exportStar(__webpack_require__(180), exports);
 __exportStar(__webpack_require__(181), exports);
 __exportStar(__webpack_require__(182), exports);
@@ -3886,20 +4015,26 @@ __exportStar(__webpack_require__(194), exports);
 __exportStar(__webpack_require__(195), exports);
 __exportStar(__webpack_require__(196), exports);
 __exportStar(__webpack_require__(197), exports);
+__exportStar(__webpack_require__(198), exports);
 __exportStar(__webpack_require__(199), exports);
 __exportStar(__webpack_require__(200), exports);
 __exportStar(__webpack_require__(201), exports);
 __exportStar(__webpack_require__(202), exports);
+__exportStar(__webpack_require__(203), exports);
+__exportStar(__webpack_require__(205), exports);
 __exportStar(__webpack_require__(206), exports);
 __exportStar(__webpack_require__(207), exports);
-__exportStar(__webpack_require__(224), exports);
-__exportStar(__webpack_require__(225), exports);
-__exportStar(__webpack_require__(226), exports);
-__exportStar(__webpack_require__(228), exports);
-__exportStar(__webpack_require__(229), exports);
+__exportStar(__webpack_require__(208), exports);
+__exportStar(__webpack_require__(212), exports);
+__exportStar(__webpack_require__(213), exports);
 __exportStar(__webpack_require__(230), exports);
 __exportStar(__webpack_require__(231), exports);
 __exportStar(__webpack_require__(232), exports);
+__exportStar(__webpack_require__(234), exports);
+__exportStar(__webpack_require__(235), exports);
+__exportStar(__webpack_require__(236), exports);
+__exportStar(__webpack_require__(237), exports);
+__exportStar(__webpack_require__(238), exports);
 exports.OutputFormatPropertyName = "OutputFormat";
 exports.CancellationErrorCodePropertyName = "CancellationErrorCode";
 exports.ServicePropertiesPropertyName = "ServiceProperties";
@@ -3909,7 +4044,7 @@ exports.AutoDetectSourceLanguagesOpenRangeOptionName = "OpenRange";
 
 
 /***/ }),
-/* 54 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3918,9 +4053,9 @@ exports.AutoDetectSourceLanguagesOpenRangeOptionName = "OpenRange";
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CognitiveSubscriptionKeyAuthentication = void 0;
-var Exports_1 = __webpack_require__(4);
-var HeaderNames_1 = __webpack_require__(55);
-var IAuthentication_1 = __webpack_require__(56);
+var Exports_1 = __webpack_require__(6);
+var HeaderNames_1 = __webpack_require__(58);
+var IAuthentication_1 = __webpack_require__(59);
 /**
  * @class
  */
@@ -3931,32 +4066,33 @@ var CognitiveSubscriptionKeyAuthentication = /** @class */ (function () {
      * @param {string} subscriptionKey - The subscription key
      */
     function CognitiveSubscriptionKeyAuthentication(subscriptionKey) {
-        var _this = this;
-        /**
-         * Fetches the subscription key.
-         * @member
-         * @function
-         * @public
-         * @param {string} authFetchEventId - The id to fetch.
-         */
-        this.fetch = function (authFetchEventId) {
-            return Promise.resolve(_this.privAuthInfo);
-        };
-        /**
-         * Fetches the subscription key.
-         * @member
-         * @function
-         * @public
-         * @param {string} authFetchEventId - The id to fetch.
-         */
-        this.fetchOnExpiry = function (authFetchEventId) {
-            return Promise.resolve(_this.privAuthInfo);
-        };
         if (!subscriptionKey) {
             throw new Exports_1.ArgumentNullError("subscriptionKey");
         }
         this.privAuthInfo = new IAuthentication_1.AuthInfo(HeaderNames_1.HeaderNames.AuthKey, subscriptionKey);
     }
+    /**
+     * Fetches the subscription key.
+     * @member
+     * @function
+     * @public
+     * @param {string} authFetchEventId - The id to fetch.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    CognitiveSubscriptionKeyAuthentication.prototype.fetch = function (authFetchEventId) {
+        return Promise.resolve(this.privAuthInfo);
+    };
+    /**
+     * Fetches the subscription key.
+     * @member
+     * @function
+     * @public
+     * @param {string} authFetchEventId - The id to fetch.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    CognitiveSubscriptionKeyAuthentication.prototype.fetchOnExpiry = function (authFetchEventId) {
+        return Promise.resolve(this.privAuthInfo);
+    };
     return CognitiveSubscriptionKeyAuthentication;
 }());
 exports.CognitiveSubscriptionKeyAuthentication = CognitiveSubscriptionKeyAuthentication;
@@ -3964,7 +4100,7 @@ exports.CognitiveSubscriptionKeyAuthentication = CognitiveSubscriptionKeyAuthent
 
 
 /***/ }),
-/* 55 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3991,7 +4127,7 @@ exports.HeaderNames = HeaderNames;
 
 
 /***/ }),
-/* 56 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4026,7 +4162,7 @@ exports.AuthInfo = AuthInfo;
 
 
 /***/ }),
-/* 57 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4035,18 +4171,11 @@ exports.AuthInfo = AuthInfo;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CognitiveTokenAuthentication = void 0;
-var Exports_1 = __webpack_require__(4);
-var IAuthentication_1 = __webpack_require__(56);
+var Exports_1 = __webpack_require__(6);
+var IAuthentication_1 = __webpack_require__(59);
 var AuthHeader = "Authorization";
 var CognitiveTokenAuthentication = /** @class */ (function () {
     function CognitiveTokenAuthentication(fetchCallback, fetchOnExpiryCallback) {
-        var _this = this;
-        this.fetch = function (authFetchEventId) {
-            return _this.privFetchCallback(authFetchEventId).then(function (token) { return new IAuthentication_1.AuthInfo(AuthHeader, CognitiveTokenAuthentication.privTokenPrefix + token); });
-        };
-        this.fetchOnExpiry = function (authFetchEventId) {
-            return _this.privFetchOnExpiryCallback(authFetchEventId).then(function (token) { return new IAuthentication_1.AuthInfo(AuthHeader, CognitiveTokenAuthentication.privTokenPrefix + token); });
-        };
         if (!fetchCallback) {
             throw new Exports_1.ArgumentNullError("fetchCallback");
         }
@@ -4056,6 +4185,12 @@ var CognitiveTokenAuthentication = /** @class */ (function () {
         this.privFetchCallback = fetchCallback;
         this.privFetchOnExpiryCallback = fetchOnExpiryCallback;
     }
+    CognitiveTokenAuthentication.prototype.fetch = function (authFetchEventId) {
+        return this.privFetchCallback(authFetchEventId).then(function (token) { return new IAuthentication_1.AuthInfo(AuthHeader, CognitiveTokenAuthentication.privTokenPrefix + token); });
+    };
+    CognitiveTokenAuthentication.prototype.fetchOnExpiry = function (authFetchEventId) {
+        return this.privFetchOnExpiryCallback(authFetchEventId).then(function (token) { return new IAuthentication_1.AuthInfo(AuthHeader, CognitiveTokenAuthentication.privTokenPrefix + token); });
+    };
     CognitiveTokenAuthentication.privTokenPrefix = "bearer ";
     return CognitiveTokenAuthentication;
 }());
@@ -4064,7 +4199,7 @@ exports.CognitiveTokenAuthentication = CognitiveTokenAuthentication;
 
 
 /***/ }),
-/* 58 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4076,7 +4211,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 /***/ }),
-/* 59 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4088,7 +4223,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 /***/ }),
-/* 60 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4111,38 +4246,37 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IntentConnectionFactory = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var Exports_3 = __webpack_require__(53);
-var HeaderNames_1 = __webpack_require__(55);
+var Exports_2 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var Exports_3 = __webpack_require__(56);
+var HeaderNames_1 = __webpack_require__(58);
 var IntentConnectionFactory = /** @class */ (function (_super) {
     __extends(IntentConnectionFactory, _super);
     function IntentConnectionFactory() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.create = function (config, authInfo, connectionId) {
-            var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint);
-            if (!endpoint) {
-                var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_IntentRegion);
-                var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
-                var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, "wss://" + region + ".sr.speech" + hostSuffix);
-                endpoint = host + "/speech/recognition/interactive/cognitiveservices/v1";
-            }
-            var queryParams = {
-                format: "simple",
-                language: config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage),
-            };
-            _this.setCommonUrlParams(config, queryParams, endpoint);
-            var headers = {};
-            if (authInfo.token !== undefined && authInfo.token !== "") {
-                headers[authInfo.headerName] = authInfo.token;
-            }
-            headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
-            config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
-            var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
-            return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
-        };
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
+    IntentConnectionFactory.prototype.create = function (config, authInfo, connectionId) {
+        var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint);
+        if (!endpoint) {
+            var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_IntentRegion);
+            var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
+            var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, "wss://" + region + ".sr.speech" + hostSuffix);
+            endpoint = host + "/speech/recognition/interactive/cognitiveservices/v1";
+        }
+        var queryParams = {
+            format: "simple",
+            language: config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage),
+        };
+        this.setCommonUrlParams(config, queryParams, endpoint);
+        var headers = {};
+        if (authInfo.token !== undefined && authInfo.token !== "") {
+            headers[authInfo.headerName] = authInfo.token;
+        }
+        headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
+        config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
+        var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
+        return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
+    };
     IntentConnectionFactory.prototype.getSpeechRegionFromIntentRegion = function (intentRegion) {
         switch (intentRegion) {
             case "West US":
@@ -4204,7 +4338,7 @@ exports.IntentConnectionFactory = IntentConnectionFactory;
 
 
 /***/ }),
-/* 61 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4212,153 +4346,153 @@ exports.IntentConnectionFactory = IntentConnectionFactory;
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
-var AudioConfig_1 = __webpack_require__(62);
+var AudioConfig_1 = __webpack_require__(65);
 Object.defineProperty(exports, "AudioConfig", { enumerable: true, get: function () { return AudioConfig_1.AudioConfig; } });
-var AudioStreamFormat_1 = __webpack_require__(72);
+var AudioStreamFormat_1 = __webpack_require__(74);
 Object.defineProperty(exports, "AudioStreamFormat", { enumerable: true, get: function () { return AudioStreamFormat_1.AudioStreamFormat; } });
 Object.defineProperty(exports, "AudioFormatTag", { enumerable: true, get: function () { return AudioStreamFormat_1.AudioFormatTag; } });
-var AudioInputStream_1 = __webpack_require__(66);
+var AudioInputStream_1 = __webpack_require__(68);
 Object.defineProperty(exports, "AudioInputStream", { enumerable: true, get: function () { return AudioInputStream_1.AudioInputStream; } });
 Object.defineProperty(exports, "PullAudioInputStream", { enumerable: true, get: function () { return AudioInputStream_1.PullAudioInputStream; } });
 Object.defineProperty(exports, "PushAudioInputStream", { enumerable: true, get: function () { return AudioInputStream_1.PushAudioInputStream; } });
-var AudioOutputStream_1 = __webpack_require__(73);
+var AudioOutputStream_1 = __webpack_require__(75);
 Object.defineProperty(exports, "AudioOutputStream", { enumerable: true, get: function () { return AudioOutputStream_1.AudioOutputStream; } });
 Object.defineProperty(exports, "PullAudioOutputStream", { enumerable: true, get: function () { return AudioOutputStream_1.PullAudioOutputStream; } });
 Object.defineProperty(exports, "PushAudioOutputStream", { enumerable: true, get: function () { return AudioOutputStream_1.PushAudioOutputStream; } });
-var CancellationReason_1 = __webpack_require__(76);
+var CancellationReason_1 = __webpack_require__(78);
 Object.defineProperty(exports, "CancellationReason", { enumerable: true, get: function () { return CancellationReason_1.CancellationReason; } });
-var PullAudioInputStreamCallback_1 = __webpack_require__(77);
+var PullAudioInputStreamCallback_1 = __webpack_require__(79);
 Object.defineProperty(exports, "PullAudioInputStreamCallback", { enumerable: true, get: function () { return PullAudioInputStreamCallback_1.PullAudioInputStreamCallback; } });
-var PushAudioOutputStreamCallback_1 = __webpack_require__(78);
+var PushAudioOutputStreamCallback_1 = __webpack_require__(80);
 Object.defineProperty(exports, "PushAudioOutputStreamCallback", { enumerable: true, get: function () { return PushAudioOutputStreamCallback_1.PushAudioOutputStreamCallback; } });
-var KeywordRecognitionModel_1 = __webpack_require__(79);
+var KeywordRecognitionModel_1 = __webpack_require__(81);
 Object.defineProperty(exports, "KeywordRecognitionModel", { enumerable: true, get: function () { return KeywordRecognitionModel_1.KeywordRecognitionModel; } });
-var SessionEventArgs_1 = __webpack_require__(80);
+var SessionEventArgs_1 = __webpack_require__(82);
 Object.defineProperty(exports, "SessionEventArgs", { enumerable: true, get: function () { return SessionEventArgs_1.SessionEventArgs; } });
-var RecognitionEventArgs_1 = __webpack_require__(81);
+var RecognitionEventArgs_1 = __webpack_require__(83);
 Object.defineProperty(exports, "RecognitionEventArgs", { enumerable: true, get: function () { return RecognitionEventArgs_1.RecognitionEventArgs; } });
-var OutputFormat_1 = __webpack_require__(82);
+var OutputFormat_1 = __webpack_require__(84);
 Object.defineProperty(exports, "OutputFormat", { enumerable: true, get: function () { return OutputFormat_1.OutputFormat; } });
-var IntentRecognitionEventArgs_1 = __webpack_require__(83);
+var IntentRecognitionEventArgs_1 = __webpack_require__(85);
 Object.defineProperty(exports, "IntentRecognitionEventArgs", { enumerable: true, get: function () { return IntentRecognitionEventArgs_1.IntentRecognitionEventArgs; } });
-var RecognitionResult_1 = __webpack_require__(84);
+var RecognitionResult_1 = __webpack_require__(86);
 Object.defineProperty(exports, "RecognitionResult", { enumerable: true, get: function () { return RecognitionResult_1.RecognitionResult; } });
-var SpeechRecognitionResult_1 = __webpack_require__(85);
+var SpeechRecognitionResult_1 = __webpack_require__(87);
 Object.defineProperty(exports, "SpeechRecognitionResult", { enumerable: true, get: function () { return SpeechRecognitionResult_1.SpeechRecognitionResult; } });
-var IntentRecognitionResult_1 = __webpack_require__(86);
+var IntentRecognitionResult_1 = __webpack_require__(88);
 Object.defineProperty(exports, "IntentRecognitionResult", { enumerable: true, get: function () { return IntentRecognitionResult_1.IntentRecognitionResult; } });
-var LanguageUnderstandingModel_1 = __webpack_require__(87);
+var LanguageUnderstandingModel_1 = __webpack_require__(89);
 Object.defineProperty(exports, "LanguageUnderstandingModel", { enumerable: true, get: function () { return LanguageUnderstandingModel_1.LanguageUnderstandingModel; } });
-var SpeechRecognitionEventArgs_1 = __webpack_require__(88);
+var SpeechRecognitionEventArgs_1 = __webpack_require__(90);
 Object.defineProperty(exports, "SpeechRecognitionEventArgs", { enumerable: true, get: function () { return SpeechRecognitionEventArgs_1.SpeechRecognitionEventArgs; } });
 Object.defineProperty(exports, "ConversationTranscriptionEventArgs", { enumerable: true, get: function () { return SpeechRecognitionEventArgs_1.ConversationTranscriptionEventArgs; } });
-var SpeechRecognitionCanceledEventArgs_1 = __webpack_require__(89);
+var SpeechRecognitionCanceledEventArgs_1 = __webpack_require__(91);
 Object.defineProperty(exports, "SpeechRecognitionCanceledEventArgs", { enumerable: true, get: function () { return SpeechRecognitionCanceledEventArgs_1.SpeechRecognitionCanceledEventArgs; } });
-var TranslationRecognitionEventArgs_1 = __webpack_require__(91);
+var TranslationRecognitionEventArgs_1 = __webpack_require__(93);
 Object.defineProperty(exports, "TranslationRecognitionEventArgs", { enumerable: true, get: function () { return TranslationRecognitionEventArgs_1.TranslationRecognitionEventArgs; } });
-var TranslationSynthesisEventArgs_1 = __webpack_require__(92);
+var TranslationSynthesisEventArgs_1 = __webpack_require__(94);
 Object.defineProperty(exports, "TranslationSynthesisEventArgs", { enumerable: true, get: function () { return TranslationSynthesisEventArgs_1.TranslationSynthesisEventArgs; } });
-var TranslationRecognitionResult_1 = __webpack_require__(93);
+var TranslationRecognitionResult_1 = __webpack_require__(95);
 Object.defineProperty(exports, "TranslationRecognitionResult", { enumerable: true, get: function () { return TranslationRecognitionResult_1.TranslationRecognitionResult; } });
-var TranslationSynthesisResult_1 = __webpack_require__(94);
+var TranslationSynthesisResult_1 = __webpack_require__(96);
 Object.defineProperty(exports, "TranslationSynthesisResult", { enumerable: true, get: function () { return TranslationSynthesisResult_1.TranslationSynthesisResult; } });
-var ResultReason_1 = __webpack_require__(95);
+var ResultReason_1 = __webpack_require__(97);
 Object.defineProperty(exports, "ResultReason", { enumerable: true, get: function () { return ResultReason_1.ResultReason; } });
-var SpeechConfig_1 = __webpack_require__(96);
+var SpeechConfig_1 = __webpack_require__(98);
 Object.defineProperty(exports, "SpeechConfig", { enumerable: true, get: function () { return SpeechConfig_1.SpeechConfig; } });
 Object.defineProperty(exports, "SpeechConfigImpl", { enumerable: true, get: function () { return SpeechConfig_1.SpeechConfigImpl; } });
-var SpeechTranslationConfig_1 = __webpack_require__(97);
+var SpeechTranslationConfig_1 = __webpack_require__(99);
 Object.defineProperty(exports, "SpeechTranslationConfig", { enumerable: true, get: function () { return SpeechTranslationConfig_1.SpeechTranslationConfig; } });
 Object.defineProperty(exports, "SpeechTranslationConfigImpl", { enumerable: true, get: function () { return SpeechTranslationConfig_1.SpeechTranslationConfigImpl; } });
-var PropertyCollection_1 = __webpack_require__(98);
+var PropertyCollection_1 = __webpack_require__(100);
 Object.defineProperty(exports, "PropertyCollection", { enumerable: true, get: function () { return PropertyCollection_1.PropertyCollection; } });
-var PropertyId_1 = __webpack_require__(99);
+var PropertyId_1 = __webpack_require__(101);
 Object.defineProperty(exports, "PropertyId", { enumerable: true, get: function () { return PropertyId_1.PropertyId; } });
-var Recognizer_1 = __webpack_require__(100);
+var Recognizer_1 = __webpack_require__(102);
 Object.defineProperty(exports, "Recognizer", { enumerable: true, get: function () { return Recognizer_1.Recognizer; } });
-var SpeechRecognizer_1 = __webpack_require__(101);
+var SpeechRecognizer_1 = __webpack_require__(103);
 Object.defineProperty(exports, "SpeechRecognizer", { enumerable: true, get: function () { return SpeechRecognizer_1.SpeechRecognizer; } });
-var IntentRecognizer_1 = __webpack_require__(102);
+var IntentRecognizer_1 = __webpack_require__(104);
 Object.defineProperty(exports, "IntentRecognizer", { enumerable: true, get: function () { return IntentRecognizer_1.IntentRecognizer; } });
-var VoiceProfileType_1 = __webpack_require__(103);
+var VoiceProfileType_1 = __webpack_require__(105);
 Object.defineProperty(exports, "VoiceProfileType", { enumerable: true, get: function () { return VoiceProfileType_1.VoiceProfileType; } });
-var TranslationRecognizer_1 = __webpack_require__(104);
+var TranslationRecognizer_1 = __webpack_require__(106);
 Object.defineProperty(exports, "TranslationRecognizer", { enumerable: true, get: function () { return TranslationRecognizer_1.TranslationRecognizer; } });
-var Translations_1 = __webpack_require__(107);
+var Translations_1 = __webpack_require__(109);
 Object.defineProperty(exports, "Translations", { enumerable: true, get: function () { return Translations_1.Translations; } });
-var NoMatchReason_1 = __webpack_require__(108);
+var NoMatchReason_1 = __webpack_require__(110);
 Object.defineProperty(exports, "NoMatchReason", { enumerable: true, get: function () { return NoMatchReason_1.NoMatchReason; } });
-var NoMatchDetails_1 = __webpack_require__(109);
+var NoMatchDetails_1 = __webpack_require__(111);
 Object.defineProperty(exports, "NoMatchDetails", { enumerable: true, get: function () { return NoMatchDetails_1.NoMatchDetails; } });
-var TranslationRecognitionCanceledEventArgs_1 = __webpack_require__(110);
+var TranslationRecognitionCanceledEventArgs_1 = __webpack_require__(112);
 Object.defineProperty(exports, "TranslationRecognitionCanceledEventArgs", { enumerable: true, get: function () { return TranslationRecognitionCanceledEventArgs_1.TranslationRecognitionCanceledEventArgs; } });
-var IntentRecognitionCanceledEventArgs_1 = __webpack_require__(111);
+var IntentRecognitionCanceledEventArgs_1 = __webpack_require__(113);
 Object.defineProperty(exports, "IntentRecognitionCanceledEventArgs", { enumerable: true, get: function () { return IntentRecognitionCanceledEventArgs_1.IntentRecognitionCanceledEventArgs; } });
-var CancellationDetailsBase_1 = __webpack_require__(112);
+var CancellationDetailsBase_1 = __webpack_require__(114);
 Object.defineProperty(exports, "CancellationDetailsBase", { enumerable: true, get: function () { return CancellationDetailsBase_1.CancellationDetailsBase; } });
-var CancellationDetails_1 = __webpack_require__(113);
+var CancellationDetails_1 = __webpack_require__(115);
 Object.defineProperty(exports, "CancellationDetails", { enumerable: true, get: function () { return CancellationDetails_1.CancellationDetails; } });
-var CancellationErrorCodes_1 = __webpack_require__(114);
+var CancellationErrorCodes_1 = __webpack_require__(116);
 Object.defineProperty(exports, "CancellationErrorCode", { enumerable: true, get: function () { return CancellationErrorCodes_1.CancellationErrorCode; } });
-var ConnectionEventArgs_1 = __webpack_require__(115);
+var ConnectionEventArgs_1 = __webpack_require__(117);
 Object.defineProperty(exports, "ConnectionEventArgs", { enumerable: true, get: function () { return ConnectionEventArgs_1.ConnectionEventArgs; } });
-var ServiceEventArgs_1 = __webpack_require__(116);
+var ServiceEventArgs_1 = __webpack_require__(118);
 Object.defineProperty(exports, "ServiceEventArgs", { enumerable: true, get: function () { return ServiceEventArgs_1.ServiceEventArgs; } });
-var Connection_1 = __webpack_require__(105);
+var Connection_1 = __webpack_require__(107);
 Object.defineProperty(exports, "Connection", { enumerable: true, get: function () { return Connection_1.Connection; } });
-var PhraseListGrammar_1 = __webpack_require__(117);
+var PhraseListGrammar_1 = __webpack_require__(119);
 Object.defineProperty(exports, "PhraseListGrammar", { enumerable: true, get: function () { return PhraseListGrammar_1.PhraseListGrammar; } });
-var DialogServiceConfig_1 = __webpack_require__(118);
+var DialogServiceConfig_1 = __webpack_require__(120);
 Object.defineProperty(exports, "DialogServiceConfig", { enumerable: true, get: function () { return DialogServiceConfig_1.DialogServiceConfig; } });
-var BotFrameworkConfig_1 = __webpack_require__(119);
+var BotFrameworkConfig_1 = __webpack_require__(121);
 Object.defineProperty(exports, "BotFrameworkConfig", { enumerable: true, get: function () { return BotFrameworkConfig_1.BotFrameworkConfig; } });
-var CustomCommandsConfig_1 = __webpack_require__(120);
+var CustomCommandsConfig_1 = __webpack_require__(122);
 Object.defineProperty(exports, "CustomCommandsConfig", { enumerable: true, get: function () { return CustomCommandsConfig_1.CustomCommandsConfig; } });
-var DialogServiceConnector_1 = __webpack_require__(121);
+var DialogServiceConnector_1 = __webpack_require__(123);
 Object.defineProperty(exports, "DialogServiceConnector", { enumerable: true, get: function () { return DialogServiceConnector_1.DialogServiceConnector; } });
-var ActivityReceivedEventArgs_1 = __webpack_require__(125);
+var ActivityReceivedEventArgs_1 = __webpack_require__(127);
 Object.defineProperty(exports, "ActivityReceivedEventArgs", { enumerable: true, get: function () { return ActivityReceivedEventArgs_1.ActivityReceivedEventArgs; } });
-var TurnStatusReceivedEventArgs_1 = __webpack_require__(126);
+var TurnStatusReceivedEventArgs_1 = __webpack_require__(128);
 Object.defineProperty(exports, "TurnStatusReceivedEventArgs", { enumerable: true, get: function () { return TurnStatusReceivedEventArgs_1.TurnStatusReceivedEventArgs; } });
-var ServicePropertyChannel_1 = __webpack_require__(128);
+var ServicePropertyChannel_1 = __webpack_require__(130);
 Object.defineProperty(exports, "ServicePropertyChannel", { enumerable: true, get: function () { return ServicePropertyChannel_1.ServicePropertyChannel; } });
-var ProfanityOption_1 = __webpack_require__(129);
+var ProfanityOption_1 = __webpack_require__(131);
 Object.defineProperty(exports, "ProfanityOption", { enumerable: true, get: function () { return ProfanityOption_1.ProfanityOption; } });
-var BaseAudioPlayer_1 = __webpack_require__(130);
+var BaseAudioPlayer_1 = __webpack_require__(132);
 Object.defineProperty(exports, "BaseAudioPlayer", { enumerable: true, get: function () { return BaseAudioPlayer_1.BaseAudioPlayer; } });
-var ConnectionMessageEventArgs_1 = __webpack_require__(131);
+var ConnectionMessageEventArgs_1 = __webpack_require__(133);
 Object.defineProperty(exports, "ConnectionMessageEventArgs", { enumerable: true, get: function () { return ConnectionMessageEventArgs_1.ConnectionMessageEventArgs; } });
-var ConnectionMessage_1 = __webpack_require__(106);
+var ConnectionMessage_1 = __webpack_require__(108);
 Object.defineProperty(exports, "ConnectionMessage", { enumerable: true, get: function () { return ConnectionMessage_1.ConnectionMessage; } });
-var VoiceProfile_1 = __webpack_require__(132);
+var VoiceProfile_1 = __webpack_require__(134);
 Object.defineProperty(exports, "VoiceProfile", { enumerable: true, get: function () { return VoiceProfile_1.VoiceProfile; } });
-var VoiceProfileEnrollmentResult_1 = __webpack_require__(133);
+var VoiceProfileEnrollmentResult_1 = __webpack_require__(135);
 Object.defineProperty(exports, "VoiceProfileEnrollmentResult", { enumerable: true, get: function () { return VoiceProfileEnrollmentResult_1.VoiceProfileEnrollmentResult; } });
 Object.defineProperty(exports, "VoiceProfileEnrollmentCancellationDetails", { enumerable: true, get: function () { return VoiceProfileEnrollmentResult_1.VoiceProfileEnrollmentCancellationDetails; } });
-var VoiceProfileResult_1 = __webpack_require__(134);
+var VoiceProfileResult_1 = __webpack_require__(136);
 Object.defineProperty(exports, "VoiceProfileResult", { enumerable: true, get: function () { return VoiceProfileResult_1.VoiceProfileResult; } });
 Object.defineProperty(exports, "VoiceProfileCancellationDetails", { enumerable: true, get: function () { return VoiceProfileResult_1.VoiceProfileCancellationDetails; } });
-var VoiceProfilePhraseResult_1 = __webpack_require__(135);
+var VoiceProfilePhraseResult_1 = __webpack_require__(137);
 Object.defineProperty(exports, "VoiceProfilePhraseResult", { enumerable: true, get: function () { return VoiceProfilePhraseResult_1.VoiceProfilePhraseResult; } });
-var VoiceProfileClient_1 = __webpack_require__(136);
+var VoiceProfileClient_1 = __webpack_require__(138);
 Object.defineProperty(exports, "VoiceProfileClient", { enumerable: true, get: function () { return VoiceProfileClient_1.VoiceProfileClient; } });
-var SpeakerRecognizer_1 = __webpack_require__(137);
+var SpeakerRecognizer_1 = __webpack_require__(139);
 Object.defineProperty(exports, "SpeakerRecognizer", { enumerable: true, get: function () { return SpeakerRecognizer_1.SpeakerRecognizer; } });
-var SpeakerIdentificationModel_1 = __webpack_require__(138);
+var SpeakerIdentificationModel_1 = __webpack_require__(140);
 Object.defineProperty(exports, "SpeakerIdentificationModel", { enumerable: true, get: function () { return SpeakerIdentificationModel_1.SpeakerIdentificationModel; } });
-var SpeakerVerificationModel_1 = __webpack_require__(139);
+var SpeakerVerificationModel_1 = __webpack_require__(141);
 Object.defineProperty(exports, "SpeakerVerificationModel", { enumerable: true, get: function () { return SpeakerVerificationModel_1.SpeakerVerificationModel; } });
-var AutoDetectSourceLanguageConfig_1 = __webpack_require__(140);
+var AutoDetectSourceLanguageConfig_1 = __webpack_require__(142);
 Object.defineProperty(exports, "AutoDetectSourceLanguageConfig", { enumerable: true, get: function () { return AutoDetectSourceLanguageConfig_1.AutoDetectSourceLanguageConfig; } });
-var AutoDetectSourceLanguageResult_1 = __webpack_require__(141);
+var AutoDetectSourceLanguageResult_1 = __webpack_require__(145);
 Object.defineProperty(exports, "AutoDetectSourceLanguageResult", { enumerable: true, get: function () { return AutoDetectSourceLanguageResult_1.AutoDetectSourceLanguageResult; } });
-var SourceLanguageConfig_1 = __webpack_require__(142);
+var SourceLanguageConfig_1 = __webpack_require__(146);
 Object.defineProperty(exports, "SourceLanguageConfig", { enumerable: true, get: function () { return SourceLanguageConfig_1.SourceLanguageConfig; } });
-var SpeakerRecognitionResult_1 = __webpack_require__(143);
+var SpeakerRecognitionResult_1 = __webpack_require__(147);
 Object.defineProperty(exports, "SpeakerRecognitionResult", { enumerable: true, get: function () { return SpeakerRecognitionResult_1.SpeakerRecognitionResult; } });
 Object.defineProperty(exports, "SpeakerRecognitionResultType", { enumerable: true, get: function () { return SpeakerRecognitionResult_1.SpeakerRecognitionResultType; } });
 Object.defineProperty(exports, "SpeakerRecognitionCancellationDetails", { enumerable: true, get: function () { return SpeakerRecognitionResult_1.SpeakerRecognitionCancellationDetails; } });
-var Exports_1 = __webpack_require__(144);
+var Exports_1 = __webpack_require__(148);
 Object.defineProperty(exports, "Conversation", { enumerable: true, get: function () { return Exports_1.Conversation; } });
 Object.defineProperty(exports, "ConversationExpirationEventArgs", { enumerable: true, get: function () { return Exports_1.ConversationExpirationEventArgs; } });
 Object.defineProperty(exports, "ConversationParticipantsChangedEventArgs", { enumerable: true, get: function () { return Exports_1.ConversationParticipantsChangedEventArgs; } });
@@ -4370,43 +4504,53 @@ Object.defineProperty(exports, "ConversationTranscriber", { enumerable: true, ge
 Object.defineProperty(exports, "Participant", { enumerable: true, get: function () { return Exports_1.Participant; } });
 Object.defineProperty(exports, "ParticipantChangedReason", { enumerable: true, get: function () { return Exports_1.ParticipantChangedReason; } });
 Object.defineProperty(exports, "User", { enumerable: true, get: function () { return Exports_1.User; } });
-var SpeechSynthesisOutputFormat_1 = __webpack_require__(75);
+var SpeechSynthesisOutputFormat_1 = __webpack_require__(77);
 Object.defineProperty(exports, "SpeechSynthesisOutputFormat", { enumerable: true, get: function () { return SpeechSynthesisOutputFormat_1.SpeechSynthesisOutputFormat; } });
-var SpeechSynthesizer_1 = __webpack_require__(156);
+var SpeechSynthesizer_1 = __webpack_require__(160);
 Object.defineProperty(exports, "SpeechSynthesizer", { enumerable: true, get: function () { return SpeechSynthesizer_1.SpeechSynthesizer; } });
-var SynthesisResult_1 = __webpack_require__(157);
+var SynthesisResult_1 = __webpack_require__(161);
 Object.defineProperty(exports, "SynthesisResult", { enumerable: true, get: function () { return SynthesisResult_1.SynthesisResult; } });
-var SpeechSynthesisResult_1 = __webpack_require__(158);
+var SpeechSynthesisResult_1 = __webpack_require__(162);
 Object.defineProperty(exports, "SpeechSynthesisResult", { enumerable: true, get: function () { return SpeechSynthesisResult_1.SpeechSynthesisResult; } });
-var SpeechSynthesisEventArgs_1 = __webpack_require__(159);
+var SpeechSynthesisEventArgs_1 = __webpack_require__(163);
 Object.defineProperty(exports, "SpeechSynthesisEventArgs", { enumerable: true, get: function () { return SpeechSynthesisEventArgs_1.SpeechSynthesisEventArgs; } });
-var SpeechSynthesisWordBoundaryEventArgs_1 = __webpack_require__(160);
+var SpeechSynthesisWordBoundaryEventArgs_1 = __webpack_require__(164);
 Object.defineProperty(exports, "SpeechSynthesisWordBoundaryEventArgs", { enumerable: true, get: function () { return SpeechSynthesisWordBoundaryEventArgs_1.SpeechSynthesisWordBoundaryEventArgs; } });
-var SpeechSynthesisBookmarkEventArgs_1 = __webpack_require__(161);
+var SpeechSynthesisBookmarkEventArgs_1 = __webpack_require__(165);
 Object.defineProperty(exports, "SpeechSynthesisBookmarkEventArgs", { enumerable: true, get: function () { return SpeechSynthesisBookmarkEventArgs_1.SpeechSynthesisBookmarkEventArgs; } });
-var SpeechSynthesisVisemeEventArgs_1 = __webpack_require__(162);
+var SpeechSynthesisVisemeEventArgs_1 = __webpack_require__(166);
 Object.defineProperty(exports, "SpeechSynthesisVisemeEventArgs", { enumerable: true, get: function () { return SpeechSynthesisVisemeEventArgs_1.SpeechSynthesisVisemeEventArgs; } });
-var SynthesisVoicesResult_1 = __webpack_require__(163);
+var SpeechSynthesisBoundaryType_1 = __webpack_require__(167);
+Object.defineProperty(exports, "SpeechSynthesisBoundaryType", { enumerable: true, get: function () { return SpeechSynthesisBoundaryType_1.SpeechSynthesisBoundaryType; } });
+var SynthesisVoicesResult_1 = __webpack_require__(168);
 Object.defineProperty(exports, "SynthesisVoicesResult", { enumerable: true, get: function () { return SynthesisVoicesResult_1.SynthesisVoicesResult; } });
-var VoiceInfo_1 = __webpack_require__(164);
+var VoiceInfo_1 = __webpack_require__(169);
 Object.defineProperty(exports, "VoiceInfo", { enumerable: true, get: function () { return VoiceInfo_1.VoiceInfo; } });
-var SpeakerAudioDestination_1 = __webpack_require__(165);
+var SpeakerAudioDestination_1 = __webpack_require__(170);
 Object.defineProperty(exports, "SpeakerAudioDestination", { enumerable: true, get: function () { return SpeakerAudioDestination_1.SpeakerAudioDestination; } });
-var ConversationTranscriptionCanceledEventArgs_1 = __webpack_require__(166);
+var ConversationTranscriptionCanceledEventArgs_1 = __webpack_require__(171);
 Object.defineProperty(exports, "ConversationTranscriptionCanceledEventArgs", { enumerable: true, get: function () { return ConversationTranscriptionCanceledEventArgs_1.ConversationTranscriptionCanceledEventArgs; } });
-var PronunciationAssessmentGradingSystem_1 = __webpack_require__(167);
+var PronunciationAssessmentGradingSystem_1 = __webpack_require__(172);
 Object.defineProperty(exports, "PronunciationAssessmentGradingSystem", { enumerable: true, get: function () { return PronunciationAssessmentGradingSystem_1.PronunciationAssessmentGradingSystem; } });
-var PronunciationAssessmentGranularity_1 = __webpack_require__(168);
+var PronunciationAssessmentGranularity_1 = __webpack_require__(173);
 Object.defineProperty(exports, "PronunciationAssessmentGranularity", { enumerable: true, get: function () { return PronunciationAssessmentGranularity_1.PronunciationAssessmentGranularity; } });
-var PronunciationAssessmentConfig_1 = __webpack_require__(169);
+var PronunciationAssessmentConfig_1 = __webpack_require__(174);
 Object.defineProperty(exports, "PronunciationAssessmentConfig", { enumerable: true, get: function () { return PronunciationAssessmentConfig_1.PronunciationAssessmentConfig; } });
-var PronunciationAssessmentResult_1 = __webpack_require__(170);
+var PronunciationAssessmentResult_1 = __webpack_require__(175);
 Object.defineProperty(exports, "PronunciationAssessmentResult", { enumerable: true, get: function () { return PronunciationAssessmentResult_1.PronunciationAssessmentResult; } });
+var LanguageIdMode_1 = __webpack_require__(143);
+Object.defineProperty(exports, "LanguageIdMode", { enumerable: true, get: function () { return LanguageIdMode_1.LanguageIdMode; } });
+var LanguageIdPriority_1 = __webpack_require__(144);
+Object.defineProperty(exports, "LanguageIdPriority", { enumerable: true, get: function () { return LanguageIdPriority_1.LanguageIdPriority; } });
+var Diagnostics_1 = __webpack_require__(176);
+Object.defineProperty(exports, "Diagnostics", { enumerable: true, get: function () { return Diagnostics_1.Diagnostics; } });
+var LogLevel_1 = __webpack_require__(5);
+Object.defineProperty(exports, "LogLevel", { enumerable: true, get: function () { return LogLevel_1.LogLevel; } });
 
 
 
 /***/ }),
-/* 62 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4429,11 +4573,11 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioOutputConfigImpl = exports.AudioConfigImpl = exports.AudioConfig = void 0;
 var Exports_1 = __webpack_require__(2);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
-var AudioFileWriter_1 = __webpack_require__(64);
-var AudioInputStream_1 = __webpack_require__(66);
-var AudioOutputStream_1 = __webpack_require__(73);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
+var AudioFileWriter_1 = __webpack_require__(66);
+var AudioInputStream_1 = __webpack_require__(68);
+var AudioOutputStream_1 = __webpack_require__(75);
 /**
  * Represents audio input configuration used for specifying what type of input to use (microphone, file, stream).
  * @class AudioConfig
@@ -4459,7 +4603,7 @@ var AudioConfig = /** @class */ (function () {
      * @function
      * @public
      * @param {string | undefined} deviceId - Specifies the device ID of the microphone to be used.
-     *        Default microphone is used the value is omitted.
+     * Default microphone is used the value is omitted.
      * @returns {AudioConfig} The audio input configuration being created.
      */
     AudioConfig.fromMicrophoneInput = function (deviceId) {
@@ -4484,7 +4628,7 @@ var AudioConfig = /** @class */ (function () {
      * @function
      * @public
      * @param {AudioInputStream | PullAudioInputStreamCallback | MediaStream} audioStream - Specifies the custom audio input
-     *        stream. Currently, only WAV / PCM is supported.
+     * stream. Currently, only WAV / PCM is supported.
      * @returns {AudioConfig} The audio input configuration being created.
      */
     AudioConfig.fromStreamInput = function (audioStream) {
@@ -4548,7 +4692,7 @@ var AudioConfig = /** @class */ (function () {
      * @function
      * @public
      * @param {AudioOutputStream | PushAudioOutputStreamCallback} audioStream - Specifies the custom audio output
-     *        stream.
+     * stream.
      * @returns {AudioConfig} The audio output configuration being created.
      * Added in version 1.11.0
      */
@@ -4736,10 +4880,10 @@ var AudioOutputConfigImpl = /** @class */ (function (_super) {
     AudioOutputConfigImpl.prototype.id = function () {
         return this.privDestination.id();
     };
-    AudioOutputConfigImpl.prototype.setProperty = function (name, value) {
+    AudioOutputConfigImpl.prototype.setProperty = function () {
         throw new Error("This AudioConfig instance does not support setting properties.");
     };
-    AudioOutputConfigImpl.prototype.getProperty = function (name, def) {
+    AudioOutputConfigImpl.prototype.getProperty = function () {
         throw new Error("This AudioConfig instance does not support getting properties.");
     };
     return AudioOutputConfigImpl;
@@ -4749,70 +4893,7 @@ exports.AudioOutputConfigImpl = AudioOutputConfigImpl;
 
 
 /***/ }),
-/* 63 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Contracts = void 0;
-/**
- * @class Contracts
- * @private
- */
-var Contracts = /** @class */ (function () {
-    function Contracts() {
-    }
-    Contracts.throwIfNullOrUndefined = function (param, name) {
-        if (param === undefined || param === null) {
-            throw new Error("throwIfNullOrUndefined:" + name);
-        }
-    };
-    Contracts.throwIfNull = function (param, name) {
-        if (param === null) {
-            throw new Error("throwIfNull:" + name);
-        }
-    };
-    Contracts.throwIfNullOrWhitespace = function (param, name) {
-        Contracts.throwIfNullOrUndefined(param, name);
-        if (("" + param).trim().length < 1) {
-            throw new Error("throwIfNullOrWhitespace:" + name);
-        }
-    };
-    Contracts.throwIfDisposed = function (isDisposed) {
-        if (isDisposed) {
-            throw new Error("the object is already disposed");
-        }
-    };
-    Contracts.throwIfArrayEmptyOrWhitespace = function (array, name) {
-        Contracts.throwIfNullOrUndefined(array, name);
-        if (array.length === 0) {
-            throw new Error("throwIfArrayEmptyOrWhitespace:" + name);
-        }
-        for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
-            var item = array_1[_i];
-            Contracts.throwIfNullOrWhitespace(item, name);
-        }
-    };
-    Contracts.throwIfFileDoesNotExist = function (param, name) {
-        Contracts.throwIfNullOrWhitespace(param, name);
-        // TODO check for file existence.
-    };
-    Contracts.throwIfNotUndefined = function (param, name) {
-        if (param !== undefined) {
-            throw new Error("throwIfNotUndefined:" + name);
-        }
-    };
-    return Contracts;
-}());
-exports.Contracts = Contracts;
-
-
-
-/***/ }),
-/* 64 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4840,14 +4921,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioFileWriter = void 0;
-var fs = __importStar(__webpack_require__(65));
-var Contracts_1 = __webpack_require__(63);
+var fs = __importStar(__webpack_require__(67));
+var Contracts_1 = __webpack_require__(53);
 var AudioFileWriter = /** @class */ (function () {
     function AudioFileWriter(filename) {
-        var _this = this;
-        this.id = function () {
-            return _this.privId;
-        };
         Contracts_1.Contracts.throwIfNullOrUndefined(fs.openSync, "\nFile System access not available, please use Push or PullAudioOutputStream");
         this.privFd = fs.openSync(filename, "w");
     }
@@ -4886,6 +4963,9 @@ var AudioFileWriter = /** @class */ (function () {
             this.privWriteStream.end();
         }
     };
+    AudioFileWriter.prototype.id = function () {
+        return this.privId;
+    };
     return AudioFileWriter;
 }());
 exports.AudioFileWriter = AudioFileWriter;
@@ -4893,13 +4973,13 @@ exports.AudioFileWriter = AudioFileWriter;
 
 
 /***/ }),
-/* 65 */
+/* 67 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 66 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4957,12 +5037,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PullAudioInputStreamImpl = exports.PullAudioInputStream = exports.PushAudioInputStreamImpl = exports.PushAudioInputStream = exports.AudioInputStream = void 0;
-// tslint:disable:max-classes-per-file
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Guid_1 = __webpack_require__(7);
-var Exports_3 = __webpack_require__(61);
-var AudioStreamFormat_1 = __webpack_require__(72);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Guid_1 = __webpack_require__(9);
+var Exports_3 = __webpack_require__(64);
+var AudioStreamFormat_1 = __webpack_require__(74);
 /**
  * Represents audio input stream used for custom audio input configurations.
  * @class AudioInputStream
@@ -4973,6 +5053,7 @@ var AudioInputStream = /** @class */ (function () {
      * @constructor
      */
     function AudioInputStream() {
+        return;
     }
     /**
      * Creates a memory backed PushAudioInputStream with the specified audio format.
@@ -4980,7 +5061,7 @@ var AudioInputStream = /** @class */ (function () {
      * @function
      * @public
      * @param {AudioStreamFormat} format - The audio data format in which audio will be
-     *        written to the push audio stream's write() method (Required if format is not 16 kHz 16bit mono PCM).
+     * written to the push audio stream's write() method (Required if format is not 16 kHz 16bit mono PCM).
      * @returns {PushAudioInputStream} The audio input stream being created.
      */
     AudioInputStream.createPushStream = function (format) {
@@ -4993,9 +5074,9 @@ var AudioInputStream = /** @class */ (function () {
      * @function
      * @public
      * @param {PullAudioInputStreamCallback} callback - The custom audio input object, derived from
-     *        PullAudioInputStreamCallback
+     * PullAudioInputStreamCallback
      * @param {AudioStreamFormat} format - The audio data format in which audio will be returned from
-     *        the callback's read() method (Required if format is not 16 kHz 16bit mono PCM).
+     * the callback's read() method (Required if format is not 16 kHz 16bit mono PCM).
      * @returns {PullAudioInputStream} The audio input stream being created.
      */
     AudioInputStream.createPullStream = function (callback, format) {
@@ -5020,7 +5101,7 @@ var PushAudioInputStream = /** @class */ (function (_super) {
      * @function
      * @public
      * @param {AudioStreamFormat} format - The audio data format in which audio will be written to the
-     *        push audio stream's write() method (Required if format is not 16 kHz 16bit mono PCM).
+     * push audio stream's write() method (Required if format is not 16 kHz 16bit mono PCM).
      * @returns {PushAudioInputStream} The push audio input stream being created.
      */
     PushAudioInputStream.create = function (format) {
@@ -5043,10 +5124,6 @@ var PushAudioInputStreamImpl = /** @class */ (function (_super) {
      */
     function PushAudioInputStreamImpl(format) {
         var _this = _super.call(this) || this;
-        _this.onEvent = function (event) {
-            _this.privEvents.onEvent(event);
-            Exports_2.Events.instance.onEvent(event);
-        };
         if (format === undefined) {
             _this.privFormat = AudioStreamFormat_1.AudioStreamFormatImpl.getDefaultInputFormat();
         }
@@ -5152,12 +5229,8 @@ var PushAudioInputStreamImpl = /** @class */ (function (_super) {
                                         return [2 /*return*/, this.turnOff()];
                                     });
                                 }); },
-                                id: function () {
-                                    return audioNodeId;
-                                },
-                                read: function () {
-                                    return stream.read();
-                                },
+                                id: function () { return audioNodeId; },
+                                read: function () { return stream.read(); },
                             }];
                 }
             });
@@ -5191,6 +5264,10 @@ var PushAudioInputStreamImpl = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    PushAudioInputStreamImpl.prototype.onEvent = function (event) {
+        this.privEvents.onEvent(event);
+        Exports_2.Events.instance.onEvent(event);
+    };
     PushAudioInputStreamImpl.prototype.toBuffer = function (arrayBuffer) {
         var buf = Buffer.alloc(arrayBuffer.byteLength);
         var view = new Uint8Array(arrayBuffer);
@@ -5222,9 +5299,9 @@ var PullAudioInputStream = /** @class */ (function (_super) {
      * @function
      * @public
      * @param {PullAudioInputStreamCallback} callback - The custom audio input object,
-     *        derived from PullAudioInputStreamCustomCallback
+     * derived from PullAudioInputStreamCustomCallback
      * @param {AudioStreamFormat} format - The audio data format in which audio will be
-     *        returned from the callback's read() method (Required if format is not 16 kHz 16bit mono PCM).
+     * returned from the callback's read() method (Required if format is not 16 kHz 16bit mono PCM).
      * @returns {PullAudioInputStream} The push audio input stream being created.
      */
     PullAudioInputStream.create = function (callback, format) {
@@ -5245,16 +5322,12 @@ var PullAudioInputStreamImpl = /** @class */ (function (_super) {
      * read() and close() methods, using the default format (16 kHz 16bit mono PCM).
      * @constructor
      * @param {PullAudioInputStreamCallback} callback - The custom audio input object,
-     *        derived from PullAudioInputStreamCustomCallback
+     * derived from PullAudioInputStreamCustomCallback
      * @param {AudioStreamFormat} format - The audio data format in which audio will be
-     *        returned from the callback's read() method (Required if format is not 16 kHz 16bit mono PCM).
+     * returned from the callback's read() method (Required if format is not 16 kHz 16bit mono PCM).
      */
     function PullAudioInputStreamImpl(callback, format) {
         var _this = _super.call(this) || this;
-        _this.onEvent = function (event) {
-            _this.privEvents.onEvent(event);
-            Exports_2.Events.instance.onEvent(event);
-        };
         if (undefined === format) {
             _this.privFormat = Exports_3.AudioStreamFormat.getDefaultInputFormat();
         }
@@ -5320,9 +5393,7 @@ var PullAudioInputStreamImpl = /** @class */ (function (_super) {
                                     _this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(_this.privId, audioNodeId));
                                     return _this.turnOff();
                                 },
-                                id: function () {
-                                    return audioNodeId;
-                                },
+                                id: function () { return audioNodeId; },
                                 read: function () {
                                     var totalBytes = 0;
                                     var transmitBuff;
@@ -5388,15 +5459,19 @@ var PullAudioInputStreamImpl = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    PullAudioInputStreamImpl.prototype.onEvent = function (event) {
+        this.privEvents.onEvent(event);
+        Exports_2.Events.instance.onEvent(event);
+    };
     return PullAudioInputStreamImpl;
 }(PullAudioInputStream));
 exports.PullAudioInputStreamImpl = PullAudioInputStreamImpl;
 
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(67).Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(69).Buffer))
 
 /***/ }),
-/* 67 */
+/* 69 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5410,9 +5485,9 @@ exports.PullAudioInputStreamImpl = PullAudioInputStreamImpl;
 
 
 
-var base64 = __webpack_require__(69)
-var ieee754 = __webpack_require__(70)
-var isArray = __webpack_require__(71)
+var base64 = __webpack_require__(71)
+var ieee754 = __webpack_require__(72)
+var isArray = __webpack_require__(73)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -7190,10 +7265,10 @@ function isnan (val) {
   return val !== val // eslint-disable-line no-self-compare
 }
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(68)))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(70)))
 
 /***/ }),
-/* 68 */
+/* 70 */
 /***/ (function(module, exports) {
 
 var g;
@@ -7219,7 +7294,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 69 */
+/* 71 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7376,7 +7451,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 70 */
+/* 72 */
 /***/ (function(module, exports) {
 
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
@@ -7467,7 +7542,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 71 */
+/* 73 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -7478,7 +7553,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 72 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7500,6 +7575,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioStreamFormatImpl = exports.AudioStreamFormat = exports.AudioFormatTag = void 0;
+// eslint-disable-next-line max-classes-per-file
 var AudioFormatTag;
 (function (AudioFormatTag) {
     AudioFormatTag[AudioFormatTag["PCM"] = 1] = "PCM";
@@ -7539,7 +7615,7 @@ var AudioStreamFormat = /** @class */ (function () {
      * @param {number} samplesPerSecond - Sample rate, in samples per second (Hertz).
      * @param {number} bitsPerSample - Bits per sample, typically 16.
      * @param {number} channels - Number of channels in the waveform-audio data. Monaural data
-     *        uses one channel and stereo data uses two channels.
+     * uses one channel and stereo data uses two channels.
      * @param {AudioFormatTag} format - Audio format (PCM, alaw or mulaw).
      * @returns {AudioStreamFormat} The audio stream format being created.
      */
@@ -7554,7 +7630,7 @@ var AudioStreamFormat = /** @class */ (function () {
      * @param {number} samplesPerSecond - Sample rate, in samples per second (Hertz).
      * @param {number} bitsPerSample - Bits per sample, typically 16.
      * @param {number} channels - Number of channels in the waveform-audio data. Monaural data
-     *        uses one channel and stereo data uses two channels.
+     * uses one channel and stereo data uses two channels.
      * @returns {AudioStreamFormat} The audio stream format being created.
      */
     AudioStreamFormat.getWaveFormatPCM = function (samplesPerSecond, bitsPerSample, channels) {
@@ -7567,7 +7643,6 @@ exports.AudioStreamFormat = AudioStreamFormat;
  * @private
  * @class AudioStreamFormatImpl
  */
-// tslint:disable-next-line:max-classes-per-file
 var AudioStreamFormatImpl = /** @class */ (function (_super) {
     __extends(AudioStreamFormatImpl, _super);
     /**
@@ -7584,11 +7659,6 @@ var AudioStreamFormatImpl = /** @class */ (function (_super) {
         if (channels === void 0) { channels = 1; }
         if (format === void 0) { format = AudioFormatTag.PCM; }
         var _this = _super.call(this) || this;
-        _this.setString = function (view, offset, str) {
-            for (var i = 0; i < str.length; i++) {
-                view.setUint8(offset + i, str.charCodeAt(i));
-            }
-        };
         var isWavFormat = true;
         /* 1 for PCM; 6 for alaw; 7 for mulaw */
         switch (format) {
@@ -7657,6 +7727,7 @@ var AudioStreamFormatImpl = /** @class */ (function (_super) {
      * @public
      * @returns {AudioContext} An audio context instance
      */
+    /* eslint-disable */
     AudioStreamFormatImpl.getAudioContext = function (sampleRate) {
         // Workaround for Speech SDK bug in Safari.
         var AudioContext = window.AudioContext // our preferred impl
@@ -7675,13 +7746,16 @@ var AudioStreamFormatImpl = /** @class */ (function (_super) {
             throw new Error("Browser does not support Web Audio API (AudioContext is not available).");
         }
     };
+    /* eslint-enable */
     /**
      * Closes the configuration object.
      * @member AudioStreamFormatImpl.prototype.close
      * @function
      * @public
      */
-    AudioStreamFormatImpl.prototype.close = function () { return; };
+    AudioStreamFormatImpl.prototype.close = function () {
+        return;
+    };
     Object.defineProperty(AudioStreamFormatImpl.prototype, "header", {
         get: function () {
             return this.privHeader;
@@ -7689,6 +7763,11 @@ var AudioStreamFormatImpl = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    AudioStreamFormatImpl.prototype.setString = function (view, offset, str) {
+        for (var i = 0; i < str.length; i++) {
+            view.setUint8(offset + i, str.charCodeAt(i));
+        }
+    };
     return AudioStreamFormatImpl;
 }(AudioStreamFormat));
 exports.AudioStreamFormatImpl = AudioStreamFormatImpl;
@@ -7696,7 +7775,7 @@ exports.AudioStreamFormatImpl = AudioStreamFormatImpl;
 
 
 /***/ }),
-/* 73 */
+/* 75 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7754,10 +7833,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PushAudioOutputStreamImpl = exports.PushAudioOutputStream = exports.PullAudioOutputStreamImpl = exports.PullAudioOutputStream = exports.AudioOutputStream = void 0;
-// tslint:disable:max-classes-per-file
-var Exports_1 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var AudioOutputFormat_1 = __webpack_require__(74);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var AudioOutputFormat_1 = __webpack_require__(76);
 /**
  * Represents audio output stream used for custom audio output configurations.
  * @class AudioOutputStream
@@ -7768,6 +7847,7 @@ var AudioOutputStream = /** @class */ (function () {
      * @constructor
      */
     function AudioOutputStream() {
+        return;
     }
     /**
      * Creates a memory backed PullAudioOutputStream with the specified audio format.
@@ -7891,28 +7971,27 @@ var PullAudioOutputStreamImpl = /** @class */ (function (_super) {
                         }
                         _a.label = 1;
                     case 1:
-                        if (!(totalBytes < dataBuffer.byteLength && !this.privStream.isReadEnded)) return [3 /*break*/, 6];
+                        if (!(totalBytes < dataBuffer.byteLength && !this.privStream.isReadEnded)) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.privStream.read()];
                     case 2:
                         chunk = _a.sent();
-                        if (!(chunk !== undefined && !chunk.isEnd)) return [3 /*break*/, 3];
-                        tmpBuffer = void 0;
-                        if (chunk.buffer.byteLength > dataBuffer.byteLength - totalBytes) {
-                            tmpBuffer = chunk.buffer.slice(0, dataBuffer.byteLength - totalBytes);
-                            this.privLastChunkView = new Int8Array(chunk.buffer.slice(dataBuffer.byteLength - totalBytes));
+                        if (chunk !== undefined && !chunk.isEnd) {
+                            tmpBuffer = void 0;
+                            if (chunk.buffer.byteLength > dataBuffer.byteLength - totalBytes) {
+                                tmpBuffer = chunk.buffer.slice(0, dataBuffer.byteLength - totalBytes);
+                                this.privLastChunkView = new Int8Array(chunk.buffer.slice(dataBuffer.byteLength - totalBytes));
+                            }
+                            else {
+                                tmpBuffer = chunk.buffer;
+                            }
+                            intView.set(new Int8Array(tmpBuffer), totalBytes);
+                            totalBytes += tmpBuffer.byteLength;
                         }
                         else {
-                            tmpBuffer = chunk.buffer;
+                            this.privStream.readEnded();
                         }
-                        intView.set(new Int8Array(tmpBuffer), totalBytes);
-                        totalBytes += tmpBuffer.byteLength;
-                        return [3 /*break*/, 5];
-                    case 3: return [4 /*yield*/, this.privStream.readEnded()];
-                    case 4:
-                        _a.sent();
-                        _a.label = 5;
-                    case 5: return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/, totalBytes];
+                        return [3 /*break*/, 1];
+                    case 3: return [2 /*return*/, totalBytes];
                 }
             });
         });
@@ -7964,7 +8043,7 @@ var PushAudioOutputStream = /** @class */ (function (_super) {
      * @function
      * @public
      * @param {PushAudioOutputStreamCallback} callback - The custom audio output object,
-     *        derived from PushAudioOutputStreamCallback
+     * derived from PushAudioOutputStreamCallback
      * @returns {PushAudioOutputStream} The push audio output stream being created.
      */
     PushAudioOutputStream.create = function (callback) {
@@ -7985,7 +8064,7 @@ var PushAudioOutputStreamImpl = /** @class */ (function (_super) {
      * read() and close() methods.
      * @constructor
      * @param {PushAudioOutputStreamCallback} callback - The custom audio output object,
-     *        derived from PushAudioOutputStreamCallback
+     * derived from PushAudioOutputStreamCallback
      */
     function PushAudioOutputStreamImpl(callback) {
         var _this = _super.call(this) || this;
@@ -7994,7 +8073,7 @@ var PushAudioOutputStreamImpl = /** @class */ (function (_super) {
         return _this;
     }
     Object.defineProperty(PushAudioOutputStreamImpl.prototype, "format", {
-        // tslint:disable-next-line:no-empty
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         set: function (format) { },
         enumerable: false,
         configurable: true
@@ -8019,7 +8098,7 @@ exports.PushAudioOutputStreamImpl = PushAudioOutputStreamImpl;
 
 
 /***/ }),
-/* 74 */
+/* 76 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8042,14 +8121,14 @@ var __extends = (this && this.__extends) || (function () {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioOutputFormatImpl = void 0;
-var SpeechSynthesisOutputFormat_1 = __webpack_require__(75);
-var AudioStreamFormat_1 = __webpack_require__(72);
+var SpeechSynthesisOutputFormat_1 = __webpack_require__(77);
+var AudioStreamFormat_1 = __webpack_require__(74);
 /**
  * @private
  * @class AudioOutputFormatImpl
  * Updated in version 1.17.0
  */
-// tslint:disable-next-line:max-classes-per-file
+// eslint-disable-next-line max-classes-per-file
 var AudioOutputFormatImpl = /** @class */ (function (_super) {
     __extends(AudioOutputFormatImpl, _super);
     /**
@@ -8198,6 +8277,7 @@ var AudioOutputFormatImpl = /** @class */ (function (_super) {
     AudioOutputFormatImpl.prototype.updateHeader = function (audioLength) {
         if (this.priHasHeader) {
             var view = new DataView(this.privHeader);
+            view.setUint32(4, audioLength + this.privHeader.byteLength - 8, true);
             view.setUint32(40, audioLength, true);
         }
     };
@@ -8256,7 +8336,7 @@ exports.AudioOutputFormatImpl = AudioOutputFormatImpl;
 
 
 /***/ }),
-/* 75 */
+/* 77 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8458,7 +8538,7 @@ var SpeechSynthesisOutputFormat;
 
 
 /***/ }),
-/* 76 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8488,7 +8568,7 @@ var CancellationReason;
 
 
 /***/ }),
-/* 77 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8512,7 +8592,7 @@ exports.PullAudioInputStreamCallback = PullAudioInputStreamCallback;
 
 
 /***/ }),
-/* 78 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8536,7 +8616,7 @@ exports.PushAudioOutputStreamCallback = PushAudioOutputStreamCallback;
 
 
 /***/ }),
-/* 79 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8545,7 +8625,7 @@ exports.PushAudioOutputStreamCallback = PushAudioOutputStreamCallback;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KeywordRecognitionModel = void 0;
-var Contracts_1 = __webpack_require__(63);
+var Contracts_1 = __webpack_require__(53);
 /**
  * Represents a keyword recognition model for recognizing when
  * the user says a keyword to initiate further speech recognition.
@@ -8558,6 +8638,7 @@ var KeywordRecognitionModel = /** @class */ (function () {
      */
     function KeywordRecognitionModel() {
         this.privDisposed = false;
+        return;
     }
     /**
      * Creates a keyword recognition model using the specified filename.
@@ -8565,8 +8646,8 @@ var KeywordRecognitionModel = /** @class */ (function () {
      * @function
      * @public
      * @param {string} fileName - A string that represents file name for the keyword recognition model.
-     *        Note, the file can point to a zip file in which case the model
-     *        will be extracted from the zip.
+     * Note, the file can point to a zip file in which case the model
+     * will be extracted from the zip.
      * @returns {KeywordRecognitionModel} The keyword recognition model being created.
      */
     KeywordRecognitionModel.fromFile = function (fileName) {
@@ -8579,7 +8660,7 @@ var KeywordRecognitionModel = /** @class */ (function () {
      * @function
      * @public
      * @param {string} file - A File that represents file for the keyword recognition model.
-     *        Note, the file can point to a zip file in which case the model will be extracted from the zip.
+     * Note, the file can point to a zip file in which case the model will be extracted from the zip.
      * @returns {KeywordRecognitionModel} The keyword recognition model being created.
      */
     KeywordRecognitionModel.fromStream = function (file) {
@@ -8605,7 +8686,7 @@ exports.KeywordRecognitionModel = KeywordRecognitionModel;
 
 
 /***/ }),
-/* 80 */
+/* 82 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8648,7 +8729,7 @@ exports.SessionEventArgs = SessionEventArgs;
 
 
 /***/ }),
-/* 81 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8670,7 +8751,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecognitionEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines payload for session events like Speech Start/End Detected
  * @class
@@ -8708,7 +8789,7 @@ exports.RecognitionEventArgs = RecognitionEventArgs;
 
 
 /***/ }),
-/* 82 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8736,7 +8817,7 @@ var OutputFormat;
 
 
 /***/ }),
-/* 83 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8758,7 +8839,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IntentRecognitionEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Intent recognition result event arguments.
  * @class
@@ -8798,7 +8879,7 @@ exports.IntentRecognitionEventArgs = IntentRecognitionEventArgs;
 
 
 /***/ }),
-/* 84 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8966,7 +9047,7 @@ var RecognitionResult = /** @class */ (function () {
     });
     Object.defineProperty(RecognitionResult.prototype, "properties", {
         /**
-         *  The set of properties exposed in the result.
+         * The set of properties exposed in the result.
          * @member RecognitionResult.prototype.properties
          * @function
          * @public
@@ -8985,7 +9066,7 @@ exports.RecognitionResult = RecognitionResult;
 
 
 /***/ }),
-/* 85 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9007,7 +9088,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechRecognitionResult = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines result of speech recognition.
  * @class SpeechRecognitionResult
@@ -9056,7 +9137,7 @@ exports.SpeechRecognitionResult = SpeechRecognitionResult;
 
 
 /***/ }),
-/* 86 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9078,7 +9159,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IntentRecognitionResult = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Intent recognition result.
  * @class
@@ -9126,7 +9207,7 @@ exports.IntentRecognitionResult = IntentRecognitionResult;
 
 
 /***/ }),
-/* 87 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9148,7 +9229,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LanguageUnderstandingModelImpl = exports.LanguageUnderstandingModel = void 0;
-var Contracts_1 = __webpack_require__(63);
+// eslint-disable-next-line max-classes-per-file
+var Contracts_1 = __webpack_require__(53);
 /**
  * Language understanding model
  * @class LanguageUnderstandingModel
@@ -9159,6 +9241,7 @@ var LanguageUnderstandingModel = /** @class */ (function () {
      * @constructor
      */
     function LanguageUnderstandingModel() {
+        return;
     }
     /**
      * Creates an language understanding model using the specified endpoint.
@@ -9215,11 +9298,11 @@ var LanguageUnderstandingModel = /** @class */ (function () {
      * @function
      * @public
      * @param {string} subscriptionKey - A String that represents the subscription key of
-     *        Language Understanding service.
+     * Language Understanding service.
      * @param {string} appId - A String that represents the application id of Language
-     *        Understanding service.
+     * Understanding service.
      * @param {LanguageUnderstandingModel} region - A String that represents the region
-     *        of the Language Understanding service (see the <a href="https://aka.ms/csspeech/region">region page</a>).
+     * of the Language Understanding service (see the <a href="https://aka.ms/csspeech/region">region page</a>).
      * @returns {LanguageUnderstandingModel} The language understanding model being created.
      */
     LanguageUnderstandingModel.fromSubscription = function (subscriptionKey, appId, region) {
@@ -9239,7 +9322,6 @@ exports.LanguageUnderstandingModel = LanguageUnderstandingModel;
  * @private
  * @class LanguageUnderstandingModelImpl
  */
-// tslint:disable-next-line:max-classes-per-file
 var LanguageUnderstandingModelImpl = /** @class */ (function (_super) {
     __extends(LanguageUnderstandingModelImpl, _super);
     function LanguageUnderstandingModelImpl() {
@@ -9252,7 +9334,7 @@ exports.LanguageUnderstandingModelImpl = LanguageUnderstandingModelImpl;
 
 
 /***/ }),
-/* 88 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9274,7 +9356,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranscriptionEventArgs = exports.SpeechRecognitionEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines contents of speech recognizing/recognized event.
  * @class SpeechRecognitionEventArgs
@@ -9314,7 +9397,6 @@ exports.SpeechRecognitionEventArgs = SpeechRecognitionEventArgs;
  * Defines contents of conversation transcribed/transcribing event.
  * @class ConversationTranscriptionEventArgs
  */
-// tslint:disable-next-line:max-classes-per-file
 var ConversationTranscriptionEventArgs = /** @class */ (function (_super) {
     __extends(ConversationTranscriptionEventArgs, _super);
     function ConversationTranscriptionEventArgs() {
@@ -9327,7 +9409,7 @@ exports.ConversationTranscriptionEventArgs = ConversationTranscriptionEventArgs;
 
 
 /***/ }),
-/* 89 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9349,7 +9431,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechRecognitionCanceledEventArgs = void 0;
-var CancellationEventArgsBase_1 = __webpack_require__(90);
+var CancellationEventArgsBase_1 = __webpack_require__(92);
 var SpeechRecognitionCanceledEventArgs = /** @class */ (function (_super) {
     __extends(SpeechRecognitionCanceledEventArgs, _super);
     function SpeechRecognitionCanceledEventArgs() {
@@ -9362,7 +9444,7 @@ exports.SpeechRecognitionCanceledEventArgs = SpeechRecognitionCanceledEventArgs;
 
 
 /***/ }),
-/* 90 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9384,7 +9466,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CancellationEventArgsBase = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines content of a CancellationEvent.
  * @class CancellationEventArgsBase
@@ -9452,7 +9534,7 @@ exports.CancellationEventArgsBase = CancellationEventArgsBase;
 
 
 /***/ }),
-/* 91 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9474,7 +9556,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationRecognitionEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Translation text result event arguments.
  * @class TranslationRecognitionEventArgs
@@ -9514,7 +9596,7 @@ exports.TranslationRecognitionEventArgs = TranslationRecognitionEventArgs;
 
 
 /***/ }),
-/* 92 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9536,7 +9618,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationSynthesisEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Translation Synthesis event arguments
  * @class TranslationSynthesisEventArgs
@@ -9575,7 +9657,7 @@ exports.TranslationSynthesisEventArgs = TranslationSynthesisEventArgs;
 
 
 /***/ }),
-/* 93 */
+/* 95 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9597,7 +9679,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationRecognitionResult = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Translation text result.
  * @class TranslationRecognitionResult
@@ -9646,7 +9728,7 @@ exports.TranslationRecognitionResult = TranslationRecognitionResult;
 
 
 /***/ }),
-/* 94 */
+/* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9706,7 +9788,7 @@ exports.TranslationSynthesisResult = TranslationSynthesisResult;
 
 
 /***/ }),
-/* 95 */
+/* 97 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9827,13 +9909,14 @@ var ResultReason;
 
 
 /***/ }),
-/* 96 */
+/* 98 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
+/* eslint-disable max-classes-per-file */
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -9849,9 +9932,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechConfigImpl = exports.SpeechConfig = void 0;
-var Exports_1 = __webpack_require__(53);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
 /**
  * Speech configuration.
  * @class SpeechConfig
@@ -9862,6 +9945,7 @@ var SpeechConfig = /** @class */ (function () {
      * @constructor
      */
     function SpeechConfig() {
+        return;
     }
     /**
      * Static instance of SpeechConfig returned by passing subscriptionKey and service region.
@@ -9888,12 +9972,12 @@ var SpeechConfig = /** @class */ (function () {
      * Note: Please use your LanguageUnderstanding subscription key in case you want to use the Intent recognizer.
      * Note: The query parameters specified in the endpoint URL are not changed, even if they are set by any other APIs.
      * For example, if language is defined in the uri as query parameter "language=de-DE", and also set by
-     *              SpeechConfig.speechRecognitionLanguage = "en-US", the language setting in uri takes precedence,
-     *              and the effective language is "de-DE". Only the parameters that are not specified in the
-     *              endpoint URL can be set by other APIs.
+     * SpeechConfig.speechRecognitionLanguage = "en-US", the language setting in uri takes precedence,
+     * and the effective language is "de-DE". Only the parameters that are not specified in the
+     * endpoint URL can be set by other APIs.
      * Note: To use authorization token with fromEndpoint, pass an empty string to the subscriptionKey in the
-     *       fromEndpoint method, and then set authorizationToken="token" on the created SpeechConfig instance to
-     *       use the authorization token.
+     * fromEndpoint method, and then set authorizationToken="token" on the created SpeechConfig instance to
+     * use the authorization token.
      * @member SpeechConfig.fromEndpoint
      * @function
      * @public
@@ -9937,12 +10021,12 @@ var SpeechConfig = /** @class */ (function () {
     /**
      * Creates an instance of the speech factory with specified initial authorization token and region.
      * Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
-     *       expires, the caller needs to refresh it by calling this setter with a new valid token.
+     * expires, the caller needs to refresh it by calling this setter with a new valid token.
      * Note: Please use a token derived from your LanguageUnderstanding subscription key in case you want
-     *       to use the Intent recognizer. As configuration values are copied when creating a new recognizer,
-     *       the new token value will not apply to recognizers that have already been created. For recognizers
-     *       that have been created before, you need to set authorization token of the corresponding recognizer
-     *       to refresh the token. Otherwise, the recognizers will encounter errors during recognition.
+     * to use the Intent recognizer. As configuration values are copied when creating a new recognizer,
+     * the new token value will not apply to recognizers that have already been created. For recognizers
+     * that have been created before, you need to set authorization token of the corresponding recognizer
+     * to refresh the token. Otherwise, the recognizers will encounter errors during recognition.
      * @member SpeechConfig.fromAuthorizationToken
      * @function
      * @public
@@ -9965,7 +10049,7 @@ var SpeechConfig = /** @class */ (function () {
      * @function
      * @public
      */
-    /* tslint:disable:no-empty */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     SpeechConfig.prototype.close = function () { };
     return SpeechConfig;
 }());
@@ -9974,7 +10058,6 @@ exports.SpeechConfig = SpeechConfig;
  * @public
  * @class SpeechConfigImpl
  */
-// tslint:disable-next-line:max-classes-per-file
 var SpeechConfigImpl = /** @class */ (function (_super) {
     __extends(SpeechConfigImpl, _super);
     function SpeechConfigImpl() {
@@ -10075,7 +10158,7 @@ var SpeechConfigImpl = /** @class */ (function (_super) {
         this.setProperty(Exports_2.PropertyId[Exports_2.PropertyId.SpeechServiceConnection_ProxyUserName], proxyUserName);
         this.setProperty(Exports_2.PropertyId[Exports_2.PropertyId.SpeechServiceConnection_ProxyPassword], proxyPassword);
     };
-    SpeechConfigImpl.prototype.setServiceProperty = function (name, value, channel) {
+    SpeechConfigImpl.prototype.setServiceProperty = function (name, value) {
         var currentProperties = JSON.parse(this.privProperties.getProperty(Exports_1.ServicePropertiesPropertyName, "{}"));
         currentProperties[name] = value;
         this.privProperties.setProperty(Exports_1.ServicePropertiesPropertyName, JSON.stringify(currentProperties));
@@ -10134,7 +10217,7 @@ exports.SpeechConfigImpl = SpeechConfigImpl;
 
 
 /***/ }),
-/* 97 */
+/* 99 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10156,9 +10239,10 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechTranslationConfigImpl = exports.SpeechTranslationConfig = void 0;
-var Exports_1 = __webpack_require__(53);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(56);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
 /**
  * Speech translation configuration.
  * @class SpeechTranslationConfig
@@ -10191,9 +10275,9 @@ var SpeechTranslationConfig = /** @class */ (function (_super) {
     /**
      * Static instance of SpeechTranslationConfig returned by passing authorization token and service region.
      * Note: The caller needs to ensure that the authorization token is valid. Before the authorization token
-     *       expires, the caller needs to refresh it by setting the property authorizationToken with a new
-     *       valid token. Otherwise, all the recognizers created by this SpeechTranslationConfig instance
-     *       will encounter errors during recognition.
+     * expires, the caller needs to refresh it by setting the property authorizationToken with a new
+     * valid token. Otherwise, all the recognizers created by this SpeechTranslationConfig instance
+     * will encounter errors during recognition.
      * As configuration values are copied when creating a new recognizer, the new token value will not apply
      * to recognizers that have already been created.
      * For recognizers that have been created before, you need to set authorization token of the corresponding recognizer
@@ -10241,13 +10325,13 @@ var SpeechTranslationConfig = /** @class */ (function (_super) {
      * Creates an instance of the speech translation config with specified endpoint and subscription key.
      * This method is intended only for users who use a non-standard service endpoint or paramters.
      * Note: The query properties specified in the endpoint URL are not changed, even if they are
-     *       set by any other APIs. For example, if language is defined in the uri as query parameter
-     *       "language=de-DE", and also set by the speechRecognitionLanguage property, the language
-     *       setting in uri takes precedence, and the effective language is "de-DE".
+     * set by any other APIs. For example, if language is defined in the uri as query parameter
+     * "language=de-DE", and also set by the speechRecognitionLanguage property, the language
+     * setting in uri takes precedence, and the effective language is "de-DE".
      * Only the properties that are not specified in the endpoint URL can be set by other APIs.
      * Note: To use authorization token with fromEndpoint, pass an empty string to the subscriptionKey in the
-     *       fromEndpoint method, and then set authorizationToken="token" on the created SpeechConfig instance to
-     *       use the authorization token.
+     * fromEndpoint method, and then set authorizationToken="token" on the created SpeechConfig instance to
+     * use the authorization token.
      * @member SpeechTranslationConfig.fromEndpoint
      * @function
      * @public
@@ -10270,7 +10354,6 @@ exports.SpeechTranslationConfig = SpeechTranslationConfig;
  * @private
  * @class SpeechTranslationConfigImpl
  */
-// tslint:disable-next-line:max-classes-per-file
 var SpeechTranslationConfigImpl = /** @class */ (function (_super) {
     __extends(SpeechTranslationConfigImpl, _super);
     function SpeechTranslationConfigImpl() {
@@ -10341,6 +10424,7 @@ var SpeechTranslationConfigImpl = /** @class */ (function (_super) {
          * @public
          */
         get: function () {
+            // eslint-disable-next-line
             return Exports_2.OutputFormat[this.privSpeechProperties.getProperty(Exports_1.OutputFormatPropertyName, undefined)];
         },
         /**
@@ -10499,7 +10583,7 @@ var SpeechTranslationConfigImpl = /** @class */ (function (_super) {
     SpeechTranslationConfigImpl.prototype.close = function () {
         return;
     };
-    SpeechTranslationConfigImpl.prototype.setServiceProperty = function (name, value, channel) {
+    SpeechTranslationConfigImpl.prototype.setServiceProperty = function (name, value) {
         var currentProperties = JSON.parse(this.privSpeechProperties.getProperty(Exports_1.ServicePropertiesPropertyName, "{}"));
         currentProperties[name] = value;
         this.privSpeechProperties.setProperty(Exports_1.ServicePropertiesPropertyName, JSON.stringify(currentProperties));
@@ -10538,6 +10622,7 @@ var SpeechTranslationConfigImpl = /** @class */ (function (_super) {
     });
     Object.defineProperty(SpeechTranslationConfigImpl.prototype, "speechSynthesisOutputFormat", {
         get: function () {
+            // eslint-disable-next-line
             return Exports_2.SpeechSynthesisOutputFormat[this.privSpeechProperties.getProperty(Exports_2.PropertyId.SpeechServiceConnection_SynthOutputFormat, undefined)];
         },
         set: function (format) {
@@ -10553,7 +10638,7 @@ exports.SpeechTranslationConfigImpl = SpeechTranslationConfigImpl;
 
 
 /***/ }),
-/* 98 */
+/* 100 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10562,7 +10647,7 @@ exports.SpeechTranslationConfigImpl = SpeechTranslationConfigImpl;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PropertyCollection = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Represents collection of properties and their values.
  * @class PropertyCollection
@@ -10573,15 +10658,15 @@ var PropertyCollection = /** @class */ (function () {
         this.privValues = [];
     }
     /**
-     * Returns the property value in type String. The parameter must have the same type as String.
+     * Returns the property value in type String.
      * Currently only String, int and bool are allowed.
      * If the name is not available, the specified defaultValue is returned.
      * @member PropertyCollection.prototype.getProperty
      * @function
      * @public
      * @param {string} key - The parameter name.
-     * @param {string} def - The default value which is returned if the parameter
-     *        is not available in the collection.
+     * @param {string | number | boolean} def - The default value which is returned if the parameter
+     * is not available in the collection.
      * @returns {string} value of the parameter.
      */
     PropertyCollection.prototype.getProperty = function (key, def) {
@@ -10597,7 +10682,10 @@ var PropertyCollection = /** @class */ (function () {
                 return this.privValues[n];
             }
         }
-        return def;
+        if (def === undefined) {
+            return undefined;
+        }
+        return String(def);
     };
     /**
      * Sets the String value of the parameter specified by name.
@@ -10644,7 +10732,7 @@ var PropertyCollection = /** @class */ (function () {
      * @member PropertyCollection.prototype.mergeTo
      * @function
      * @public
-     * @param {PropertyCollection} The collection to merge into.
+     * @param {PropertyCollection}  destinationCollection - The collection to merge into.
      */
     PropertyCollection.prototype.mergeTo = function (destinationCollection) {
         var _this = this;
@@ -10676,7 +10764,7 @@ exports.PropertyCollection = PropertyCollection;
 
 
 /***/ }),
-/* 99 */
+/* 101 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10692,8 +10780,8 @@ exports.PropertyId = void 0;
 var PropertyId;
 (function (PropertyId) {
     /**
-     * The Cognitive Services Speech Service subscription Key. If you are using an intent recognizer, you need to specify
-     * to specify the LUIS endpoint key for your particular LUIS app. Under normal circumstances, you shouldn't
+     * The Cognitive Services Speech Service subscription Key. If you are using an intent recognizer, you need to
+     * specify the LUIS endpoint key for your particular LUIS app. Under normal circumstances, you shouldn't
      * have to use this property directly.
      * Instead, use [[SpeechConfig.fromSubscription]].
      * @member PropertyId.SpeechServiceConnection_Key
@@ -10892,115 +10980,164 @@ var PropertyId;
      */
     PropertyId[PropertyId["SpeechServiceConnection_EndSilenceTimeoutMs"] = 31] = "SpeechServiceConnection_EndSilenceTimeoutMs";
     /**
+     * A duration of detected silence, measured in milliseconds, after which speech-to-text will determine a spoken
+     * phrase has ended and generate a final Recognized result. Configuring this timeout may be helpful in situations
+     * where spoken input is significantly faster or slower than usual and default segmentation behavior consistently
+     * yields results that are too long or too short. Segmentation timeout values that are inappropriately high or low
+     * can negatively affect speech-to-text accuracy; this property should be carefully configured and the resulting
+     * behavior should be thoroughly validated as intended.
+     *
+     * For more information about timeout configuration that includes discussion of default behaviors, please visit
+     * https://aka.ms/csspeech/timeouts.
+     *
+     * Added in version 1.21.0.
+     */
+    PropertyId[PropertyId["Speech_SegmentationSilenceTimeoutMs"] = 32] = "Speech_SegmentationSilenceTimeoutMs";
+    /**
      * A boolean value specifying whether audio logging is enabled in the service or not.
      * Added in version 1.7.0
      */
-    PropertyId[PropertyId["SpeechServiceConnection_EnableAudioLogging"] = 32] = "SpeechServiceConnection_EnableAudioLogging";
+    PropertyId[PropertyId["SpeechServiceConnection_EnableAudioLogging"] = 33] = "SpeechServiceConnection_EnableAudioLogging";
+    /**
+     * A string value representing the priority for single language detection.
+     * Allowed values include "Latency" and "Accuracy"
+     * Added in version 1.21.0
+     */
+    PropertyId[PropertyId["SpeechServiceConnection_AtStartLanguageIdPriority"] = 34] = "SpeechServiceConnection_AtStartLanguageIdPriority";
+    /**
+     * A string value representing the priority for continuous language detection.
+     * "Latency" is default, "Accuracy" is currently not allowed for continuous LID
+     * Added in version 1.21.0
+     */
+    PropertyId[PropertyId["SpeechServiceConnection_ContinuousLanguageIdPriority"] = 35] = "SpeechServiceConnection_ContinuousLanguageIdPriority";
+    /**
+     * A string value representing the desired endpoint version to target for Speech Recognition.
+     * Added in version 1.21.0
+     */
+    PropertyId[PropertyId["SpeechServiceConnection_RecognitionEndpointVersion"] = 36] = "SpeechServiceConnection_RecognitionEndpointVersion";
     /**
      * The requested Cognitive Services Speech Service response output profanity setting.
      * Allowed values are "masked", "removed", and "raw".
      * Added in version 1.7.0.
      */
-    PropertyId[PropertyId["SpeechServiceResponse_ProfanityOption"] = 33] = "SpeechServiceResponse_ProfanityOption";
+    PropertyId[PropertyId["SpeechServiceResponse_ProfanityOption"] = 37] = "SpeechServiceResponse_ProfanityOption";
     /**
      * A string value specifying which post processing option should be used by service.
      * Allowed values are "TrueText".
      * Added in version 1.7.0
      */
-    PropertyId[PropertyId["SpeechServiceResponse_PostProcessingOption"] = 34] = "SpeechServiceResponse_PostProcessingOption";
+    PropertyId[PropertyId["SpeechServiceResponse_PostProcessingOption"] = 38] = "SpeechServiceResponse_PostProcessingOption";
     /**
-     *  A boolean value specifying whether to include word-level timestamps in the response result.
+     * A boolean value specifying whether to include word-level timestamps in the response result.
      * Added in version 1.7.0
      */
-    PropertyId[PropertyId["SpeechServiceResponse_RequestWordLevelTimestamps"] = 35] = "SpeechServiceResponse_RequestWordLevelTimestamps";
+    PropertyId[PropertyId["SpeechServiceResponse_RequestWordLevelTimestamps"] = 39] = "SpeechServiceResponse_RequestWordLevelTimestamps";
     /**
      * The number of times a word has to be in partial results to be returned.
      * Added in version 1.7.0
      */
-    PropertyId[PropertyId["SpeechServiceResponse_StablePartialResultThreshold"] = 36] = "SpeechServiceResponse_StablePartialResultThreshold";
+    PropertyId[PropertyId["SpeechServiceResponse_StablePartialResultThreshold"] = 40] = "SpeechServiceResponse_StablePartialResultThreshold";
     /**
      * A string value specifying the output format option in the response result. Internal use only.
      * Added in version 1.7.0.
      */
-    PropertyId[PropertyId["SpeechServiceResponse_OutputFormatOption"] = 37] = "SpeechServiceResponse_OutputFormatOption";
+    PropertyId[PropertyId["SpeechServiceResponse_OutputFormatOption"] = 41] = "SpeechServiceResponse_OutputFormatOption";
     /**
      * A boolean value to request for stabilizing translation partial results by omitting words in the end.
      * Added in version 1.7.0.
      */
-    PropertyId[PropertyId["SpeechServiceResponse_TranslationRequestStablePartialResult"] = 38] = "SpeechServiceResponse_TranslationRequestStablePartialResult";
+    PropertyId[PropertyId["SpeechServiceResponse_TranslationRequestStablePartialResult"] = 42] = "SpeechServiceResponse_TranslationRequestStablePartialResult";
+    /**
+     * A boolean value specifying whether to request WordBoundary events.
+     * @member PropertyId.SpeechServiceResponse_RequestWordBoundary
+     * Added in version 1.21.0.
+     */
+    PropertyId[PropertyId["SpeechServiceResponse_RequestWordBoundary"] = 43] = "SpeechServiceResponse_RequestWordBoundary";
+    /**
+     * A boolean value specifying whether to request punctuation boundary in WordBoundary Events. Default is true.
+     * @member PropertyId.SpeechServiceResponse_RequestPunctuationBoundary
+     * Added in version 1.21.0.
+     */
+    PropertyId[PropertyId["SpeechServiceResponse_RequestPunctuationBoundary"] = 44] = "SpeechServiceResponse_RequestPunctuationBoundary";
+    /**
+     * A boolean value specifying whether to request sentence boundary in WordBoundary Events. Default is false.
+     * @member PropertyId.SpeechServiceResponse_RequestSentenceBoundary
+     * Added in version 1.21.0.
+     */
+    PropertyId[PropertyId["SpeechServiceResponse_RequestSentenceBoundary"] = 45] = "SpeechServiceResponse_RequestSentenceBoundary";
     /**
      * Identifier used to connect to the backend service.
      * @member PropertyId.Conversation_ApplicationId
      */
-    PropertyId[PropertyId["Conversation_ApplicationId"] = 39] = "Conversation_ApplicationId";
+    PropertyId[PropertyId["Conversation_ApplicationId"] = 46] = "Conversation_ApplicationId";
     /**
      * Type of dialog backend to connect to.
      * @member PropertyId.Conversation_DialogType
      */
-    PropertyId[PropertyId["Conversation_DialogType"] = 40] = "Conversation_DialogType";
+    PropertyId[PropertyId["Conversation_DialogType"] = 47] = "Conversation_DialogType";
     /**
      * Silence timeout for listening
      * @member PropertyId.Conversation_Initial_Silence_Timeout
      */
-    PropertyId[PropertyId["Conversation_Initial_Silence_Timeout"] = 41] = "Conversation_Initial_Silence_Timeout";
+    PropertyId[PropertyId["Conversation_Initial_Silence_Timeout"] = 48] = "Conversation_Initial_Silence_Timeout";
     /**
      * From Id to add to speech recognition activities.
      * @member PropertyId.Conversation_From_Id
      */
-    PropertyId[PropertyId["Conversation_From_Id"] = 42] = "Conversation_From_Id";
+    PropertyId[PropertyId["Conversation_From_Id"] = 49] = "Conversation_From_Id";
     /**
      * ConversationId for the session.
      * @member PropertyId.Conversation_Conversation_Id
      */
-    PropertyId[PropertyId["Conversation_Conversation_Id"] = 43] = "Conversation_Conversation_Id";
+    PropertyId[PropertyId["Conversation_Conversation_Id"] = 50] = "Conversation_Conversation_Id";
     /**
      * Comma separated list of custom voice deployment ids.
      * @member PropertyId.Conversation_Custom_Voice_Deployment_Ids
      */
-    PropertyId[PropertyId["Conversation_Custom_Voice_Deployment_Ids"] = 44] = "Conversation_Custom_Voice_Deployment_Ids";
+    PropertyId[PropertyId["Conversation_Custom_Voice_Deployment_Ids"] = 51] = "Conversation_Custom_Voice_Deployment_Ids";
     /**
      * Speech activity template, stamp properties from the template on the activity generated by the service for speech.
      * @member PropertyId.Conversation_Speech_Activity_Template
      * Added in version 1.10.0.
      */
-    PropertyId[PropertyId["Conversation_Speech_Activity_Template"] = 45] = "Conversation_Speech_Activity_Template";
+    PropertyId[PropertyId["Conversation_Speech_Activity_Template"] = 52] = "Conversation_Speech_Activity_Template";
     /**
      * Enables or disables the receipt of turn status messages as obtained on the turnStatusReceived event.
      * @member PropertyId.Conversation_Request_Bot_Status_Messages
      * Added in version 1.15.0.
      */
-    PropertyId[PropertyId["Conversation_Request_Bot_Status_Messages"] = 46] = "Conversation_Request_Bot_Status_Messages";
+    PropertyId[PropertyId["Conversation_Request_Bot_Status_Messages"] = 53] = "Conversation_Request_Bot_Status_Messages";
     /**
      * Specifies the connection ID to be provided in the Agent configuration message, e.g. a Direct Line token for
      * channel authentication.
      * Added in version 1.15.1.
      */
-    PropertyId[PropertyId["Conversation_Agent_Connection_Id"] = 47] = "Conversation_Agent_Connection_Id";
+    PropertyId[PropertyId["Conversation_Agent_Connection_Id"] = 54] = "Conversation_Agent_Connection_Id";
     /**
      * The Cognitive Services Speech Service host (url). Under normal circumstances, you shouldn't have to use this property directly.
      * Instead, use [[SpeechConfig.fromHost]].
      */
-    PropertyId[PropertyId["SpeechServiceConnection_Host"] = 48] = "SpeechServiceConnection_Host";
+    PropertyId[PropertyId["SpeechServiceConnection_Host"] = 55] = "SpeechServiceConnection_Host";
     /**
      * Set the host for service calls to the Conversation Translator REST management and websocket calls.
      */
-    PropertyId[PropertyId["ConversationTranslator_Host"] = 49] = "ConversationTranslator_Host";
+    PropertyId[PropertyId["ConversationTranslator_Host"] = 56] = "ConversationTranslator_Host";
     /**
      * Optionally set the the host's display name.
      * Used when joining a conversation.
      */
-    PropertyId[PropertyId["ConversationTranslator_Name"] = 50] = "ConversationTranslator_Name";
+    PropertyId[PropertyId["ConversationTranslator_Name"] = 57] = "ConversationTranslator_Name";
     /**
      * Optionally set a value for the X-CorrelationId request header.
      * Used for troubleshooting errors in the server logs. It should be a valid guid.
      */
-    PropertyId[PropertyId["ConversationTranslator_CorrelationId"] = 51] = "ConversationTranslator_CorrelationId";
+    PropertyId[PropertyId["ConversationTranslator_CorrelationId"] = 58] = "ConversationTranslator_CorrelationId";
     /**
      * Set the conversation token to be sent to the speech service. This enables the
      * service to service call from the speech service to the Conversation Translator service for relaying
      * recognitions. For internal use.
      */
-    PropertyId[PropertyId["ConversationTranslator_Token"] = 52] = "ConversationTranslator_Token";
+    PropertyId[PropertyId["ConversationTranslator_Token"] = 59] = "ConversationTranslator_Token";
     /**
      * The reference text of the audio for pronunciation evaluation.
      * For this and the following pronunciation assessment parameters, see
@@ -11008,19 +11145,19 @@ var PropertyId;
      * Under normal circumstances, you shouldn't have to use this property directly.
      * Added in version 1.15.0
      */
-    PropertyId[PropertyId["PronunciationAssessment_ReferenceText"] = 53] = "PronunciationAssessment_ReferenceText";
+    PropertyId[PropertyId["PronunciationAssessment_ReferenceText"] = 60] = "PronunciationAssessment_ReferenceText";
     /**
      * The point system for pronunciation score calibration (FivePoint or HundredMark).
      * Under normal circumstances, you shouldn't have to use this property directly.
      * Added in version 1.15.0
      */
-    PropertyId[PropertyId["PronunciationAssessment_GradingSystem"] = 54] = "PronunciationAssessment_GradingSystem";
+    PropertyId[PropertyId["PronunciationAssessment_GradingSystem"] = 61] = "PronunciationAssessment_GradingSystem";
     /**
      * The pronunciation evaluation granularity (Phoneme, Word, or FullText).
      * Under normal circumstances, you shouldn't have to use this property directly.
      * Added in version 1.15.0
      */
-    PropertyId[PropertyId["PronunciationAssessment_Granularity"] = 55] = "PronunciationAssessment_Granularity";
+    PropertyId[PropertyId["PronunciationAssessment_Granularity"] = 62] = "PronunciationAssessment_Granularity";
     /**
      * Defines if enable miscue calculation.
      * With this enabled, the pronounced words will be compared to the reference text,
@@ -11028,30 +11165,30 @@ var PropertyId;
      * Under normal circumstances, you shouldn't have to use this property directly.
      * Added in version 1.15.0
      */
-    PropertyId[PropertyId["PronunciationAssessment_EnableMiscue"] = 56] = "PronunciationAssessment_EnableMiscue";
+    PropertyId[PropertyId["PronunciationAssessment_EnableMiscue"] = 63] = "PronunciationAssessment_EnableMiscue";
     /**
      * The json string of pronunciation assessment parameters
      * Under normal circumstances, you shouldn't have to use this property directly.
      * Added in version 1.15.0
      */
-    PropertyId[PropertyId["PronunciationAssessment_Json"] = 57] = "PronunciationAssessment_Json";
+    PropertyId[PropertyId["PronunciationAssessment_Json"] = 64] = "PronunciationAssessment_Json";
     /**
      * Pronunciation assessment parameters.
      * This property is intended to be read-only. The SDK is using it internally.
      * Added in version 1.15.0
      */
-    PropertyId[PropertyId["PronunciationAssessment_Params"] = 58] = "PronunciationAssessment_Params";
+    PropertyId[PropertyId["PronunciationAssessment_Params"] = 65] = "PronunciationAssessment_Params";
     /**
      * Version of Speaker Recognition API to use.
      * Added in version 1.18.0
      */
-    PropertyId[PropertyId["SpeakerRecognition_Api_Version"] = 59] = "SpeakerRecognition_Api_Version";
+    PropertyId[PropertyId["SpeakerRecognition_Api_Version"] = 66] = "SpeakerRecognition_Api_Version";
 })(PropertyId = exports.PropertyId || (exports.PropertyId = {}));
 
 
 
 /***/ }),
-/* 100 */
+/* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11096,10 +11233,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Recognizer = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 /**
  * Defines the base class Recognizer which mainly contains common event handlers.
  * @class Recognizer
@@ -11196,7 +11333,6 @@ var Recognizer = /** @class */ (function () {
      * recognition errors are collected and sent to Microsoft.
      * If set to false, no telemetry is sent to Microsoft.
      */
-    /* tslint:disable:member-ordering */
     Recognizer.enableTelemetry = function (enabled) {
         Exports_1.ServiceRecognizerBase.telemetryDataEnabled = enabled;
     };
@@ -11288,10 +11424,10 @@ var Recognizer = /** @class */ (function () {
         var subscriptionKey = properties.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Key, undefined);
         var authentication = (subscriptionKey && subscriptionKey !== "") ?
             new Exports_1.CognitiveSubscriptionKeyAuthentication(subscriptionKey) :
-            new Exports_1.CognitiveTokenAuthentication(function (authFetchEventId) {
+            new Exports_1.CognitiveTokenAuthentication(function () {
                 var authorizationToken = properties.getProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token, undefined);
                 return Promise.resolve(authorizationToken);
-            }, function (authFetchEventId) {
+            }, function () {
                 var authorizationToken = properties.getProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token, undefined);
                 return Promise.resolve(authorizationToken);
             });
@@ -11304,7 +11440,7 @@ exports.Recognizer = Recognizer;
 
 
 /***/ }),
-/* 101 */
+/* 103 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11362,10 +11498,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechRecognizer = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 /**
  * Performs speech recognition from microphone, file, or other audio input streams, and gets transcribed text as result.
  * @class SpeechRecognizer
@@ -11493,8 +11629,8 @@ var SpeechRecognizer = /** @class */ (function (_super) {
      * Starts speech recognition, and stops after the first utterance is recognized.
      * The task returns the recognition text as result.
      * Note: RecognizeOnceAsync() returns when the first utterance has been recognized,
-     *       so it is suitable only for single shot recognition
-     *       like command or query. For long-running recognition, use StartContinuousRecognitionAsync() instead.
+     * so it is suitable only for single shot recognition
+     * like command or query. For long-running recognition, use StartContinuousRecognitionAsync() instead.
      * @member SpeechRecognizer.prototype.recognizeOnceAsync
      * @function
      * @public
@@ -11532,12 +11668,12 @@ var SpeechRecognizer = /** @class */ (function (_super) {
      * stopKeywordRecognitionAsync() is called.
      * User must subscribe to events to receive recognition results.
      * Note: Key word spotting functionality is only available on the
-     *      Speech Devices SDK. This functionality is currently not included in the SDK itself.
+     * Speech Devices SDK. This functionality is currently not included in the SDK itself.
      * @member SpeechRecognizer.prototype.startKeywordRecognitionAsync
      * @function
      * @public
      * @param {KeywordRecognitionModel} model The keyword recognition model that
-     *        specifies the keyword to be recognized.
+     * specifies the keyword to be recognized.
      * @param cb - Callback invoked once the recognition has started.
      * @param err - Callback invoked in case of an error.
      */
@@ -11550,14 +11686,14 @@ var SpeechRecognizer = /** @class */ (function (_super) {
     /**
      * Stops continuous speech recognition.
      * Note: Key word spotting functionality is only available on the
-     *       Speech Devices SDK. This functionality is currently not included in the SDK itself.
+     * Speech Devices SDK. This functionality is currently not included in the SDK itself.
      * @member SpeechRecognizer.prototype.stopKeywordRecognitionAsync
      * @function
      * @public
      * @param cb - Callback invoked once the recognition has stopped.
      * @param err - Callback invoked in case of an error.
      */
-    SpeechRecognizer.prototype.stopKeywordRecognitionAsync = function (cb, err) {
+    SpeechRecognizer.prototype.stopKeywordRecognitionAsync = function (cb) {
         if (!!cb) {
             cb();
         }
@@ -11615,7 +11751,7 @@ exports.SpeechRecognizer = SpeechRecognizer;
 
 
 /***/ }),
-/* 102 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11673,10 +11809,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IntentRecognizer = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 /**
  * Intent recognizer.
  * @class
@@ -11749,7 +11885,7 @@ var IntentRecognizer = /** @class */ (function (_super) {
          * @function
          * @public
          * @returns {PropertyCollection} The collection of properties and their
-         *          values defined for this IntentRecognizer.
+         * values defined for this IntentRecognizer.
          */
         get: function () {
             return this.privProperties;
@@ -11761,8 +11897,8 @@ var IntentRecognizer = /** @class */ (function (_super) {
      * Starts intent recognition, and stops after the first utterance is recognized.
      * The task returns the recognition text and intent as result.
      * Note: RecognizeOnceAsync() returns when the first utterance has been recognized,
-     *       so it is suitable only for single shot recognition like command or query.
-     *       For long-running recognition, use StartContinuousRecognitionAsync() instead.
+     * so it is suitable only for single shot recognition like command or query.
+     * For long-running recognition, use StartContinuousRecognitionAsync() instead.
      * @member IntentRecognizer.prototype.recognizeOnceAsync
      * @function
      * @public
@@ -11814,7 +11950,7 @@ var IntentRecognizer = /** @class */ (function (_super) {
      * Starts speech recognition with keyword spotting, until stopKeywordRecognitionAsync() is called.
      * User must subscribe to events to receive recognition results.
      * Note: Key word spotting functionality is only available on the Speech Devices SDK.
-     *       This functionality is currently not included in the SDK itself.
+     * This functionality is currently not included in the SDK itself.
      * @member IntentRecognizer.prototype.startKeywordRecognitionAsync
      * @function
      * @public
@@ -11831,7 +11967,7 @@ var IntentRecognizer = /** @class */ (function (_super) {
     /**
      * Stops continuous speech recognition.
      * Note: Key word spotting functionality is only available on the Speech Devices SDK.
-     *       This functionality is currently not included in the SDK itself.
+     * This functionality is currently not included in the SDK itself.
      * @member IntentRecognizer.prototype.stopKeywordRecognitionAsync
      * @function
      * @public
@@ -11840,7 +11976,14 @@ var IntentRecognizer = /** @class */ (function (_super) {
      */
     IntentRecognizer.prototype.stopKeywordRecognitionAsync = function (cb, err) {
         if (!!cb) {
-            cb();
+            try {
+                cb();
+            }
+            catch (e) {
+                if (!!err) {
+                    err(e);
+                }
+            }
         }
     };
     /**
@@ -11863,10 +12006,10 @@ var IntentRecognizer = /** @class */ (function (_super) {
      * @function
      * @public
      * @param {string} intentId - A String that represents the identifier of the intent
-     *        to be recognized. Ignored if intentName is empty.
+     * to be recognized. Ignored if intentName is empty.
      * @param {string} model - The intent model from Language Understanding service.
      * @param {string} intentName - The intent name defined in the intent model. If it
-     *        is empty, all intent names defined in the model will be added.
+     * is empty, all intent names defined in the model will be added.
      */
     IntentRecognizer.prototype.addIntentWithLanguageModel = function (intentId, model, intentName) {
         Contracts_1.Contracts.throwIfDisposed(this.privDisposedIntentRecognizer);
@@ -11986,7 +12129,7 @@ exports.IntentRecognizer = IntentRecognizer;
 
 
 /***/ }),
-/* 103 */
+/* 105 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12021,7 +12164,7 @@ var VoiceProfileType;
 
 
 /***/ }),
-/* 104 */
+/* 106 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12079,11 +12222,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationRecognizer = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Connection_1 = __webpack_require__(105);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Connection_1 = __webpack_require__(107);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 /**
  * Translation recognizer
  * @class TranslationRecognizer
@@ -12155,6 +12298,20 @@ var TranslationRecognizer = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(TranslationRecognizer.prototype, "properties", {
+        /**
+         * The collection of properties and their values defined for this TranslationRecognizer.
+         * @member TranslationRecognizer.prototype.properties
+         * @function
+         * @public
+         * @returns {PropertyCollection} The collection of properties and their values defined for this TranslationRecognizer.
+         */
+        get: function () {
+            return this.privProperties;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(TranslationRecognizer.prototype, "authorizationToken", {
         /**
          * Gets the authorization token used to communicate with the service.
@@ -12179,26 +12336,12 @@ var TranslationRecognizer = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(TranslationRecognizer.prototype, "properties", {
-        /**
-         * The collection of properties and their values defined for this TranslationRecognizer.
-         * @member TranslationRecognizer.prototype.properties
-         * @function
-         * @public
-         * @returns {PropertyCollection} The collection of properties and their values defined for this TranslationRecognizer.
-         */
-        get: function () {
-            return this.privProperties;
-        },
-        enumerable: false,
-        configurable: true
-    });
     /**
      * Starts recognition and translation, and stops after the first utterance is recognized.
      * The task returns the translation text as result.
-     * Note: recognizeOnceAsync returns when the first utterance has been recognized, so it is suitableonly
-     *       for single shot recognition like command or query. For long-running recognition,
-     *       use startContinuousRecognitionAsync() instead.
+     * Note: recognizeOnceAsync returns when the first utterance has been recognized, so it is suitable only
+     * for single shot recognition like command or query. For long-running recognition,
+     * use startContinuousRecognitionAsync() instead.
      * @member TranslationRecognizer.prototype.recognizeOnceAsync
      * @function
      * @public
@@ -12292,7 +12435,7 @@ var TranslationRecognizer = /** @class */ (function (_super) {
      * @function
      * @public
      */
-    /* tslint:disable:no-empty */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     TranslationRecognizer.prototype.onConnection = function () { };
     /**
      * handles disconnection events for conversation translation scenarios.
@@ -12300,7 +12443,7 @@ var TranslationRecognizer = /** @class */ (function (_super) {
      * @function
      * @public
      */
-    /* tslint:disable:no-empty */
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
     TranslationRecognizer.prototype.onDisconnection = function () {
         return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
             return [2 /*return*/];
@@ -12353,7 +12496,7 @@ exports.TranslationRecognizer = TranslationRecognizer;
 
 
 /***/ }),
-/* 105 */
+/* 107 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12364,11 +12507,11 @@ exports.TranslationRecognizer = TranslationRecognizer;
 //
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Connection = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var ConnectionMessage_1 = __webpack_require__(106);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var ConnectionMessage_1 = __webpack_require__(108);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 /**
  * Connection is a proxy class for managing connection to the speech service of the specified Recognizer.
  * By default, a Recognizer autonomously manages connection to service when needed.
@@ -12475,7 +12618,7 @@ var Connection = /** @class */ (function () {
      * Dispose of associated resources.
      */
     Connection.prototype.close = function () {
-        /* tslint:disable:no-empty */
+        /* eslint-disable no-empty */
     };
     Connection.prototype.setupEvents = function () {
         var _this = this;
@@ -12514,7 +12657,7 @@ exports.Connection = Connection;
 
 
 /***/ }),
-/* 106 */
+/* 108 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12525,10 +12668,11 @@ exports.Connection = Connection;
 //
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConnectionMessageImpl = exports.ConnectionMessage = void 0;
-var HeaderNames_1 = __webpack_require__(55);
-var Exports_1 = __webpack_require__(4);
-var PropertyCollection_1 = __webpack_require__(98);
-var PropertyId_1 = __webpack_require__(99);
+// eslint-disable-next-line max-classes-per-file
+var HeaderNames_1 = __webpack_require__(58);
+var Exports_1 = __webpack_require__(6);
+var PropertyCollection_1 = __webpack_require__(100);
+var PropertyId_1 = __webpack_require__(101);
 /**
  * ConnectionMessage represents implementation specific messages sent to and received from
  * the speech service. These messages are provided for debugging purposes and should not
@@ -12543,7 +12687,6 @@ var ConnectionMessage = /** @class */ (function () {
     return ConnectionMessage;
 }());
 exports.ConnectionMessage = ConnectionMessage;
-// tslint:disable-next-line:max-classes-per-file
 var ConnectionMessageImpl = /** @class */ (function () {
     function ConnectionMessageImpl(message) {
         var _this = this;
@@ -12552,7 +12695,7 @@ var ConnectionMessageImpl = /** @class */ (function () {
         if (!!this.privConnectionMessage.headers[HeaderNames_1.HeaderNames.ConnectionId]) {
             this.privProperties.setProperty(PropertyId_1.PropertyId.Speech_SessionId, this.privConnectionMessage.headers[HeaderNames_1.HeaderNames.ConnectionId]);
         }
-        Object.keys(this.privConnectionMessage.headers).forEach(function (header, index, array) {
+        Object.keys(this.privConnectionMessage.headers).forEach(function (header) {
             _this.privProperties.setProperty(header, _this.privConnectionMessage.headers[header]);
         });
     }
@@ -12634,7 +12777,7 @@ exports.ConnectionMessageImpl = ConnectionMessageImpl;
 
 
 /***/ }),
-/* 107 */
+/* 109 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12643,7 +12786,7 @@ exports.ConnectionMessageImpl = ConnectionMessageImpl;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translations = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Represents collection of parameters and their values.
  * @class Translations
@@ -12653,6 +12796,20 @@ var Translations = /** @class */ (function () {
         // Use an PropertyCollection internally, just wrapping it to hide the | enum syntax it has.
         this.privMap = new Exports_1.PropertyCollection();
     }
+    Object.defineProperty(Translations.prototype, "languages", {
+        /**
+         * Get the languages in the object in a String array.
+         * @member Translations.prototype.languages
+         * @function
+         * @public
+         * @returns {string[]} languages in translations object.
+         */
+        get: function () {
+            return this.privMap.keys;
+        },
+        enumerable: false,
+        configurable: true
+    });
     /**
      * Returns the parameter value in type String. The parameter must have the same type as String.
      * Currently only String, int and bool are allowed.
@@ -12678,20 +12835,6 @@ var Translations = /** @class */ (function () {
     Translations.prototype.set = function (key, value) {
         this.privMap.setProperty(key, value);
     };
-    Object.defineProperty(Translations.prototype, "languages", {
-        /**
-         * Get the languages in the object in a String array.
-         * @member Translations.prototype.languages
-         * @function
-         * @public
-         * @returns {string[]} languages in translations object.
-         */
-        get: function () {
-            return this.privMap.keys;
-        },
-        enumerable: false,
-        configurable: true
-    });
     return Translations;
 }());
 exports.Translations = Translations;
@@ -12699,7 +12842,7 @@ exports.Translations = Translations;
 
 
 /***/ }),
-/* 108 */
+/* 110 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12736,7 +12879,7 @@ var NoMatchReason;
 
 
 /***/ }),
-/* 109 */
+/* 111 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12745,8 +12888,8 @@ var NoMatchReason;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NoMatchDetails = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(64);
 /**
  * Contains detailed information for NoMatch recognition results.
  * @class NoMatchDetails
@@ -12766,7 +12909,7 @@ var NoMatchDetails = /** @class */ (function () {
      * @function
      * @public
      * @param {SpeechRecognitionResult | IntentRecognitionResult | TranslationRecognitionResult}
-     *        result - The recognition result that was not recognized.
+     * result - The recognition result that was not recognized.
      * @returns {NoMatchDetails} The no match details object being created.
      */
     NoMatchDetails.fromResult = function (result) {
@@ -12806,7 +12949,7 @@ exports.NoMatchDetails = NoMatchDetails;
 
 
 /***/ }),
-/* 110 */
+/* 112 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12910,7 +13053,7 @@ exports.TranslationRecognitionCanceledEventArgs = TranslationRecognitionCanceled
 
 
 /***/ }),
-/* 111 */
+/* 113 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12932,7 +13075,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IntentRecognitionCanceledEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Define payload of intent recognition canceled result events.
  * @class IntentRecognitionCanceledEventArgs
@@ -13000,7 +13143,7 @@ exports.IntentRecognitionCanceledEventArgs = IntentRecognitionCanceledEventArgs;
 
 
 /***/ }),
-/* 112 */
+/* 114 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13072,7 +13215,7 @@ exports.CancellationDetailsBase = CancellationDetailsBase;
 
 
 /***/ }),
-/* 113 */
+/* 115 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13094,9 +13237,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CancellationDetails = void 0;
-var Exports_1 = __webpack_require__(53);
-var CancellationDetailsBase_1 = __webpack_require__(112);
-var Exports_2 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var CancellationDetailsBase_1 = __webpack_require__(114);
+var Exports_2 = __webpack_require__(64);
 /**
  * Contains detailed information about why a result was canceled.
  * @class CancellationDetails
@@ -13133,7 +13276,7 @@ exports.CancellationDetails = CancellationDetails;
 
 
 /***/ }),
-/* 114 */
+/* 116 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13143,8 +13286,8 @@ exports.CancellationDetails = CancellationDetails;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CancellationErrorCode = void 0;
 /**
- *  Defines error code in case that CancellationReason is Error.
- *  Added in version 1.1.0.
+ * Defines error code in case that CancellationReason is Error.
+ * Added in version 1.1.0.
  */
 var CancellationErrorCode;
 (function (CancellationErrorCode) {
@@ -13190,7 +13333,7 @@ var CancellationErrorCode;
 
 
 /***/ }),
-/* 115 */
+/* 117 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13214,7 +13357,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConnectionEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines payload for connection events like Connected/Disconnected.
  * Added in version 1.2.0
@@ -13231,7 +13374,7 @@ exports.ConnectionEventArgs = ConnectionEventArgs;
 
 
 /***/ }),
-/* 116 */
+/* 118 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13255,7 +13398,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines payload for any Service message event
  * Added in version 1.9.0
@@ -13294,7 +13437,7 @@ exports.ServiceEventArgs = ServiceEventArgs;
 
 
 /***/ }),
-/* 117 */
+/* 119 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13348,7 +13491,7 @@ exports.PhraseListGrammar = PhraseListGrammar;
 
 
 /***/ }),
-/* 118 */
+/* 120 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13370,8 +13513,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DialogServiceConfigImpl = exports.DialogServiceConfig = void 0;
-var Contracts_1 = __webpack_require__(63);
-var Exports_1 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Contracts_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(64);
 /**
  * Class that defines base configurations for dialog service connector
  * @class DialogServiceConfig
@@ -13382,6 +13526,7 @@ var DialogServiceConfig = /** @class */ (function () {
      * @constructor
      */
     function DialogServiceConfig() {
+        return;
     }
     Object.defineProperty(DialogServiceConfig.prototype, "applicationId", {
         /**
@@ -13391,20 +13536,21 @@ var DialogServiceConfig = /** @class */ (function () {
          * @public
          * @param {string} value - The application identifier to set.
          */
-        // tslint:disable-next-line: no-empty
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         set: function (value) { },
         enumerable: false,
         configurable: true
     });
-    var _a;
-    DialogServiceConfig.DialogTypes = (_a = /** @class */ (function () {
-            function class_1() {
-            }
-            return class_1;
-        }()),
-        _a.BotFramework = "bot_framework",
-        _a.CustomCommands = "custom_commands",
-        _a);
+    Object.defineProperty(DialogServiceConfig, "DialogTypes", {
+        get: function () {
+            return {
+                BotFramework: "bot_framework",
+                CustomCommands: "custom_commands"
+            };
+        },
+        enumerable: false,
+        configurable: true
+    });
     return DialogServiceConfig;
 }());
 exports.DialogServiceConfig = DialogServiceConfig;
@@ -13412,7 +13558,6 @@ exports.DialogServiceConfig = DialogServiceConfig;
  * Dialog Service configuration.
  * @class DialogServiceConfigImpl
  */
-// tslint:disable-next-line:max-classes-per-file
 var DialogServiceConfigImpl = /** @class */ (function (_super) {
     __extends(DialogServiceConfigImpl, _super);
     /**
@@ -13492,6 +13637,7 @@ var DialogServiceConfigImpl = /** @class */ (function (_super) {
      * @returns {string} The current value, or provided default, of the given property.
      */
     DialogServiceConfigImpl.prototype.getProperty = function (name, def) {
+        void def;
         return this.privSpeechConfig.getProperty(name);
     };
     /**
@@ -13514,7 +13660,8 @@ var DialogServiceConfigImpl = /** @class */ (function (_super) {
         }
     };
     DialogServiceConfigImpl.prototype.setServiceProperty = function (name, value, channel) {
-        this.privSpeechConfig.setServiceProperty(name, value, channel);
+        void channel;
+        this.privSpeechConfig.setServiceProperty(name, value);
     };
     /**
      * Dispose of associated resources.
@@ -13532,7 +13679,7 @@ exports.DialogServiceConfigImpl = DialogServiceConfigImpl;
 
 
 /***/ }),
-/* 119 */
+/* 121 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13554,9 +13701,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BotFrameworkConfig = void 0;
-var Contracts_1 = __webpack_require__(63);
-var DialogServiceConfig_1 = __webpack_require__(118);
-var Exports_1 = __webpack_require__(61);
+var Contracts_1 = __webpack_require__(53);
+var DialogServiceConfig_1 = __webpack_require__(120);
+var Exports_1 = __webpack_require__(64);
 /**
  * Class that defines configurations for the dialog service connector object for using a Bot Framework backend.
  * @class BotFrameworkConfig
@@ -13577,7 +13724,7 @@ var BotFrameworkConfig = /** @class */ (function (_super) {
      * @param subscription Subscription key associated with the bot
      * @param region The region name (see the <a href="https://aka.ms/csspeech/region">region page</a>).
      * @param botId Optional. Identifier for using a specific bot within an Azure resource group. Equivalent to the
-     *        resource name.
+     * resource name.
      * @returns {BotFrameworkConfig} A new bot framework configuration instance.
      */
     BotFrameworkConfig.fromSubscription = function (subscription, region, botId) {
@@ -13595,19 +13742,19 @@ var BotFrameworkConfig = /** @class */ (function (_super) {
     /**
      * Creates a bot framework configuration instance for the specified authorization token and region.
      * Note: The caller must ensure that an authorization token is valid. Before an authorization token expires, the
-     *       caller must refresh it by setting the authorizationToken property on the corresponding
-     *       DialogServiceConnector instance created with this config. The contents of configuration objects are copied
-     *       when connectors are created, so setting authorizationToken on a DialogServiceConnector will not update the
-     *       original configuration's authorization token. Create a new configuration instance or set the
-     *       SpeechServiceAuthorization_Token property to update an existing instance if it will be used to create
-     *       further DialogServiceConnectors.
+     * caller must refresh it by setting the authorizationToken property on the corresponding
+     * DialogServiceConnector instance created with this config. The contents of configuration objects are copied
+     * when connectors are created, so setting authorizationToken on a DialogServiceConnector will not update the
+     * original configuration's authorization token. Create a new configuration instance or set the
+     * SpeechServiceAuthorization_Token property to update an existing instance if it will be used to create
+     * further DialogServiceConnectors.
      * @member BotFrameworkConfig.fromAuthorizationToken
      * @function
      * @public
      * @param authorizationToken The authorization token associated with the bot
      * @param region The region name (see the <a href="https://aka.ms/csspeech/region">region page</a>).
      * @param botId Optional. Identifier for using a specific bot within an Azure resource group. Equivalent to the
-     *        resource name.
+     * resource name.
      * @returns {BotFrameworkConfig} A new bot framework configuration instance.
      */
     BotFrameworkConfig.fromAuthorizationToken = function (authorizationToken, region, botId) {
@@ -13628,21 +13775,22 @@ var BotFrameworkConfig = /** @class */ (function (_super) {
      * assumed. For services with a non-standard resource path or no path at all, use fromEndpoint instead.
      * Note: Query parameters are not allowed in the host URI and must be set by other APIs.
      * Note: To use an authorization token with fromHost, use fromHost(URL) and then set the AuthorizationToken
-     *       property on the created BotFrameworkConfig instance.
+     * property on the created BotFrameworkConfig instance.
      * Note: Added in version 1.15.0.
      * @member BotFrameworkConfig.fromHost
      * @function
      * @public
      * @param {URL | string} host - If a URL is provided, the fully-qualified host with protocol (e.g.
-     *        wss://your.host.com:1234) will be used. If a string is provided, it will be embedded in
-     *        wss://{host}.convai.speech.azure.us.
+     * wss://your.host.com:1234) will be used. If a string is provided, it will be embedded in
+     * wss://{host}.convai.speech.azure.us.
      * @param {string} subscriptionKey - The subscription key. If a subscription key is not specified, an authorization
-     *        token must be set.
+     * token must be set.
      * @param botId Optional. Identifier for using a specific bot within an Azure resource group. Equivalent to the
-     *        resource name.
+     * resource name.
      * @returns {BotFrameworkConfig} A new bot framework configuration instance.
      */
     BotFrameworkConfig.fromHost = function (host, subscriptionKey, botId) {
+        void botId;
         Contracts_1.Contracts.throwIfNullOrUndefined(host, "host");
         var resolvedHost = host instanceof URL ? host : new URL("wss://" + host + ".convai.speech.azure.us");
         Contracts_1.Contracts.throwIfNullOrUndefined(resolvedHost, "resolvedHost");
@@ -13659,15 +13807,15 @@ var BotFrameworkConfig = /** @class */ (function (_super) {
      * This method is intended only for users who use a non-standard service endpoint or parameters.
      * Note: The query parameters specified in the endpoint URL are not changed, even if they are set by any other APIs.
      * Note: To use authorization token with fromEndpoint, pass an empty string to the subscriptionKey in the
-     *       fromEndpoint method, and then set authorizationToken="token" on the created BotFrameworkConfig instance to
-     *       use the authorization token.
+     * fromEndpoint method, and then set authorizationToken="token" on the created BotFrameworkConfig instance to
+     * use the authorization token.
      * Note: Added in version 1.15.0.
      * @member BotFrameworkConfig.fromEndpoint
      * @function
      * @public
      * @param {URL} endpoint - The service endpoint to connect to.
      * @param {string} subscriptionKey - The subscription key. If a subscription key is not specified, an authorization
-     *        token must be set.
+     * token must be set.
      * @returns {BotFrameworkConfig} - A new bot framework configuration instance using the provided endpoint.
      */
     BotFrameworkConfig.fromEndpoint = function (endpoint, subscriptionKey) {
@@ -13687,7 +13835,7 @@ exports.BotFrameworkConfig = BotFrameworkConfig;
 
 
 /***/ }),
-/* 120 */
+/* 122 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13709,9 +13857,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomCommandsConfig = void 0;
-var Contracts_1 = __webpack_require__(63);
-var DialogServiceConfig_1 = __webpack_require__(118);
-var Exports_1 = __webpack_require__(61);
+var Contracts_1 = __webpack_require__(53);
+var DialogServiceConfig_1 = __webpack_require__(120);
+var Exports_1 = __webpack_require__(64);
 /**
  * Class that defines configurations for the dialog service connector object for using a CustomCommands backend.
  * @class CustomCommandsConfig
@@ -13803,7 +13951,7 @@ exports.CustomCommandsConfig = CustomCommandsConfig;
 
 
 /***/ }),
-/* 121 */
+/* 123 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13861,12 +14009,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DialogServiceConnector = void 0;
-var DialogConnectorFactory_1 = __webpack_require__(122);
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
-var PropertyId_1 = __webpack_require__(99);
+var DialogConnectorFactory_1 = __webpack_require__(124);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
+var PropertyId_1 = __webpack_require__(101);
 /**
  * Dialog Service Connector
  * @class DialogServiceConnector
@@ -14011,7 +14159,8 @@ var DialogServiceConnector = /** @class */ (function (_super) {
             var retPromise = callbackHolder();
             retPromise.catch(function () {
                 // Destroy the recognizer.
-                /* tslint:disable:no-empty */ // We've done all we can here.
+                // We've done all we can here.
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 _this.dispose(true).catch(function () { });
             });
             Exports_2.marshalPromiseToCallbacks(retPromise.finally(function () {
@@ -14082,7 +14231,7 @@ exports.DialogServiceConnector = DialogServiceConnector;
 
 
 /***/ }),
-/* 122 */
+/* 124 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14104,69 +14253,62 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DialogConnectionFactory = void 0;
+/* eslint-disable max-classes-per-file */
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(53);
-var Exports_3 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var Exports_4 = __webpack_require__(53);
-var HeaderNames_1 = __webpack_require__(55);
-var QueryParameterNames_1 = __webpack_require__(124);
+var Exports_2 = __webpack_require__(56);
+var Exports_3 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var Exports_4 = __webpack_require__(56);
+var HeaderNames_1 = __webpack_require__(58);
+var QueryParameterNames_1 = __webpack_require__(126);
 var DialogConnectionFactory = /** @class */ (function (_super) {
     __extends(DialogConnectionFactory, _super);
     function DialogConnectionFactory() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.create = function (config, authInfo, connectionId) {
-            var applicationId = config.parameters.getProperty(Exports_3.PropertyId.Conversation_ApplicationId, "");
-            var dialogType = config.parameters.getProperty(Exports_3.PropertyId.Conversation_DialogType);
-            var region = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Region);
-            var language = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_RecoLanguage, "en-US");
-            var requestTurnStatus = config.parameters.getProperty(Exports_3.PropertyId.Conversation_Request_Bot_Status_Messages, "true");
-            var queryParams = {};
-            queryParams[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
-            queryParams[QueryParameterNames_1.QueryParameterNames.Format] = config.parameters.getProperty(Exports_2.OutputFormatPropertyName, Exports_3.OutputFormat[Exports_3.OutputFormat.Simple]).toLowerCase();
-            queryParams[QueryParameterNames_1.QueryParameterNames.Language] = language;
-            queryParams[QueryParameterNames_1.QueryParameterNames.RequestBotStatusMessages] = requestTurnStatus;
-            if (applicationId) {
-                queryParams[QueryParameterNames_1.QueryParameterNames.BotId] = applicationId;
-                if (dialogType === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands) {
-                    queryParams[HeaderNames_1.HeaderNames.CustomCommandsAppId] = applicationId;
-                }
-            }
-            var resourceInfix = dialogType === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands ? "commands/"
-                : "";
-            var version = dialogType === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands ? "v1"
-                : dialogType === Exports_3.DialogServiceConfig.DialogTypes.BotFramework ? "v3"
-                    : "v0";
-            var headers = {};
-            if (authInfo.token != null && authInfo.token !== "") {
-                headers[authInfo.headerName] = authInfo.token;
-            }
-            // The URL used for connection is chosen in a priority order of specification:
-            //  1. If a custom endpoint is provided, that URL is used verbatim.
-            //  2. If a custom host is provided (e.g. "wss://my.custom.endpoint.com:1123"), a URL is constructed from it.
-            //  3. If no custom connection details are provided, a URL is constructed from default values.
-            var endpoint = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Endpoint, "");
-            if (!endpoint) {
-                var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
-                var host = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Host, "wss://" + region + "." + DialogConnectionFactory.Constants.BaseUrl + hostSuffix);
-                var standardizedHost = host.endsWith("/") ? host : host + "/";
-                endpoint = "" + standardizedHost + resourceInfix + DialogConnectionFactory.Constants.ApiKey + "/" + version;
-            }
-            _this.setCommonUrlParams(config, queryParams, endpoint);
-            var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
-            return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_4.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
-        };
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-    var _a;
-    DialogConnectionFactory.Constants = (_a = /** @class */ (function () {
-            function class_1() {
+    DialogConnectionFactory.prototype.create = function (config, authInfo, connectionId) {
+        var applicationId = config.parameters.getProperty(Exports_3.PropertyId.Conversation_ApplicationId, "");
+        var dialogType = config.parameters.getProperty(Exports_3.PropertyId.Conversation_DialogType);
+        var region = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Region);
+        var language = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_RecoLanguage, "en-US");
+        var requestTurnStatus = config.parameters.getProperty(Exports_3.PropertyId.Conversation_Request_Bot_Status_Messages, "true");
+        var queryParams = {};
+        queryParams[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
+        queryParams[QueryParameterNames_1.QueryParameterNames.Format] = config.parameters.getProperty(Exports_2.OutputFormatPropertyName, Exports_3.OutputFormat[Exports_3.OutputFormat.Simple]).toLowerCase();
+        queryParams[QueryParameterNames_1.QueryParameterNames.Language] = language;
+        queryParams[QueryParameterNames_1.QueryParameterNames.RequestBotStatusMessages] = requestTurnStatus;
+        if (applicationId) {
+            queryParams[QueryParameterNames_1.QueryParameterNames.BotId] = applicationId;
+            if (dialogType === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands) {
+                queryParams[HeaderNames_1.HeaderNames.CustomCommandsAppId] = applicationId;
             }
-            return class_1;
-        }()),
-        _a.ApiKey = "api",
-        _a.BaseUrl = "convai.speech",
-        _a);
+        }
+        var resourceInfix = dialogType === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands ? "commands/"
+            : "";
+        var version = dialogType === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands ? "v1"
+            : dialogType === Exports_3.DialogServiceConfig.DialogTypes.BotFramework ? "v3"
+                : "v0";
+        var headers = {};
+        if (authInfo.token != null && authInfo.token !== "") {
+            headers[authInfo.headerName] = authInfo.token;
+        }
+        // The URL used for connection is chosen in a priority order of specification:
+        //  1. If a custom endpoint is provided, that URL is used verbatim.
+        //  2. If a custom host is provided (e.g. "wss://my.custom.endpoint.com:1123"), a URL is constructed from it.
+        //  3. If no custom connection details are provided, a URL is constructed from default values.
+        var endpoint = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Endpoint, "");
+        if (!endpoint) {
+            var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
+            var host = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Host, "wss://" + region + "." + DialogConnectionFactory.BaseUrl + hostSuffix);
+            var standardizedHost = host.endsWith("/") ? host : host + "/";
+            endpoint = "" + standardizedHost + resourceInfix + DialogConnectionFactory.ApiKey + "/" + version;
+        }
+        this.setCommonUrlParams(config, queryParams, endpoint);
+        var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
+        return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_4.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
+    };
+    DialogConnectionFactory.ApiKey = "api";
+    DialogConnectionFactory.BaseUrl = "convai.speech";
     return DialogConnectionFactory;
 }(ConnectionFactoryBase_1.ConnectionFactoryBase));
 exports.DialogConnectionFactory = DialogConnectionFactory;
@@ -14174,7 +14316,7 @@ exports.DialogConnectionFactory = DialogConnectionFactory;
 
 
 /***/ }),
-/* 123 */
+/* 125 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14183,9 +14325,9 @@ exports.DialogConnectionFactory = DialogConnectionFactory;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConnectionFactoryBase = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(61);
-var QueryParameterNames_1 = __webpack_require__(124);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(64);
+var QueryParameterNames_1 = __webpack_require__(126);
 var ConnectionFactoryBase = /** @class */ (function () {
     function ConnectionFactoryBase() {
     }
@@ -14201,14 +14343,22 @@ var ConnectionFactoryBase = /** @class */ (function () {
         return ".microsoft.com";
     };
     ConnectionFactoryBase.prototype.setCommonUrlParams = function (config, queryParams, endpoint) {
-        this.setUrlParameter(Exports_2.PropertyId.SpeechServiceConnection_EnableAudioLogging, QueryParameterNames_1.QueryParameterNames.EnableAudioLogging, config, queryParams, endpoint);
-        this.setUrlParameter(Exports_2.PropertyId.SpeechServiceResponse_RequestWordLevelTimestamps, QueryParameterNames_1.QueryParameterNames.EnableWordLevelTimestamps, config, queryParams, endpoint);
-        this.setUrlParameter(Exports_2.PropertyId.SpeechServiceResponse_ProfanityOption, QueryParameterNames_1.QueryParameterNames.Profanity, config, queryParams, endpoint);
-        this.setUrlParameter(Exports_2.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, QueryParameterNames_1.QueryParameterNames.InitialSilenceTimeoutMs, config, queryParams, endpoint);
-        this.setUrlParameter(Exports_2.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, QueryParameterNames_1.QueryParameterNames.EndSilenceTimeoutMs, config, queryParams, endpoint);
-        this.setUrlParameter(Exports_2.PropertyId.SpeechServiceResponse_StablePartialResultThreshold, QueryParameterNames_1.QueryParameterNames.StableIntermediateThreshold, config, queryParams, endpoint);
+        var _this = this;
+        var propertyIdToParameterMap = new Map([
+            [Exports_2.PropertyId.Speech_SegmentationSilenceTimeoutMs, QueryParameterNames_1.QueryParameterNames.SegmentationSilenceTimeoutMs],
+            [Exports_2.PropertyId.SpeechServiceConnection_EnableAudioLogging, QueryParameterNames_1.QueryParameterNames.EnableAudioLogging],
+            [Exports_2.PropertyId.SpeechServiceConnection_EndSilenceTimeoutMs, QueryParameterNames_1.QueryParameterNames.EndSilenceTimeoutMs],
+            [Exports_2.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, QueryParameterNames_1.QueryParameterNames.InitialSilenceTimeoutMs],
+            [Exports_2.PropertyId.SpeechServiceResponse_PostProcessingOption, QueryParameterNames_1.QueryParameterNames.Postprocessing],
+            [Exports_2.PropertyId.SpeechServiceResponse_ProfanityOption, QueryParameterNames_1.QueryParameterNames.Profanity],
+            [Exports_2.PropertyId.SpeechServiceResponse_RequestWordLevelTimestamps, QueryParameterNames_1.QueryParameterNames.EnableWordLevelTimestamps],
+            [Exports_2.PropertyId.SpeechServiceResponse_StablePartialResultThreshold, QueryParameterNames_1.QueryParameterNames.StableIntermediateThreshold],
+        ]);
+        propertyIdToParameterMap.forEach(function (parameterName, propertyId) {
+            _this.setUrlParameter(propertyId, parameterName, config, queryParams, endpoint);
+        });
         var serviceProperties = JSON.parse(config.parameters.getProperty(Exports_1.ServicePropertiesPropertyName, "{}"));
-        Object.keys(serviceProperties).forEach(function (value, num, array) {
+        Object.keys(serviceProperties).forEach(function (value) {
             queryParams[value] = serviceProperties[value];
         });
     };
@@ -14225,7 +14375,7 @@ exports.ConnectionFactoryBase = ConnectionFactoryBase;
 
 
 /***/ }),
-/* 124 */
+/* 126 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14244,6 +14394,7 @@ var QueryParameterNames = /** @class */ (function () {
     QueryParameterNames.EnableLanguageId = "lidEnabled";
     QueryParameterNames.EnableWordLevelTimestamps = "wordLevelTimestamps";
     QueryParameterNames.EndSilenceTimeoutMs = "endSilenceTimeoutMs";
+    QueryParameterNames.SegmentationSilenceTimeoutMs = "segmentationSilenceTimeoutMs";
     QueryParameterNames.Format = "format";
     QueryParameterNames.InitialSilenceTimeoutMs = "initialSilenceTimeoutMs";
     QueryParameterNames.Language = "language";
@@ -14252,6 +14403,7 @@ var QueryParameterNames = /** @class */ (function () {
     QueryParameterNames.StableIntermediateThreshold = "stableIntermediateThreshold";
     QueryParameterNames.StableTranslation = "stableTranslation";
     QueryParameterNames.TestHooks = "testhooks";
+    QueryParameterNames.Postprocessing = "postprocessing";
     return QueryParameterNames;
 }());
 exports.QueryParameterNames = QueryParameterNames;
@@ -14259,7 +14411,7 @@ exports.QueryParameterNames = QueryParameterNames;
 
 
 /***/ }),
-/* 125 */
+/* 127 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14310,7 +14462,7 @@ exports.ActivityReceivedEventArgs = ActivityReceivedEventArgs;
 
 
 /***/ }),
-/* 126 */
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14319,7 +14471,7 @@ exports.ActivityReceivedEventArgs = ActivityReceivedEventArgs;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TurnStatusReceivedEventArgs = void 0;
-var TurnStatusPayload_1 = __webpack_require__(127);
+var TurnStatusPayload_1 = __webpack_require__(129);
 /**
  * Defines contents of received message/events.
  * @class TurnStatusReceivedEventArgs
@@ -14370,7 +14522,7 @@ var TurnStatusReceivedEventArgs = /** @class */ (function () {
          * @returns {number} the received turn status.
          */
         get: function () {
-            return this.privTurnStatus.statusCode;
+            return this.privTurnStatus.statusCode; // eslint-disable-line @typescript-eslint/no-unsafe-return
         },
         enumerable: false,
         configurable: true
@@ -14382,7 +14534,7 @@ exports.TurnStatusReceivedEventArgs = TurnStatusReceivedEventArgs;
 
 
 /***/ }),
-/* 127 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14424,6 +14576,7 @@ var TurnStatusResponsePayload = /** @class */ (function () {
                 case "TimedOut":
                     return 429;
                 default:
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                     return this.privMessageStatusResponse.statusCode;
             }
         },
@@ -14437,7 +14590,7 @@ exports.TurnStatusResponsePayload = TurnStatusResponsePayload;
 
 
 /***/ }),
-/* 128 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14461,7 +14614,7 @@ var ServicePropertyChannel;
 
 
 /***/ }),
-/* 129 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14484,7 +14637,7 @@ var ProfanityOption;
 
 
 /***/ }),
-/* 130 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14529,10 +14682,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BaseAudioPlayer = void 0;
-var Error_1 = __webpack_require__(25);
-var Promise_1 = __webpack_require__(40);
-var Exports_1 = __webpack_require__(61);
-var AudioStreamFormat_1 = __webpack_require__(72);
+var Error_1 = __webpack_require__(27);
+var Exports_1 = __webpack_require__(64);
+var AudioStreamFormat_1 = __webpack_require__(74);
 /**
  * Base audio player class
  * TODO: Plays only PCM for now.
@@ -14558,19 +14710,22 @@ var BaseAudioPlayer = /** @class */ (function () {
      * @param newAudioData audio data to be played.
      */
     BaseAudioPlayer.prototype.playAudioSample = function (newAudioData, cb, err) {
-        var _this = this;
-        Promise_1.marshalPromiseToCallbacks((function () { return __awaiter(_this, void 0, void 0, function () {
-            var audioData, newSamplesData;
-            return __generator(this, function (_a) {
-                this.ensureInitializedContext();
-                audioData = this.formatAudioData(newAudioData);
-                newSamplesData = new Float32Array(this.samples.length + audioData.length);
-                newSamplesData.set(this.samples, 0);
-                newSamplesData.set(audioData, this.samples.length);
-                this.samples = newSamplesData;
-                return [2 /*return*/];
-            });
-        }); })(), cb, err);
+        try {
+            this.ensureInitializedContext();
+            var audioData = this.formatAudioData(newAudioData);
+            var newSamplesData = new Float32Array(this.samples.length + audioData.length);
+            newSamplesData.set(this.samples, 0);
+            newSamplesData.set(audioData, this.samples.length);
+            this.samples = newSamplesData;
+            if (!!cb) {
+                cb();
+            }
+        }
+        catch (e) {
+            if (!!err) {
+                err(e);
+            }
+        }
     };
     /**
      * stops audio and clears the buffers
@@ -14578,6 +14733,7 @@ var BaseAudioPlayer = /** @class */ (function () {
     BaseAudioPlayer.prototype.stopAudio = function (cb, err) {
         if (this.audioContext !== null) {
             this.samples = new Float32Array();
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearInterval(this.autoUpdateBufferTimer);
             this.audioContext.close().then(function () {
                 if (!!cb) {
@@ -14692,7 +14848,7 @@ exports.BaseAudioPlayer = BaseAudioPlayer;
 
 
 /***/ }),
-/* 131 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14730,7 +14886,7 @@ exports.ConnectionMessageEventArgs = ConnectionMessageEventArgs;
 
 
 /***/ }),
-/* 132 */
+/* 134 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14789,7 +14945,7 @@ exports.VoiceProfile = VoiceProfile;
 
 
 /***/ }),
-/* 133 */
+/* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14811,8 +14967,10 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoiceProfileEnrollmentCancellationDetails = exports.VoiceProfileEnrollmentResult = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(64);
+var parse = function (json) { return JSON.parse(json); };
 /**
  * Output format
  * @class VoiceProfileEnrollmentResult
@@ -14823,7 +14981,7 @@ var VoiceProfileEnrollmentResult = /** @class */ (function () {
         this.privProperties = new Exports_2.PropertyCollection();
         if (this.privReason !== Exports_2.ResultReason.Canceled) {
             if (!!json) {
-                this.privDetails = JSON.parse(json);
+                this.privDetails = parse(json);
                 if (this.privDetails.enrollmentStatus.toLowerCase() === "enrolling") {
                     this.privReason = Exports_2.ResultReason.EnrollingVoiceProfile;
                 }
@@ -14834,32 +14992,6 @@ var VoiceProfileEnrollmentResult = /** @class */ (function () {
             this.privProperties.setProperty(Exports_1.CancellationErrorCodePropertyName, Exports_2.CancellationErrorCode[Exports_2.CancellationErrorCode.ServiceError]);
         }
     }
-    VoiceProfileEnrollmentResult.FromIdentificationProfileList = function (json) {
-        var results = [];
-        for (var _i = 0, _a = json.value; _i < _a.length; _i++) {
-            var item = _a[_i];
-            var reason = item.enrollmentStatus.toLowerCase() === "enrolling" ?
-                Exports_2.ResultReason.EnrollingVoiceProfile : item.enrollmentStatus.toLowerCase() === "enrolled" ?
-                Exports_2.ResultReason.EnrolledVoiceProfile : Exports_2.ResultReason.Canceled;
-            var result = new VoiceProfileEnrollmentResult(reason, null, null);
-            result.privDetails = this.getIdentificationDetails(item);
-            results.push(result);
-        }
-        return results;
-    };
-    VoiceProfileEnrollmentResult.FromVerificationProfileList = function (json) {
-        var results = [];
-        for (var _i = 0, _a = json.value; _i < _a.length; _i++) {
-            var item = _a[_i];
-            var reason = item.enrollmentStatus.toLowerCase() === "enrolling" ?
-                Exports_2.ResultReason.EnrollingVoiceProfile : item.enrollmentStatus.toLowerCase() === "enrolled" ?
-                Exports_2.ResultReason.EnrolledVoiceProfile : Exports_2.ResultReason.Canceled;
-            var result = new VoiceProfileEnrollmentResult(reason, null, null);
-            result.privDetails = this.getVerificationDetails(item);
-            results.push(result);
-        }
-        return results;
-    };
     Object.defineProperty(VoiceProfileEnrollmentResult.prototype, "reason", {
         get: function () {
             return this.privReason;
@@ -14902,6 +15034,32 @@ var VoiceProfileEnrollmentResult = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    VoiceProfileEnrollmentResult.FromIdentificationProfileList = function (json) {
+        var results = [];
+        for (var _i = 0, _a = json.value; _i < _a.length; _i++) {
+            var item = _a[_i];
+            var reason = item.enrollmentStatus.toLowerCase() === "enrolling" ?
+                Exports_2.ResultReason.EnrollingVoiceProfile : item.enrollmentStatus.toLowerCase() === "enrolled" ?
+                Exports_2.ResultReason.EnrolledVoiceProfile : Exports_2.ResultReason.Canceled;
+            var result = new VoiceProfileEnrollmentResult(reason, null, null);
+            result.privDetails = this.getIdentificationDetails(item);
+            results.push(result);
+        }
+        return results;
+    };
+    VoiceProfileEnrollmentResult.FromVerificationProfileList = function (json) {
+        var results = [];
+        for (var _i = 0, _a = json.value; _i < _a.length; _i++) {
+            var item = _a[_i];
+            var reason = item.enrollmentStatus.toLowerCase() === "enrolling" ?
+                Exports_2.ResultReason.EnrollingVoiceProfile : item.enrollmentStatus.toLowerCase() === "enrolled" ?
+                Exports_2.ResultReason.EnrolledVoiceProfile : Exports_2.ResultReason.Canceled;
+            var result = new VoiceProfileEnrollmentResult(reason, null, null);
+            result.privDetails = this.getVerificationDetails(item);
+            results.push(result);
+        }
+        return results;
+    };
     VoiceProfileEnrollmentResult.getIdentificationDetails = function (json) {
         return {
             audioLengthInSec: json.audioLengthInSec ? parseFloat(json.audioLengthInSec) : 0,
@@ -14933,7 +15091,6 @@ exports.VoiceProfileEnrollmentResult = VoiceProfileEnrollmentResult;
 /**
  * @class VoiceProfileEnrollmentCancellationDetails
  */
-// tslint:disable-next-line:max-classes-per-file
 var VoiceProfileEnrollmentCancellationDetails = /** @class */ (function (_super) {
     __extends(VoiceProfileEnrollmentCancellationDetails, _super);
     function VoiceProfileEnrollmentCancellationDetails(reason, errorDetails, errorCode) {
@@ -14951,7 +15108,7 @@ var VoiceProfileEnrollmentCancellationDetails = /** @class */ (function (_super)
         var reason = Exports_2.CancellationReason.Error;
         var errorCode = Exports_2.CancellationErrorCode.NoError;
         if (!!result.properties) {
-            errorCode = Exports_2.CancellationErrorCode[result.properties.getProperty(Exports_1.CancellationErrorCodePropertyName, Exports_2.CancellationErrorCode[Exports_2.CancellationErrorCode.NoError])];
+            errorCode = Exports_2.CancellationErrorCode[result.properties.getProperty(Exports_1.CancellationErrorCodePropertyName, Exports_2.CancellationErrorCode[Exports_2.CancellationErrorCode.NoError])]; //eslint-disable-line
         }
         return new VoiceProfileEnrollmentCancellationDetails(reason, result.errorDetails, errorCode);
     };
@@ -14962,7 +15119,7 @@ exports.VoiceProfileEnrollmentCancellationDetails = VoiceProfileEnrollmentCancel
 
 
 /***/ }),
-/* 134 */
+/* 136 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -14984,9 +15141,10 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoiceProfileCancellationDetails = exports.VoiceProfileResult = void 0;
-var Exports_1 = __webpack_require__(53);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(56);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
 /**
  * Output format
  * @class VoiceProfileResult
@@ -15028,7 +15186,6 @@ exports.VoiceProfileResult = VoiceProfileResult;
 /**
  * @class VoiceProfileCancellationDetails
  */
-// tslint:disable-next-line:max-classes-per-file
 var VoiceProfileCancellationDetails = /** @class */ (function (_super) {
     __extends(VoiceProfileCancellationDetails, _super);
     function VoiceProfileCancellationDetails(reason, errorDetails, errorCode) {
@@ -15046,7 +15203,7 @@ var VoiceProfileCancellationDetails = /** @class */ (function (_super) {
         var reason = Exports_2.CancellationReason.Error;
         var errorCode = Exports_2.CancellationErrorCode.NoError;
         if (!!result.properties) {
-            errorCode = Exports_2.CancellationErrorCode[result.properties.getProperty(Exports_1.CancellationErrorCodePropertyName, Exports_2.CancellationErrorCode[Exports_2.CancellationErrorCode.NoError])];
+            errorCode = Exports_2.CancellationErrorCode[result.properties.getProperty(Exports_1.CancellationErrorCodePropertyName, Exports_2.CancellationErrorCode[Exports_2.CancellationErrorCode.NoError])]; //eslint-disable-line
         }
         return new VoiceProfileCancellationDetails(reason, result.errorDetails, errorCode);
     };
@@ -15057,7 +15214,7 @@ exports.VoiceProfileCancellationDetails = VoiceProfileCancellationDetails;
 
 
 /***/ }),
-/* 135 */
+/* 137 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15079,8 +15236,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoiceProfilePhraseResult = void 0;
-var Contracts_1 = __webpack_require__(63);
-var Exports_1 = __webpack_require__(61);
+var Contracts_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(64);
 /**
  * Output format
  * @class VoiceProfilePhraseResult
@@ -15113,7 +15270,7 @@ exports.VoiceProfilePhraseResult = VoiceProfilePhraseResult;
 
 
 /***/ }),
-/* 136 */
+/* 138 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15158,9 +15315,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoiceProfileClient = void 0;
-var Exports_1 = __webpack_require__(53);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
 /**
  * Defines VoiceProfileClient class for Speaker Recognition
  * Handles operations from user for Voice Profile operations (e.g. createProfile, deleteProfile)
@@ -15178,6 +15335,20 @@ var VoiceProfileClient = /** @class */ (function () {
         this.privProperties = speechConfigImpl.properties.clone();
         this.implClientSetup();
     }
+    Object.defineProperty(VoiceProfileClient.prototype, "properties", {
+        /**
+         * The collection of properties and their values defined for this VoiceProfileClient.
+         * @member VoiceProfileClient.prototype.properties
+         * @function
+         * @public
+         * @returns {PropertyCollection} The collection of properties and their values defined for this VoiceProfileClient.
+         */
+        get: function () {
+            return this.privProperties;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(VoiceProfileClient.prototype, "authorizationToken", {
         /**
          * Gets the authorization token used to communicate with the service.
@@ -15203,20 +15374,6 @@ var VoiceProfileClient = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(VoiceProfileClient.prototype, "properties", {
-        /**
-         * The collection of properties and their values defined for this VoiceProfileClient.
-         * @member VoiceProfileClient.prototype.properties
-         * @function
-         * @public
-         * @returns {PropertyCollection} The collection of properties and their values defined for this VoiceProfileClient.
-         */
-        get: function () {
-            return this.privProperties;
-        },
-        enumerable: false,
-        configurable: true
-    });
     /**
      * Create a speaker recognition voice profile
      * @member VoiceProfileClient.prototype.createProfileAsync
@@ -15224,7 +15381,6 @@ var VoiceProfileClient = /** @class */ (function () {
      * @public
      * @async
      * @param {VoiceProfileType} profileType Type of Voice Profile to be created
-     *        specifies the keyword to be recognized.
      * @param {string} lang Language string (locale) for Voice Profile
      * @return {Promise<VoiceProfile>} - Promise of a VoiceProfile.
      */
@@ -15407,7 +15563,7 @@ var VoiceProfileClient = /** @class */ (function () {
         var recognizerConfig = new Exports_1.SpeakerRecognitionConfig(new Exports_1.Context(new Exports_1.OS(osPlatform, osName, osVersion)), this.privProperties);
         this.privAdapter = new Exports_1.SpeakerIdMessageAdapter(recognizerConfig);
     };
-    VoiceProfileClient.prototype.getResult = function (result, successReason, cb) {
+    VoiceProfileClient.prototype.getResult = function (result, successReason) {
         var response = new Exports_2.VoiceProfileResult(result.ok ? successReason : Exports_2.ResultReason.Canceled, result.statusText);
         return (response);
     };
@@ -15418,7 +15574,7 @@ exports.VoiceProfileClient = VoiceProfileClient;
 
 
 /***/ }),
-/* 137 */
+/* 139 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15463,9 +15619,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeakerRecognizer = void 0;
-var Exports_1 = __webpack_require__(53);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
 /**
  * Defines SpeakerRecognizer class for Speaker Recognition
  * Handles operations from user for Voice Profile operations (e.g. createProfile, deleteProfile)
@@ -15595,7 +15751,7 @@ exports.SpeakerRecognizer = SpeakerRecognizer;
 
 
 /***/ }),
-/* 138 */
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15604,8 +15760,8 @@ exports.SpeakerRecognizer = SpeakerRecognizer;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeakerIdentificationModel = void 0;
-var Contracts_1 = __webpack_require__(63);
-var Exports_1 = __webpack_require__(61);
+var Contracts_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines SpeakerIdentificationModel class for Speaker Recognition
  * Model contains a set of profiles against which to identify speaker(s)
@@ -15643,7 +15799,7 @@ exports.SpeakerIdentificationModel = SpeakerIdentificationModel;
 
 
 /***/ }),
-/* 139 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15652,8 +15808,8 @@ exports.SpeakerIdentificationModel = SpeakerIdentificationModel;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeakerVerificationModel = void 0;
-var Contracts_1 = __webpack_require__(63);
-var Exports_1 = __webpack_require__(61);
+var Contracts_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines SpeakerVerificationModel class for Speaker Recognition
  * Model contains a profile against which to verify a speaker
@@ -15684,7 +15840,7 @@ exports.SpeakerVerificationModel = SpeakerVerificationModel;
 
 
 /***/ }),
-/* 140 */
+/* 142 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15693,9 +15849,11 @@ exports.SpeakerVerificationModel = SpeakerVerificationModel;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AutoDetectSourceLanguageConfig = void 0;
-var Exports_1 = __webpack_require__(53);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
+var LanguageIdMode_1 = __webpack_require__(143);
+var LanguageIdPriority_1 = __webpack_require__(144);
 /**
  * Language auto detect configuration.
  * @class AutoDetectSourceLanguageConfig
@@ -15704,6 +15862,8 @@ var Exports_2 = __webpack_require__(61);
 var AutoDetectSourceLanguageConfig = /** @class */ (function () {
     function AutoDetectSourceLanguageConfig() {
         this.privProperties = new Exports_2.PropertyCollection();
+        this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_AtStartLanguageIdPriority, "Latency");
+        this.privLanguageIdMode = LanguageIdMode_1.LanguageIdMode.AtStart;
     }
     /**
      * @member AutoDetectSourceLanguageConfig.fromOpenRange
@@ -15771,6 +15931,51 @@ var AutoDetectSourceLanguageConfig = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(AutoDetectSourceLanguageConfig.prototype, "mode", {
+        /**
+         * @member AutoDetectSourceLanguageConfig.prototype.mode
+         * @function
+         * @public
+         * @param {LanguageIdMode} mode LID mode desired.
+         * @summary Sets LID operation to desired mode
+         */
+        set: function (mode) {
+            if (mode === LanguageIdMode_1.LanguageIdMode.Continuous) {
+                this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_RecognitionEndpointVersion, "2");
+                this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_ContinuousLanguageIdPriority, "Latency");
+            }
+            else {
+                this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_RecognitionEndpointVersion, "1");
+                this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_ContinuousLanguageIdPriority, undefined);
+            }
+            this.privLanguageIdMode = mode;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(AutoDetectSourceLanguageConfig.prototype, "priority", {
+        /**
+         * @member AutoDetectSourceLanguageConfig.prototype.priority
+         * @function
+         * @public
+         * @param {LanguageIdPriority} priority LID priority desired.
+         * @summary Sets LID operation to desired priority
+         */
+        set: function (priority) {
+            if (priority === LanguageIdPriority_1.LanguageIdPriority.Accuracy) {
+                if (this.privLanguageIdMode !== LanguageIdMode_1.LanguageIdMode.Continuous) {
+                    // Accuracy not allowed for continuous mode
+                    this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_AtStartLanguageIdPriority, "Accuracy");
+                }
+            }
+            else {
+                this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_ContinuousLanguageIdPriority, "Latency");
+                this.privProperties.setProperty(Exports_2.PropertyId.SpeechServiceConnection_AtStartLanguageIdPriority, "Latency");
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
     return AutoDetectSourceLanguageConfig;
 }());
 exports.AutoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig;
@@ -15778,7 +15983,67 @@ exports.AutoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig;
 
 
 /***/ }),
-/* 141 */
+/* 143 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LanguageIdMode = void 0;
+/**
+ * Language Identification mode
+ * @class LanguageIdMode
+ */
+var LanguageIdMode;
+(function (LanguageIdMode) {
+    /**
+     * Detect language at audio start
+     * @member LanguageIdMode.AtStart
+     */
+    LanguageIdMode[LanguageIdMode["AtStart"] = 0] = "AtStart";
+    /**
+     * Continuously detect language
+     * @member LanguageIdMode.Continuous
+     */
+    LanguageIdMode[LanguageIdMode["Continuous"] = 1] = "Continuous";
+})(LanguageIdMode = exports.LanguageIdMode || (exports.LanguageIdMode = {}));
+
+
+
+/***/ }),
+/* 144 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LanguageIdPriority = void 0;
+/**
+ * Language Identification priority
+ * @class LanguageIdPriority
+ */
+var LanguageIdPriority;
+(function (LanguageIdPriority) {
+    /**
+     * Prioritize Accuracy for Language Id (does not work for continuous mode LID)
+     * @member LanguageIdPriority.Accuracy
+     */
+    LanguageIdPriority[LanguageIdPriority["Accuracy"] = 0] = "Accuracy";
+    /**
+     * Prioritize latency for Language Id
+     * @member LanguageIdPriority.Latency
+     */
+    LanguageIdPriority[LanguageIdPriority["Latency"] = 1] = "Latency";
+})(LanguageIdPriority = exports.LanguageIdPriority || (exports.LanguageIdPriority = {}));
+
+
+
+/***/ }),
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15787,7 +16052,7 @@ exports.AutoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AutoDetectSourceLanguageResult = void 0;
-var Contracts_1 = __webpack_require__(63);
+var Contracts_1 = __webpack_require__(53);
 /**
  * Output format
  * @class AutoDetectSourceLanguageResult
@@ -15831,7 +16096,7 @@ exports.AutoDetectSourceLanguageResult = AutoDetectSourceLanguageResult;
 
 
 /***/ }),
-/* 142 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15840,7 +16105,7 @@ exports.AutoDetectSourceLanguageResult = AutoDetectSourceLanguageResult;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SourceLanguageConfig = void 0;
-var Contracts_1 = __webpack_require__(63);
+var Contracts_1 = __webpack_require__(53);
 /**
  * Source Language configuration.
  * @class SourceLanguageConfig
@@ -15885,7 +16150,7 @@ exports.SourceLanguageConfig = SourceLanguageConfig;
 
 
 /***/ }),
-/* 143 */
+/* 147 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15907,9 +16172,10 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeakerRecognitionCancellationDetails = exports.SpeakerRecognitionResult = exports.SpeakerRecognitionResultType = void 0;
-var Exports_1 = __webpack_require__(53);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(56);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
 var SpeakerRecognitionResultType;
 (function (SpeakerRecognitionResultType) {
     SpeakerRecognitionResultType[SpeakerRecognitionResultType["Verify"] = 0] = "Verify";
@@ -15992,7 +16258,6 @@ exports.SpeakerRecognitionResult = SpeakerRecognitionResult;
 /**
  * @class SpeakerRecognitionCancellationDetails
  */
-// tslint:disable-next-line:max-classes-per-file
 var SpeakerRecognitionCancellationDetails = /** @class */ (function (_super) {
     __extends(SpeakerRecognitionCancellationDetails, _super);
     function SpeakerRecognitionCancellationDetails(reason, errorDetails, errorCode) {
@@ -16021,7 +16286,7 @@ exports.SpeakerRecognitionCancellationDetails = SpeakerRecognitionCancellationDe
 
 
 /***/ }),
-/* 144 */
+/* 148 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16030,35 +16295,35 @@ exports.SpeakerRecognitionCancellationDetails = SpeakerRecognitionCancellationDe
 // Licensed under the MIT license.
 // Multi-device Conversation is a Preview feature.
 Object.defineProperty(exports, "__esModule", { value: true });
-var Conversation_1 = __webpack_require__(145);
+var Conversation_1 = __webpack_require__(149);
 Object.defineProperty(exports, "Conversation", { enumerable: true, get: function () { return Conversation_1.Conversation; } });
 Object.defineProperty(exports, "ConversationImpl", { enumerable: true, get: function () { return Conversation_1.ConversationImpl; } });
-var ConversationCommon_1 = __webpack_require__(146);
+var ConversationCommon_1 = __webpack_require__(150);
 Object.defineProperty(exports, "ConversationCommon", { enumerable: true, get: function () { return ConversationCommon_1.ConversationCommon; } });
-var ConversationExpirationEventArgs_1 = __webpack_require__(147);
+var ConversationExpirationEventArgs_1 = __webpack_require__(151);
 Object.defineProperty(exports, "ConversationExpirationEventArgs", { enumerable: true, get: function () { return ConversationExpirationEventArgs_1.ConversationExpirationEventArgs; } });
-var ConversationParticipantsChangedEventArgs_1 = __webpack_require__(148);
+var ConversationParticipantsChangedEventArgs_1 = __webpack_require__(152);
 Object.defineProperty(exports, "ConversationParticipantsChangedEventArgs", { enumerable: true, get: function () { return ConversationParticipantsChangedEventArgs_1.ConversationParticipantsChangedEventArgs; } });
-var ConversationTranslationCanceledEventArgs_1 = __webpack_require__(149);
+var ConversationTranslationCanceledEventArgs_1 = __webpack_require__(153);
 Object.defineProperty(exports, "ConversationTranslationCanceledEventArgs", { enumerable: true, get: function () { return ConversationTranslationCanceledEventArgs_1.ConversationTranslationCanceledEventArgs; } });
-var ConversationTranslationEventArgs_1 = __webpack_require__(150);
+var ConversationTranslationEventArgs_1 = __webpack_require__(154);
 Object.defineProperty(exports, "ConversationTranslationEventArgs", { enumerable: true, get: function () { return ConversationTranslationEventArgs_1.ConversationTranslationEventArgs; } });
-var ConversationTranslationResult_1 = __webpack_require__(151);
+var ConversationTranslationResult_1 = __webpack_require__(155);
 Object.defineProperty(exports, "ConversationTranslationResult", { enumerable: true, get: function () { return ConversationTranslationResult_1.ConversationTranslationResult; } });
-var ConversationTranslator_1 = __webpack_require__(152);
+var ConversationTranslator_1 = __webpack_require__(156);
 Object.defineProperty(exports, "ConversationTranslator", { enumerable: true, get: function () { return ConversationTranslator_1.ConversationTranslator; } });
-var ConversationTranscriber_1 = __webpack_require__(153);
+var ConversationTranscriber_1 = __webpack_require__(157);
 Object.defineProperty(exports, "ConversationTranscriber", { enumerable: true, get: function () { return ConversationTranscriber_1.ConversationTranscriber; } });
-var IParticipant_1 = __webpack_require__(154);
+var IParticipant_1 = __webpack_require__(158);
 Object.defineProperty(exports, "Participant", { enumerable: true, get: function () { return IParticipant_1.Participant; } });
 Object.defineProperty(exports, "User", { enumerable: true, get: function () { return IParticipant_1.User; } });
-var ParticipantChangedReason_1 = __webpack_require__(155);
+var ParticipantChangedReason_1 = __webpack_require__(159);
 Object.defineProperty(exports, "ParticipantChangedReason", { enumerable: true, get: function () { return ParticipantChangedReason_1.ParticipantChangedReason; } });
 
 
 
 /***/ }),
-/* 145 */
+/* 149 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16124,12 +16389,14 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationImpl = exports.Conversation = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 var Conversation = /** @class */ (function () {
     function Conversation() {
+        return;
     }
     /**
      * Create a conversation
@@ -16170,7 +16437,6 @@ var Conversation = /** @class */ (function () {
     return Conversation;
 }());
 exports.Conversation = Conversation;
-// tslint:disable-next-line:max-classes-per-file
 var ConversationImpl = /** @class */ (function (_super) {
     __extends(ConversationImpl, _super);
     /**
@@ -16180,11 +16446,9 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     function ConversationImpl(speechConfig, id) {
         var _this = _super.call(this) || this;
-        _this.privIsDisposed = false;
-        _this.privIsConnected = false;
         _this.privErrors = Exports_1.ConversationConnectionConfig.restErrors;
-        _this.privConversationId = "";
         /** websocket callbacks */
+        /* eslint-disable @typescript-eslint/typedef */
         _this.onConnected = function (e) {
             var _a, _b;
             _this.privIsConnected = true;
@@ -16200,50 +16464,38 @@ var ConversationImpl = /** @class */ (function (_super) {
                 //
             }
         };
-        _this.onDisconnected = function (e) { return __awaiter(_this, void 0, void 0, function () {
-            var e_1;
+        _this.onDisconnected = function (e) {
             var _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        _c.trys.push([0, 1, 2, 4]);
-                        if (!!((_a = this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.sessionStopped)) {
-                            this.privConversationTranslator.sessionStopped(this.privConversationTranslator, e);
-                        }
-                        if (!!((_b = this.privTranscriberRecognizer) === null || _b === void 0 ? void 0 : _b.conversationStopped)) {
-                            this.privTranscriberRecognizer.conversationStopped(this.privTranscriberRecognizer, e);
-                        }
-                        return [3 /*break*/, 4];
-                    case 1:
-                        e_1 = _c.sent();
-                        return [3 /*break*/, 4];
-                    case 2: return [4 /*yield*/, this.close(false)];
-                    case 3:
-                        _c.sent();
-                        return [7 /*endfinally*/];
-                    case 4: return [2 /*return*/];
+            try {
+                if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.sessionStopped)) {
+                    _this.privConversationTranslator.sessionStopped(_this.privConversationTranslator, e);
                 }
-            });
-        }); };
-        _this.onCanceled = function (r, e) { return __awaiter(_this, void 0, void 0, function () {
+                if (!!((_b = _this.privTranscriberRecognizer) === null || _b === void 0 ? void 0 : _b.conversationStopped)) {
+                    _this.privTranscriberRecognizer.conversationStopped(_this.privTranscriberRecognizer, e);
+                }
+            }
+            catch (e) {
+                //
+            }
+            finally {
+                void _this.close(false);
+            }
+        };
+        _this.onCanceled = function (r, e) {
             var _a, _b;
-            return __generator(this, function (_c) {
-                try {
-                    if (!!((_a = this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.canceled)) {
-                        this.privConversationTranslator.canceled(this.privConversationTranslator, e);
-                    }
-                    if (!!((_b = this.privTranscriberRecognizer) === null || _b === void 0 ? void 0 : _b.conversationCanceled)) {
-                        this.privTranscriberRecognizer.conversationCanceled(this.privTranscriberRecognizer, e);
-                    }
+            try {
+                if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.canceled)) {
+                    _this.privConversationTranslator.canceled(_this.privConversationTranslator, e);
                 }
-                catch (e) {
-                    //
+                if (!!((_b = _this.privTranscriberRecognizer) === null || _b === void 0 ? void 0 : _b.conversationCanceled)) {
+                    _this.privTranscriberRecognizer.conversationCanceled(_this.privTranscriberRecognizer, e);
                 }
-                return [2 /*return*/];
-            });
-        }); };
+            }
+            catch (e) {
+                //
+            }
+        };
         _this.onParticipantUpdateCommandReceived = function (r, e) {
-            var _a, _b;
             try {
                 var updatedParticipant = _this.privParticipants.getParticipant(e.id);
                 if (updatedParticipant !== undefined) {
@@ -16252,7 +16504,7 @@ var ConversationImpl = /** @class */ (function (_super) {
                             updatedParticipant.displayName = e.value;
                             break;
                         case Exports_1.ConversationTranslatorCommandTypes.setUseTTS:
-                            updatedParticipant.useTts = e.value;
+                            updatedParticipant.isUsingTts = e.value;
                             break;
                         case Exports_1.ConversationTranslatorCommandTypes.setProfanityFiltering:
                             updatedParticipant.profanity = e.value;
@@ -16265,8 +16517,8 @@ var ConversationImpl = /** @class */ (function (_super) {
                             break;
                     }
                     _this.privParticipants.addOrUpdateParticipant(updatedParticipant);
-                    if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.participantsChanged)) {
-                        (_b = _this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.Updated, [_this.toParticipant(updatedParticipant)], e.sessionId));
+                    if (!!_this.privConversationTranslator) {
+                        _this.privConversationTranslator.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.Updated, [_this.toParticipant(updatedParticipant)], e.sessionId));
                     }
                 }
             }
@@ -16274,15 +16526,14 @@ var ConversationImpl = /** @class */ (function (_super) {
                 //
             }
         };
-        _this.onLockRoomCommandReceived = function (r, e) {
+        _this.onLockRoomCommandReceived = function () {
             // TODO
         };
         _this.onMuteAllCommandReceived = function (r, e) {
-            var _a, _b;
             try {
                 _this.privParticipants.participants.forEach(function (p) { return p.isMuted = (p.isHost ? false : e.isMuted); });
-                if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.participantsChanged)) {
-                    (_b = _this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.Updated, _this.toParticipants(false), e.sessionId));
+                if (!!_this.privConversationTranslator) {
+                    _this.privConversationTranslator.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.Updated, _this.toParticipants(false), e.sessionId));
                 }
             }
             catch (e) {
@@ -16290,12 +16541,11 @@ var ConversationImpl = /** @class */ (function (_super) {
             }
         };
         _this.onParticipantJoinCommandReceived = function (r, e) {
-            var _a, _b;
             try {
                 var newParticipant = _this.privParticipants.addOrUpdateParticipant(e.participant);
                 if (newParticipant !== undefined) {
-                    if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.participantsChanged)) {
-                        (_b = _this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.JoinedConversation, [_this.toParticipant(newParticipant)], e.sessionId));
+                    if (!!_this.privConversationTranslator) {
+                        _this.privConversationTranslator.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.JoinedConversation, [_this.toParticipant(newParticipant)], e.sessionId));
                     }
                 }
             }
@@ -16304,15 +16554,14 @@ var ConversationImpl = /** @class */ (function (_super) {
             }
         };
         _this.onParticipantLeaveCommandReceived = function (r, e) {
-            var _a, _b;
             try {
                 var ejectedParticipant = _this.privParticipants.getParticipant(e.participant.id);
                 if (ejectedParticipant !== undefined) {
                     // remove the participant from the internal participants list
                     _this.privParticipants.deleteParticipant(e.participant.id);
-                    if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.participantsChanged)) {
+                    if (!!_this.privConversationTranslator) {
                         // notify subscribers that the participant has left the conversation
-                        (_b = _this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.LeftConversation, [_this.toParticipant(ejectedParticipant)], e.sessionId));
+                        _this.privConversationTranslator.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.LeftConversation, [_this.toParticipant(ejectedParticipant)], e.sessionId));
                     }
                 }
             }
@@ -16321,22 +16570,21 @@ var ConversationImpl = /** @class */ (function (_super) {
             }
         };
         _this.onTranslationReceived = function (r, e) {
-            var _a, _b, _c, _d, _e, _f;
             try {
                 switch (e.command) {
                     case Exports_1.ConversationTranslatorMessageTypes.final:
-                        if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.transcribed)) {
-                            (_b = _this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.transcribed(_this.privConversationTranslator, new Exports_3.ConversationTranslationEventArgs(e.payload, undefined, e.sessionId));
+                        if (!!_this.privConversationTranslator) {
+                            _this.privConversationTranslator.transcribed(_this.privConversationTranslator, new Exports_3.ConversationTranslationEventArgs(e.payload, undefined, e.sessionId));
                         }
                         break;
                     case Exports_1.ConversationTranslatorMessageTypes.partial:
-                        if (!!((_c = _this.privConversationTranslator) === null || _c === void 0 ? void 0 : _c.transcribing)) {
-                            (_d = _this.privConversationTranslator) === null || _d === void 0 ? void 0 : _d.transcribing(_this.privConversationTranslator, new Exports_3.ConversationTranslationEventArgs(e.payload, undefined, e.sessionId));
+                        if (!!_this.privConversationTranslator) {
+                            _this.privConversationTranslator.transcribing(_this.privConversationTranslator, new Exports_3.ConversationTranslationEventArgs(e.payload, undefined, e.sessionId));
                         }
                         break;
                     case Exports_1.ConversationTranslatorMessageTypes.instantMessage:
-                        if (!!((_e = _this.privConversationTranslator) === null || _e === void 0 ? void 0 : _e.textMessageReceived)) {
-                            (_f = _this.privConversationTranslator) === null || _f === void 0 ? void 0 : _f.textMessageReceived(_this.privConversationTranslator, new Exports_3.ConversationTranslationEventArgs(e.payload, undefined, e.sessionId));
+                        if (!!_this.privConversationTranslator) {
+                            _this.privConversationTranslator.textMessageReceived(_this.privConversationTranslator, new Exports_3.ConversationTranslationEventArgs(e.payload, undefined, e.sessionId));
                         }
                         break;
                 }
@@ -16346,7 +16594,7 @@ var ConversationImpl = /** @class */ (function (_super) {
             }
         };
         _this.onParticipantsListReceived = function (r, e) {
-            var _a, _b, _c;
+            var _a;
             try {
                 // check if the session token needs to be updated
                 if (e.sessionToken !== undefined && e.sessionToken !== null) {
@@ -16358,12 +16606,12 @@ var ConversationImpl = /** @class */ (function (_super) {
                 if (_this.privParticipants.me !== undefined) {
                     _this.privIsReady = true;
                 }
-                if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.participantsChanged)) {
-                    (_b = _this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.JoinedConversation, _this.toParticipants(true), e.sessionId));
+                if (!!_this.privConversationTranslator) {
+                    _this.privConversationTranslator.participantsChanged(_this.privConversationTranslator, new Exports_3.ConversationParticipantsChangedEventArgs(Exports_3.ParticipantChangedReason.JoinedConversation, _this.toParticipants(true), e.sessionId));
                 }
                 // if this is the host, update the nickname if needed
                 if (_this.me.isHost) {
-                    var nickname = (_c = _this.privConversationTranslator) === null || _c === void 0 ? void 0 : _c.properties.getProperty(Exports_3.PropertyId.ConversationTranslator_Name);
+                    var nickname = (_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.properties.getProperty(Exports_3.PropertyId.ConversationTranslator_Name);
                     if (nickname !== undefined && nickname.length > 0 && nickname !== _this.me.displayName) {
                         // issue a change nickname request
                         _this.changeNicknameAsync(nickname);
@@ -16375,16 +16623,18 @@ var ConversationImpl = /** @class */ (function (_super) {
             }
         };
         _this.onConversationExpiration = function (r, e) {
-            var _a, _b;
             try {
-                if (!!((_a = _this.privConversationTranslator) === null || _a === void 0 ? void 0 : _a.conversationExpiration)) {
-                    (_b = _this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.conversationExpiration(_this.privConversationTranslator, e);
+                if (!!_this.privConversationTranslator) {
+                    _this.privConversationTranslator.conversationExpiration(_this.privConversationTranslator, e);
                 }
             }
             catch (e) {
                 //
             }
         };
+        _this.privIsConnected = false;
+        _this.privIsDisposed = false;
+        _this.privConversationId = "";
         _this.privProperties = new Exports_3.PropertyCollection();
         _this.privManager = new Exports_1.ConversationManager();
         // check the speech language
@@ -16427,13 +16677,6 @@ var ConversationImpl = /** @class */ (function (_super) {
         _this.privTextMessageMaxLength = 1000;
         return _this;
     }
-    Object.defineProperty(ConversationImpl.prototype, "conversationTranslator", {
-        set: function (conversationTranslator) {
-            this.privConversationTranslator = conversationTranslator;
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(ConversationImpl.prototype, "room", {
         // get the internal data about a conversation
         get: function () {
@@ -16446,18 +16689,6 @@ var ConversationImpl = /** @class */ (function (_super) {
         // get the wrapper for connecting to the websockets
         get: function () {
             return this.privConversationRecognizer; // this.privConnection;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ConversationImpl.prototype, "authorizationToken", {
-        // get / set the speech auth token
-        get: function () {
-            return this.privToken;
-        },
-        set: function (value) {
-            Contracts_1.Contracts.throwIfNullOrWhitespace(value, "authorizationToken");
-            this.privToken = value;
         },
         enumerable: false,
         configurable: true
@@ -16526,6 +16757,71 @@ var ConversationImpl = /** @class */ (function (_super) {
     Object.defineProperty(ConversationImpl.prototype, "host", {
         get: function () {
             return this.toParticipant(this.privParticipants.host);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ConversationImpl.prototype, "transcriberRecognizer", {
+        get: function () {
+            return this.privTranscriberRecognizer;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ConversationImpl.prototype, "conversationInfo", {
+        get: function () {
+            var convId = this.conversationId;
+            var p = this.participants.map(function (part) { return ({
+                id: part.id,
+                preferredLanguage: part.preferredLanguage,
+                voice: part.voice
+            }); });
+            var props = {};
+            for (var _i = 0, _a = Exports_1.ConversationConnectionConfig.transcriptionEventKeys; _i < _a.length; _i++) {
+                var key = _a[_i];
+                var val = this.properties.getProperty(key, "");
+                if (val !== "") {
+                    props[key] = val;
+                }
+            }
+            var info = { id: convId, participants: p, conversationProperties: props };
+            return info;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ConversationImpl.prototype, "canSend", {
+        get: function () {
+            var _a;
+            return this.privIsConnected && !((_a = this.privParticipants.me) === null || _a === void 0 ? void 0 : _a.isMuted);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ConversationImpl.prototype, "canSendAsHost", {
+        get: function () {
+            var _a;
+            return this.privIsConnected && ((_a = this.privParticipants.me) === null || _a === void 0 ? void 0 : _a.isHost);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ConversationImpl.prototype, "authorizationToken", {
+        // get / set the speech auth token
+        // eslint-disable-next-line @typescript-eslint/member-ordering
+        get: function () {
+            return this.privToken;
+        },
+        set: function (value) {
+            Contracts_1.Contracts.throwIfNullOrWhitespace(value, "authorizationToken");
+            this.privToken = value;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ConversationImpl.prototype, "conversationTranslator", {
+        set: function (conversationTranslator) {
+            this.privConversationTranslator = conversationTranslator;
         },
         enumerable: false,
         configurable: true
@@ -16682,7 +16978,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.lockConversationAsync = function (cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16690,11 +16985,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (!this.canSendAsHost) {
                 this.handleError(new Error(this.privErrors.permissionDeniedConversation.replace("{command}", "lock")), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getLockCommand(true), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getLockCommand(true), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16707,7 +17004,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.muteAllParticipantsAsync = function (cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16717,11 +17013,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (!this.canSendAsHost) {
                 this.handleError(new Error(this.privErrors.permissionDeniedConversation.replace("{command}", "mute")), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getMuteAllCommand(true), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getMuteAllCommand(true), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16735,7 +17033,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.muteParticipantAsync = function (userId, cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16754,11 +17051,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (exists === -1) {
                 this.handleError(new Error(this.privErrors.invalidParticipantRequest), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getMuteCommand(userId, true), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getMuteCommand(userId, true), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16772,7 +17071,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.removeParticipantAsync = function (userId, cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             if (!!this.privTranscriberRecognizer && userId.hasOwnProperty("id")) {
@@ -16803,11 +17101,13 @@ var ConversationImpl = /** @class */ (function (_super) {
                 if (index === -1) {
                     this.handleError(new Error(this.privErrors.invalidParticipantRequest), err);
                 }
-                (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getEjectCommand(participantId_1), (function () {
-                    _this.handleCallback(cb, err);
-                }), (function (error) {
-                    _this.handleError(error, err);
-                }));
+                if (!!this.privConversationRecognizer) {
+                    this.privConversationRecognizer.sendRequest(this.getEjectCommand(participantId_1), (function () {
+                        _this.handleCallback(cb, err);
+                    }), (function (error) {
+                        _this.handleError(error, err);
+                    }));
+                }
             }
         }
         catch (error) {
@@ -16821,7 +17121,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.unlockConversationAsync = function (cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16829,11 +17128,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (!this.canSendAsHost) {
                 this.handleError(new Error(this.privErrors.permissionDeniedConversation.replace("{command}", "unlock")), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getLockCommand(false), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getLockCommand(false), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16846,7 +17147,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.unmuteAllParticipantsAsync = function (cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16854,11 +17154,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (!this.canSendAsHost) {
                 this.handleError(new Error(this.privErrors.permissionDeniedConversation.replace("{command}", "unmute all")), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getMuteAllCommand(false), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getMuteAllCommand(false), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16872,7 +17174,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.unmuteParticipantAsync = function (userId, cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16891,11 +17192,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (exists === -1) {
                 this.handleError(new Error(this.privErrors.invalidParticipantRequest), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getMuteCommand(userId, false), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getMuteCommand(userId, false), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16909,7 +17212,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.sendTextMessageAsync = function (message, cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16922,11 +17224,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (message.length > this.privTextMessageMaxLength) {
                 this.handleError(new Error(this.privErrors.invalidArgs.replace("{arg}", "message length")), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getMessageCommand(message), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getMessageCommand(message), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16940,7 +17244,6 @@ var ConversationImpl = /** @class */ (function (_super) {
      */
     ConversationImpl.prototype.changeNicknameAsync = function (nickname, cb, err) {
         var _this = this;
-        var _a;
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             Contracts_1.Contracts.throwIfDisposed(this.privConversationRecognizer.isDisposed());
@@ -16949,11 +17252,13 @@ var ConversationImpl = /** @class */ (function (_super) {
             if (!this.canSend) {
                 this.handleError(new Error(this.privErrors.permissionDeniedSend), err);
             }
-            (_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.sendRequest(this.getChangeNicknameCommand(nickname), (function () {
-                _this.handleCallback(cb, err);
-            }), (function (error) {
-                _this.handleError(error, err);
-            }));
+            if (!!this.privConversationRecognizer) {
+                this.privConversationRecognizer.sendRequest(this.getChangeNicknameCommand(nickname), (function () {
+                    _this.handleCallback(cb, err);
+                }), (function (error) {
+                    _this.handleError(error, err);
+                }));
+            }
         }
         catch (error) {
             this.handleError(error, err);
@@ -16962,13 +17267,14 @@ var ConversationImpl = /** @class */ (function (_super) {
     ConversationImpl.prototype.isDisposed = function () {
         return this.privIsDisposed;
     };
-    ConversationImpl.prototype.dispose = function (reason) {
-        var _a;
+    ConversationImpl.prototype.dispose = function () {
         if (this.isDisposed) {
             return;
         }
         this.privIsDisposed = true;
-        (_a = this.config) === null || _a === void 0 ? void 0 : _a.close();
+        if (!!this.config) {
+            this.config.close();
+        }
         this.privConfig = undefined;
         this.privLanguage = undefined;
         this.privProperties = undefined;
@@ -16979,13 +17285,6 @@ var ConversationImpl = /** @class */ (function (_super) {
         this.privIsReady = false;
         this.privParticipants = undefined;
     };
-    Object.defineProperty(ConversationImpl.prototype, "transcriberRecognizer", {
-        get: function () {
-            return this.privTranscriberRecognizer;
-        },
-        enumerable: false,
-        configurable: true
-    });
     ConversationImpl.prototype.connectTranscriberRecognizer = function (recognizer) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -17004,34 +17303,9 @@ var ConversationImpl = /** @class */ (function (_super) {
             });
         });
     };
-    Object.defineProperty(ConversationImpl.prototype, "conversationInfo", {
-        get: function () {
-            var convId = this.conversationId;
-            var p = this.participants.map(function (part) {
-                return {
-                    id: part.id,
-                    preferredLanguage: part.preferredLanguage,
-                    voice: part.voice
-                };
-            });
-            var props = {};
-            for (var _i = 0, _a = Exports_1.ConversationConnectionConfig.transcriptionEventKeys; _i < _a.length; _i++) {
-                var key = _a[_i];
-                var val = this.properties.getProperty(key, "");
-                if (val !== "") {
-                    props[key] = val;
-                }
-            }
-            var info = { id: convId, participants: p, conversationProperties: props };
-            return info;
-        },
-        enumerable: false,
-        configurable: true
-    });
     ConversationImpl.prototype.getKeepAlive = function () {
         var nickname = (!!this.me) ? this.me.displayName : "default_nickname";
         return JSON.stringify({
-            // tslint:disable-next-line: object-literal-shorthand
             id: "0",
             nickname: nickname,
             participantId: this.privRoom.participantId,
@@ -17039,6 +17313,7 @@ var ConversationImpl = /** @class */ (function (_super) {
             type: Exports_1.ConversationTranslatorMessageTypes.keepAlive
         });
     };
+    /* eslint-enable @typescript-eslint/typedef */
     ConversationImpl.prototype.addParticipantImplAsync = function (participant) {
         var newParticipant = this.privParticipants.addOrUpdateParticipant(participant);
         if (newParticipant !== undefined) {
@@ -17056,24 +17331,26 @@ var ConversationImpl = /** @class */ (function (_super) {
         return this.privTranscriberRecognizer.pushConversationEvent(conversationInfo, "leave");
     };
     ConversationImpl.prototype.close = function (dispose) {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function () {
-            var e_2;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var e_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        _c.trys.push([0, 2, , 3]);
+                        _b.trys.push([0, 2, , 3]);
                         this.privIsConnected = false;
                         return [4 /*yield*/, ((_a = this.privConversationRecognizer) === null || _a === void 0 ? void 0 : _a.close())];
                     case 1:
-                        _c.sent();
+                        _b.sent();
                         this.privConversationRecognizer = undefined;
-                        (_b = this.privConversationTranslator) === null || _b === void 0 ? void 0 : _b.dispose();
+                        if (!!this.privConversationTranslator) {
+                            this.privConversationTranslator.dispose();
+                        }
                         return [3 /*break*/, 3];
                     case 2:
-                        e_2 = _c.sent();
+                        e_1 = _b.sent();
                         // ignore error
-                        throw e_2;
+                        throw e_1;
                     case 3:
                         if (dispose) {
                             this.dispose();
@@ -17083,23 +17360,7 @@ var ConversationImpl = /** @class */ (function (_super) {
             });
         });
     };
-    Object.defineProperty(ConversationImpl.prototype, "canSend", {
-        /** Helpers */
-        get: function () {
-            var _a;
-            return this.privIsConnected && !((_a = this.privParticipants.me) === null || _a === void 0 ? void 0 : _a.isMuted);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ConversationImpl.prototype, "canSendAsHost", {
-        get: function () {
-            var _a;
-            return this.privIsConnected && ((_a = this.privParticipants.me) === null || _a === void 0 ? void 0 : _a.isHost);
-        },
-        enumerable: false,
-        configurable: true
-    });
+    /** Helpers */
     ConversationImpl.prototype.handleCallback = function (cb, err) {
         if (!!cb) {
             try {
@@ -17127,9 +17388,7 @@ var ConversationImpl = /** @class */ (function (_super) {
     /** Participant Helpers */
     ConversationImpl.prototype.toParticipants = function (includeHost) {
         var _this = this;
-        var participants = this.privParticipants.participants.map(function (p) {
-            return _this.toParticipant(p);
-        });
+        var participants = this.privParticipants.participants.map(function (p) { return (_this.toParticipant(p)); });
         if (!includeHost) {
             return participants.filter(function (p) { return p.isHost === false; });
         }
@@ -17145,7 +17404,6 @@ var ConversationImpl = /** @class */ (function (_super) {
         Contracts_1.Contracts.throwIfNullOrWhitespace(this.privRoom.participantId, "participantId");
         return JSON.stringify({
             command: Exports_1.ConversationTranslatorCommandTypes.setMuteAll,
-            // tslint:disable-next-line: object-literal-shorthand
             participantId: this.privRoom.participantId,
             roomid: this.privRoom.roomId,
             type: Exports_1.ConversationTranslatorMessageTypes.participantCommand,
@@ -17157,7 +17415,7 @@ var ConversationImpl = /** @class */ (function (_super) {
         Contracts_1.Contracts.throwIfNullOrWhitespace(participantId, "participantId");
         return JSON.stringify({
             command: Exports_1.ConversationTranslatorCommandTypes.setMute,
-            // tslint:disable-next-line: object-literal-shorthand
+            // eslint-disable-next-line object-shorthand
             participantId: participantId,
             roomid: this.privRoom.roomId,
             type: Exports_1.ConversationTranslatorMessageTypes.participantCommand,
@@ -17169,7 +17427,6 @@ var ConversationImpl = /** @class */ (function (_super) {
         Contracts_1.Contracts.throwIfNullOrWhitespace(this.privRoom.participantId, "participantId");
         return JSON.stringify({
             command: Exports_1.ConversationTranslatorCommandTypes.setLockState,
-            // tslint:disable-next-line: object-literal-shorthand
             participantId: this.privRoom.participantId,
             roomid: this.privRoom.roomId,
             type: Exports_1.ConversationTranslatorMessageTypes.participantCommand,
@@ -17181,7 +17438,7 @@ var ConversationImpl = /** @class */ (function (_super) {
         Contracts_1.Contracts.throwIfNullOrWhitespace(participantId, "participantId");
         return JSON.stringify({
             command: Exports_1.ConversationTranslatorCommandTypes.ejectParticipant,
-            // tslint:disable-next-line: object-literal-shorthand
+            // eslint-disable-next-line object-shorthand
             participantId: participantId,
             roomid: this.privRoom.roomId,
             type: Exports_1.ConversationTranslatorMessageTypes.participantCommand,
@@ -17194,7 +17451,6 @@ var ConversationImpl = /** @class */ (function (_super) {
         return JSON.stringify({
             command: Exports_1.ConversationTranslatorCommandTypes.changeNickname,
             nickname: nickname,
-            // tslint:disable-next-line: object-literal-shorthand
             participantId: this.privRoom.participantId,
             roomid: this.privRoom.roomId,
             type: Exports_1.ConversationTranslatorMessageTypes.participantCommand,
@@ -17206,7 +17462,6 @@ var ConversationImpl = /** @class */ (function (_super) {
         Contracts_1.Contracts.throwIfNullOrWhitespace(this.privRoom.participantId, "participantId");
         Contracts_1.Contracts.throwIfNullOrWhitespace(message, "message");
         return JSON.stringify({
-            // tslint:disable-next-line: object-literal-shorthand
             participantId: this.privRoom.participantId,
             roomId: this.privRoom.roomId,
             text: message,
@@ -17220,7 +17475,7 @@ exports.ConversationImpl = ConversationImpl;
 
 
 /***/ }),
-/* 146 */
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17264,7 +17519,7 @@ exports.ConversationCommon = ConversationCommon;
 
 
 /***/ }),
-/* 147 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17287,7 +17542,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationExpirationEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 var ConversationExpirationEventArgs = /** @class */ (function (_super) {
     __extends(ConversationExpirationEventArgs, _super);
     function ConversationExpirationEventArgs(expirationTime, sessionId) {
@@ -17310,7 +17565,7 @@ exports.ConversationExpirationEventArgs = ConversationExpirationEventArgs;
 
 
 /***/ }),
-/* 148 */
+/* 152 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17333,7 +17588,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationParticipantsChangedEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 var ConversationParticipantsChangedEventArgs = /** @class */ (function (_super) {
     __extends(ConversationParticipantsChangedEventArgs, _super);
     function ConversationParticipantsChangedEventArgs(reason, participants, sessionId) {
@@ -17363,7 +17618,7 @@ exports.ConversationParticipantsChangedEventArgs = ConversationParticipantsChang
 
 
 /***/ }),
-/* 149 */
+/* 153 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17386,7 +17641,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranslationCanceledEventArgs = void 0;
-var CancellationEventArgsBase_1 = __webpack_require__(90);
+var CancellationEventArgsBase_1 = __webpack_require__(92);
 var ConversationTranslationCanceledEventArgs = /** @class */ (function (_super) {
     __extends(ConversationTranslationCanceledEventArgs, _super);
     function ConversationTranslationCanceledEventArgs() {
@@ -17399,7 +17654,7 @@ exports.ConversationTranslationCanceledEventArgs = ConversationTranslationCancel
 
 
 /***/ }),
-/* 150 */
+/* 154 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17422,7 +17677,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranslationEventArgs = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 var ConversationTranslationEventArgs = /** @class */ (function (_super) {
     __extends(ConversationTranslationEventArgs, _super);
     /**
@@ -17455,7 +17710,7 @@ exports.ConversationTranslationEventArgs = ConversationTranslationEventArgs;
 
 
 /***/ }),
-/* 151 */
+/* 155 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17478,7 +17733,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranslationResult = void 0;
-var TranslationRecognitionResult_1 = __webpack_require__(93);
+var TranslationRecognitionResult_1 = __webpack_require__(95);
 var ConversationTranslationResult = /** @class */ (function (_super) {
     __extends(ConversationTranslationResult, _super);
     function ConversationTranslationResult(participantId, translations, originalLanguage, resultId, reason, text, duration, offset, errorDetails, json, properties) {
@@ -17514,7 +17769,7 @@ exports.ConversationTranslationResult = ConversationTranslationResult;
 
 
 /***/ }),
-/* 152 */
+/* 156 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17573,19 +17828,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranslator = exports.SpeechState = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
-var Conversation_1 = __webpack_require__(145);
-var Exports_4 = __webpack_require__(144);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
+var Conversation_1 = __webpack_require__(149);
+var Exports_4 = __webpack_require__(148);
 var SpeechState;
 (function (SpeechState) {
     SpeechState[SpeechState["Inactive"] = 0] = "Inactive";
     SpeechState[SpeechState["Connecting"] = 1] = "Connecting";
     SpeechState[SpeechState["Connected"] = 2] = "Connected";
 })(SpeechState = exports.SpeechState || (exports.SpeechState = {}));
-// tslint:disable:max-classes-per-file
 // child class of TranslationRecognizer meant only for use with ConversationTranslator
 var ConversationTranslationRecognizer = /** @class */ (function (_super) {
     __extends(ConversationTranslationRecognizer, _super);
@@ -17600,6 +17855,7 @@ var ConversationTranslationRecognizer = /** @class */ (function (_super) {
             _this.sessionStopped = function () {
                 _this.privSpeechState = SpeechState.Inactive;
             };
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
             _this.recognized = function (tr, e) { return __awaiter(_this, void 0, void 0, function () {
                 var _a;
                 return __generator(this, function (_b) {
@@ -17616,7 +17872,8 @@ var ConversationTranslationRecognizer = /** @class */ (function (_super) {
                     }
                 });
             }); };
-            _this.canceled = function (r, e) { return __awaiter(_this, void 0, void 0, function () {
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            _this.canceled = function () { return __awaiter(_this, void 0, void 0, function () {
                 var error_1;
                 return __generator(this, function (_a) {
                     switch (_a.label) {
@@ -17672,10 +17929,9 @@ var ConversationTranslationRecognizer = /** @class */ (function (_super) {
      * @param error
      */
     ConversationTranslationRecognizer.prototype.fireCancelEvent = function (error) {
-        var _a, _b, _c;
         try {
             if (!!this.privTranslator.canceled) {
-                var cancelEvent = new Exports_4.ConversationTranslationCanceledEventArgs((_a = error === null || error === void 0 ? void 0 : error.reason) !== null && _a !== void 0 ? _a : Exports_3.CancellationReason.Error, (_b = error === null || error === void 0 ? void 0 : error.errorDetails) !== null && _b !== void 0 ? _b : error, (_c = error === null || error === void 0 ? void 0 : error.errorCode) !== null && _c !== void 0 ? _c : Exports_3.CancellationErrorCode.RuntimeError, undefined, error === null || error === void 0 ? void 0 : error.sessionId);
+                var cancelEvent = new Exports_4.ConversationTranslationCanceledEventArgs(Exports_3.CancellationReason.Error, error, Exports_3.CancellationErrorCode.RuntimeError);
                 this.privTranslator.canceled(this.privTranslator, cancelEvent);
             }
         }
@@ -17707,16 +17963,16 @@ var ConversationTranslationRecognizer = /** @class */ (function (_super) {
     };
     return ConversationTranslationRecognizer;
 }(Exports_3.TranslationRecognizer));
-/***
+/**
  * Join, leave or connect to a conversation.
  */
 var ConversationTranslator = /** @class */ (function (_super) {
     __extends(ConversationTranslator, _super);
     function ConversationTranslator(audioConfig) {
         var _this = _super.call(this, audioConfig) || this;
+        _this.privErrors = Exports_1.ConversationConnectionConfig.restErrors;
         _this.privIsDisposed = false;
         _this.privIsSpeaking = false;
-        _this.privErrors = Exports_1.ConversationConnectionConfig.restErrors;
         _this.privPlaceholderKey = "abcdefghijklmnopqrstuvwxyz012345";
         _this.privPlaceholderRegion = "westus";
         _this.privProperties = new Exports_3.PropertyCollection();
@@ -17740,6 +17996,25 @@ var ConversationTranslator = /** @class */ (function (_super) {
         get: function () {
             var _a;
             return (_a = this.privConversation) === null || _a === void 0 ? void 0 : _a.participants;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(ConversationTranslator.prototype, "canSpeak", {
+        get: function () {
+            // is there a Conversation websocket available and has the Recognizer been set up
+            if (!this.privConversation.isConnected || !this.privCTRecognizer) {
+                return false;
+            }
+            // is the user already speaking
+            if (this.privIsSpeaking || this.privCTRecognizer.state === SpeechState.Connected || this.privCTRecognizer.state === SpeechState.Connecting) {
+                return false;
+            }
+            // is the user muted
+            if (this.privConversation.isMutedByHost) {
+                return false;
+            }
+            return true;
         },
         enumerable: false,
         configurable: true
@@ -17850,11 +18125,10 @@ var ConversationTranslator = /** @class */ (function (_super) {
      * @param err
      */
     ConversationTranslator.prototype.sendTextMessageAsync = function (message, cb, err) {
-        var _a;
         try {
             Contracts_1.Contracts.throwIfNullOrUndefined(this.privConversation, this.privErrors.permissionDeniedSend);
             Contracts_1.Contracts.throwIfNullOrWhitespace(message, this.privErrors.invalidArgs.replace("{arg}", message));
-            (_a = this.privConversation) === null || _a === void 0 ? void 0 : _a.sendTextMessageAsync(message, cb, err);
+            this.privConversation.sendTextMessageAsync(message, cb, err);
         }
         catch (error) {
             this.handleError(error, err);
@@ -17927,8 +18201,7 @@ var ConversationTranslator = /** @class */ (function (_super) {
                         // stop the recognition but leave the websocket open
                         this.privIsSpeaking = false;
                         return [4 /*yield*/, new Promise(function (resolve, reject) {
-                                var _a;
-                                (_a = _this.privCTRecognizer) === null || _a === void 0 ? void 0 : _a.stopContinuousRecognitionAsync(resolve, reject);
+                                _this.privCTRecognizer.stopContinuousRecognitionAsync(resolve, reject);
                             })];
                     case 3:
                         _a.sent();
@@ -17950,23 +18223,22 @@ var ConversationTranslator = /** @class */ (function (_super) {
     ConversationTranslator.prototype.dispose = function (reason, success, err) {
         var _this = this;
         Exports_2.marshalPromiseToCallbacks((function () { return __awaiter(_this, void 0, void 0, function () {
-            var _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (this.isDisposed && !this.privIsSpeaking) {
                             return [2 /*return*/];
                         }
                         return [4 /*yield*/, this.cancelSpeech()];
                     case 1:
-                        _c.sent();
+                        _a.sent();
                         this.privIsDisposed = true;
-                        (_a = this.privSpeechTranslationConfig) === null || _a === void 0 ? void 0 : _a.close();
+                        this.privSpeechTranslationConfig.close();
                         this.privSpeechRecognitionLanguage = undefined;
                         this.privProperties = undefined;
                         this.privAudioConfig = undefined;
                         this.privSpeechTranslationConfig = undefined;
-                        (_b = this.privConversation) === null || _b === void 0 ? void 0 : _b.dispose();
+                        this.privConversation.dispose();
                         this.privConversation = undefined;
                         return [2 /*return*/];
                 }
@@ -18046,25 +18318,6 @@ var ConversationTranslator = /** @class */ (function (_super) {
             _this.privCTRecognizer.startContinuousRecognitionAsync(resolve, reject);
         });
     };
-    Object.defineProperty(ConversationTranslator.prototype, "canSpeak", {
-        get: function () {
-            // is there a Conversation websocket available and has the Recognizer been set up
-            if (!this.privConversation.isConnected || !this.privCTRecognizer) {
-                return false;
-            }
-            // is the user already speaking
-            if (this.privIsSpeaking || this.privCTRecognizer.state === SpeechState.Connected || this.privCTRecognizer.state === SpeechState.Connecting) {
-                return false;
-            }
-            // is the user muted
-            if (this.privConversation.isMutedByHost) {
-                return false;
-            }
-            return true;
-        },
-        enumerable: false,
-        configurable: true
-    });
     return ConversationTranslator;
 }(Exports_4.ConversationCommon));
 exports.ConversationTranslator = ConversationTranslator;
@@ -18072,7 +18325,7 @@ exports.ConversationTranslator = ConversationTranslator;
 
 
 /***/ }),
-/* 153 */
+/* 157 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18117,10 +18370,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranscriber = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 var ConversationTranscriber = /** @class */ (function () {
     /**
      * ConversationTranscriber constructor.
@@ -18133,44 +18386,6 @@ var ConversationTranscriber = /** @class */ (function () {
         this.privRecognizer = undefined;
         this.privDisposedRecognizer = false;
     }
-    /**
-     * @param {Conversation} converation - conversation to be recognized
-     */
-    ConversationTranscriber.prototype.joinConversationAsync = function (conversation, cb, err) {
-        var conversationImpl = conversation;
-        Contracts_1.Contracts.throwIfNullOrUndefined(conversationImpl, "Conversation");
-        // ref the conversation object
-        // create recognizer and subscribe to recognizer events
-        this.privRecognizer = new Exports_1.TranscriberRecognizer(conversation.config, this.privAudioConfig);
-        Contracts_1.Contracts.throwIfNullOrUndefined(this.privRecognizer, "Recognizer");
-        this.privRecognizer.connectCallbacks(this);
-        Exports_2.marshalPromiseToCallbacks(conversationImpl.connectTranscriberRecognizer(this.privRecognizer), cb, err);
-    };
-    Object.defineProperty(ConversationTranscriber.prototype, "authorizationToken", {
-        /**
-         * Gets the authorization token used to communicate with the service.
-         * @member ConversationTranscriber.prototype.authorizationToken
-         * @function
-         * @public
-         * @returns {string} Authorization token.
-         */
-        get: function () {
-            return this.properties.getProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token);
-        },
-        /**
-         * Gets/Sets the authorization token used to communicate with the service.
-         * @member ConversationTranscriber.prototype.authorizationToken
-         * @function
-         * @public
-         * @param {string} token - Authorization token.
-         */
-        set: function (token) {
-            Contracts_1.Contracts.throwIfNullOrWhitespace(token, "token");
-            this.properties.setProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token, token);
-        },
-        enumerable: false,
-        configurable: true
-    });
     Object.defineProperty(ConversationTranscriber.prototype, "speechRecognitionLanguage", {
         /**
          * Gets the spoken language of recognition.
@@ -18200,6 +18415,44 @@ var ConversationTranscriber = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(ConversationTranscriber.prototype, "authorizationToken", {
+        /**
+         * Gets the authorization token used to communicate with the service.
+         * @member ConversationTranscriber.prototype.authorizationToken
+         * @function
+         * @public
+         * @returns {string} Authorization token.
+         */
+        get: function () {
+            return this.properties.getProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token);
+        },
+        /**
+         * Gets/Sets the authorization token used to communicate with the service.
+         * @member ConversationTranscriber.prototype.authorizationToken
+         * @function
+         * @public
+         * @param {string} token - Authorization token.
+         */
+        set: function (token) {
+            Contracts_1.Contracts.throwIfNullOrWhitespace(token, "token");
+            this.properties.setProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token, token);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    /**
+     * @param {Conversation} converation - conversation to be recognized
+     */
+    ConversationTranscriber.prototype.joinConversationAsync = function (conversation, cb, err) {
+        var conversationImpl = conversation;
+        Contracts_1.Contracts.throwIfNullOrUndefined(conversationImpl, "Conversation");
+        // ref the conversation object
+        // create recognizer and subscribe to recognizer events
+        this.privRecognizer = new Exports_1.TranscriberRecognizer(conversation.config, this.privAudioConfig);
+        Contracts_1.Contracts.throwIfNullOrUndefined(this.privRecognizer, "Recognizer");
+        this.privRecognizer.connectCallbacks(this);
+        Exports_2.marshalPromiseToCallbacks(conversationImpl.connectTranscriberRecognizer(this.privRecognizer), cb, err);
+    };
     /**
      * Starts conversation transcription, until stopTranscribingAsync() is called.
      * User must subscribe to events to receive transcription results.
@@ -18230,6 +18483,7 @@ var ConversationTranscriber = /** @class */ (function () {
     ConversationTranscriber.prototype.leaveConversationAsync = function (cb, err) {
         var _this = this;
         this.privRecognizer.disconnectCallbacks();
+        // eslint-disable-next-line
         Exports_2.marshalPromiseToCallbacks((function () { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
             return [2 /*return*/];
         }); }); })(), cb, err);
@@ -18281,7 +18535,7 @@ exports.ConversationTranscriber = ConversationTranscriber;
 
 
 /***/ }),
-/* 154 */
+/* 158 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18291,7 +18545,8 @@ exports.ConversationTranscriber = ConversationTranscriber;
 // Multi-device Conversation is a Preview feature.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Participant = exports.User = void 0;
-var Exports_1 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(64);
 var User = /** @class */ (function () {
     function User(userId) {
         this.privUserId = userId;
@@ -18306,7 +18561,6 @@ var User = /** @class */ (function () {
     return User;
 }());
 exports.User = User;
-// tslint:disable-next-line: max-classes-per-file
 var Participant = /** @class */ (function () {
     function Participant(id, avatar, displayName, isHost, isMuted, isUsingTts, preferredLanguage, voice) {
         this.privId = id;
@@ -18319,9 +18573,6 @@ var Participant = /** @class */ (function () {
         this.privVoice = voice;
         this.privProperties = new Exports_1.PropertyCollection();
     }
-    Participant.From = function (id, language, voice) {
-        return new Participant(id, "", id, false, false, false, language, voice);
-    };
     Object.defineProperty(Participant.prototype, "avatar", {
         get: function () {
             return this.privAvatar;
@@ -18385,6 +18636,9 @@ var Participant = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Participant.From = function (id, language, voice) {
+        return new Participant(id, "", id, false, false, false, language, voice);
+    };
     return Participant;
 }());
 exports.Participant = Participant;
@@ -18392,7 +18646,7 @@ exports.Participant = Participant;
 
 
 /***/ }),
-/* 155 */
+/* 159 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18407,7 +18661,7 @@ var ParticipantChangedReason;
     /** Participant has joined the conversation. */
     ParticipantChangedReason[ParticipantChangedReason["JoinedConversation"] = 0] = "JoinedConversation";
     /** Participant has left the conversation. This could be voluntary, or involuntary
-     *  (e.g. they are experiencing networking issues).
+     * (e.g. they are experiencing networking issues).
      */
     ParticipantChangedReason[ParticipantChangedReason["LeftConversation"] = 1] = "LeftConversation";
     /** The participants' state has changed (e.g. they became muted, changed their nickname). */
@@ -18417,11 +18671,12 @@ var ParticipantChangedReason;
 
 
 /***/ }),
-/* 156 */
+/* 160 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+/* eslint-disable @typescript-eslint/no-empty-function */
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -18462,13 +18717,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesisRequest = exports.SpeechSynthesizer = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var AudioFileWriter_1 = __webpack_require__(64);
-var AudioOutputFormat_1 = __webpack_require__(74);
-var AudioOutputStream_1 = __webpack_require__(73);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var AudioFileWriter_1 = __webpack_require__(66);
+var AudioOutputFormat_1 = __webpack_require__(76);
+var AudioOutputStream_1 = __webpack_require__(75);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
 /**
  * Defines the class SpeechSynthesizer for text to speech.
  * Updated in version 1.16.0
@@ -18585,6 +18840,7 @@ var SpeechSynthesizer = /** @class */ (function () {
             _a["ar-YE"] = "ar-YE-MaryamNeural",
             _a["bg-BG"] = "bg-BG-BorislavNeural",
             _a["bn-BD"] = "bn-BD-NabanitaNeural",
+            _a["bn-IN"] = "bn-IN-BashkarNeural",
             _a["ca-ES"] = "ca-ES-JoanaNeural",
             _a["cs-CZ"] = "cs-CZ-AntoninNeural",
             _a["cy-GB"] = "cy-GB-AledNeural",
@@ -18645,13 +18901,19 @@ var SpeechSynthesizer = /** @class */ (function () {
             _a["hr-HR"] = "hr-HR-GabrijelaNeural",
             _a["hu-HU"] = "hu-HU-NoemiNeural",
             _a["id-ID"] = "id-ID-ArdiNeural",
+            _a["is-IS"] = "is-IS-GudrunNeural",
             _a["it-IT"] = "it-IT-IsabellaNeural",
             _a["ja-JP"] = "ja-JP-NanamiNeural",
             _a["jv-ID"] = "jv-ID-DimasNeural",
+            _a["kk-KZ"] = "kk-KZ-AigulNeural",
             _a["km-KH"] = "km-KH-PisethNeural",
+            _a["kn-IN"] = "kn-IN-GaganNeural",
             _a["ko-KR"] = "ko-KR-SunHiNeural",
+            _a["lo-LA"] = "lo-LA-ChanthavongNeural",
             _a["lt-LT"] = "lt-LT-LeonasNeural",
             _a["lv-LV"] = "lv-LV-EveritaNeural",
+            _a["mk-MK"] = "mk-MK-AleksandarNeural",
+            _a["ml-IN"] = "ml-IN-MidhunNeural",
             _a["mr-IN"] = "mr-IN-AarohiNeural",
             _a["ms-MY"] = "ms-MY-OsmanNeural",
             _a["mt-MT"] = "mt-MT-GraceNeural",
@@ -18660,13 +18922,16 @@ var SpeechSynthesizer = /** @class */ (function () {
             _a["nl-BE"] = "nl-BE-ArnaudNeural",
             _a["nl-NL"] = "nl-NL-ColetteNeural",
             _a["pl-PL"] = "pl-PL-AgnieszkaNeural",
+            _a["ps-AF"] = "ps-AF-GulNawazNeural",
             _a["pt-BR"] = "pt-BR-FranciscaNeural",
             _a["pt-PT"] = "pt-PT-DuarteNeural",
             _a["ro-RO"] = "ro-RO-AlinaNeural",
             _a["ru-RU"] = "ru-RU-SvetlanaNeural",
+            _a["si-LK"] = "si-LK-SameeraNeural",
             _a["sk-SK"] = "sk-SK-LukasNeural",
             _a["sl-SI"] = "sl-SI-PetraNeural",
             _a["so-SO"] = "so-SO-MuuseNeural",
+            _a["sr-RS"] = "sr-RS-NicholasNeural",
             _a["su-ID"] = "su-ID-JajangNeural",
             _a["sv-SE"] = "sv-SE-SofieNeural",
             _a["sw-KE"] = "sw-KE-RafikiNeural",
@@ -18827,10 +19092,10 @@ var SpeechSynthesizer = /** @class */ (function () {
         var subscriptionKey = this.privProperties.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Key, undefined);
         var authentication = (subscriptionKey && subscriptionKey !== "") ?
             new Exports_1.CognitiveSubscriptionKeyAuthentication(subscriptionKey) :
-            new Exports_1.CognitiveTokenAuthentication(function (authFetchEventId) {
+            new Exports_1.CognitiveTokenAuthentication(function () {
                 var authorizationToken = _this.privProperties.getProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token, undefined);
                 return Promise.resolve(authorizationToken);
-            }, function (authFetchEventId) {
+            }, function () {
                 var authorizationToken = _this.privProperties.getProperty(Exports_3.PropertyId.SpeechServiceAuthorization_Token, undefined);
                 return Promise.resolve(authorizationToken);
             });
@@ -18869,14 +19134,14 @@ var SpeechSynthesizer = /** @class */ (function () {
                     }
                 }
                 cb = undefined;
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
                 _this.adapterSpeak().catch(function () { });
             }, function (e) {
                 if (!!err) {
                     err(e);
                 }
             }, audioDestination));
-            /* tslint:disable:no-empty */
+            /* eslint-disable no-empty-function */
             this.adapterSpeak().catch(function () { });
         }
         catch (error) {
@@ -18890,7 +19155,7 @@ var SpeechSynthesizer = /** @class */ (function () {
                 }
             }
             // Destroy the synthesizer.
-            /* tslint:disable:no-empty */
+            /* eslint-disable no-empty */
             this.dispose(true).catch(function () { });
         }
     };
@@ -18909,10 +19174,10 @@ var SpeechSynthesizer = /** @class */ (function () {
                             if (!!locale && locale.length > 0) {
                                 json = json.filter(function (item) { return !!item.Locale && item.Locale.toLowerCase() === locale.toLowerCase(); });
                             }
-                            return [2 /*return*/, new Exports_3.SynthesisVoicesResult(requestId, json)];
+                            return [2 /*return*/, new Exports_3.SynthesisVoicesResult(requestId, json, undefined)];
                         }
                         else {
-                            return [2 /*return*/, new Exports_3.SynthesisVoicesResult(requestId, { errorDetails: "Error: " + response.status + ": " + response.statusText })];
+                            return [2 /*return*/, new Exports_3.SynthesisVoicesResult(requestId, undefined, "Error: " + response.status + ": " + response.statusText)];
                         }
                         return [2 /*return*/];
                 }
@@ -18946,7 +19211,6 @@ var SpeechSynthesizer = /** @class */ (function () {
     return SpeechSynthesizer;
 }());
 exports.SpeechSynthesizer = SpeechSynthesizer;
-// tslint:disable-next-line:max-classes-per-file
 var SynthesisRequest = /** @class */ (function () {
     function SynthesisRequest(requestId, text, isSSML, cb, err, dataStream) {
         this.requestId = requestId;
@@ -18963,7 +19227,7 @@ exports.SynthesisRequest = SynthesisRequest;
 
 
 /***/ }),
-/* 157 */
+/* 161 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19036,7 +19300,7 @@ var SynthesisResult = /** @class */ (function () {
     });
     Object.defineProperty(SynthesisResult.prototype, "properties", {
         /**
-         *  The set of properties exposed in the result.
+         * The set of properties exposed in the result.
          * @member SynthesisResult.prototype.properties
          * @function
          * @public
@@ -19055,7 +19319,7 @@ exports.SynthesisResult = SynthesisResult;
 
 
 /***/ }),
-/* 158 */
+/* 162 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19077,7 +19341,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechSynthesisResult = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines result of speech synthesis.
  * @class SpeechSynthesisResult
@@ -19090,13 +19354,15 @@ var SpeechSynthesisResult = /** @class */ (function (_super) {
      * @constructor
      * @param {string} resultId - The result id.
      * @param {ResultReason} reason - The reason.
-     * @param {number} audioData - The offset into the stream.
+     * @param {ArrayBuffer} audioData - The synthesized audio binary.
      * @param {string} errorDetails - Error details, if provided.
      * @param {PropertyCollection} properties - Additional properties, if provided.
+     * @param {number} audioDuration - The audio duration.
      */
-    function SpeechSynthesisResult(resultId, reason, audioData, errorDetails, properties) {
+    function SpeechSynthesisResult(resultId, reason, audioData, errorDetails, properties, audioDuration) {
         var _this = _super.call(this, resultId, reason, errorDetails, properties) || this;
         _this.privAudioData = audioData;
+        _this.privAudioDuration = audioDuration;
         return _this;
     }
     Object.defineProperty(SpeechSynthesisResult.prototype, "audioData", {
@@ -19113,6 +19379,20 @@ var SpeechSynthesisResult = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(SpeechSynthesisResult.prototype, "audioDuration", {
+        /**
+         * The time duration of synthesized audio, in ticks (100 nanoseconds).
+         * @member SpeechSynthesisResult.prototype.audioDuration
+         * @function
+         * @public
+         * @returns {number} The time duration of synthesized audio.
+         */
+        get: function () {
+            return this.privAudioDuration;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return SpeechSynthesisResult;
 }(Exports_1.SynthesisResult));
 exports.SpeechSynthesisResult = SpeechSynthesisResult;
@@ -19120,7 +19400,7 @@ exports.SpeechSynthesisResult = SpeechSynthesisResult;
 
 
 /***/ }),
-/* 159 */
+/* 163 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19164,7 +19444,7 @@ exports.SpeechSynthesisEventArgs = SpeechSynthesisEventArgs;
 
 
 /***/ }),
-/* 160 */
+/* 164 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19183,15 +19463,19 @@ var SpeechSynthesisWordBoundaryEventArgs = /** @class */ (function () {
      * Creates and initializes an instance of this class.
      * @constructor
      * @param {number} audioOffset - The audio offset.
+     * @param {number} duration - The audio duration.
      * @param {string} text - The text.
      * @param {number} wordLength - The length of the word.
      * @param {number} textOffset - The text offset.
+     * @param {SpeechSynthesisBoundaryType} boundaryType - The boundary type
      */
-    function SpeechSynthesisWordBoundaryEventArgs(audioOffset, text, wordLength, textOffset) {
+    function SpeechSynthesisWordBoundaryEventArgs(audioOffset, duration, text, wordLength, textOffset, boundaryType) {
         this.privAudioOffset = audioOffset;
+        this.privDuration = duration;
         this.privText = text;
         this.privWordLength = wordLength;
         this.privTextOffset = textOffset;
+        this.privBoundaryType = boundaryType;
     }
     Object.defineProperty(SpeechSynthesisWordBoundaryEventArgs.prototype, "audioOffset", {
         /**
@@ -19203,6 +19487,20 @@ var SpeechSynthesisWordBoundaryEventArgs = /** @class */ (function () {
          */
         get: function () {
             return this.privAudioOffset;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(SpeechSynthesisWordBoundaryEventArgs.prototype, "duration", {
+        /**
+         * Specifies the duration, in ticks (100 nanoseconds).
+         * @member SpeechSynthesisWordBoundaryEventArgs.prototype.duration
+         * @function
+         * @public
+         * @returns {number} Duration in 100 nanosecond increments.
+         */
+        get: function () {
+            return this.privDuration;
         },
         enumerable: false,
         configurable: true
@@ -19249,6 +19547,20 @@ var SpeechSynthesisWordBoundaryEventArgs = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(SpeechSynthesisWordBoundaryEventArgs.prototype, "boundaryType", {
+        /**
+         * Specifies the boundary type.
+         * @member SpeechSynthesisWordBoundaryEventArgs.prototype.boundaryType
+         * @function
+         * @public
+         * @returns {SpeechSynthesisBoundaryType} the boundary type.
+         */
+        get: function () {
+            return this.privBoundaryType;
+        },
+        enumerable: false,
+        configurable: true
+    });
     return SpeechSynthesisWordBoundaryEventArgs;
 }());
 exports.SpeechSynthesisWordBoundaryEventArgs = SpeechSynthesisWordBoundaryEventArgs;
@@ -19256,7 +19568,7 @@ exports.SpeechSynthesisWordBoundaryEventArgs = SpeechSynthesisWordBoundaryEventA
 
 
 /***/ }),
-/* 161 */
+/* 165 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19316,7 +19628,7 @@ exports.SpeechSynthesisBookmarkEventArgs = SpeechSynthesisBookmarkEventArgs;
 
 
 /***/ }),
-/* 162 */
+/* 166 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19392,7 +19704,43 @@ exports.SpeechSynthesisVisemeEventArgs = SpeechSynthesisVisemeEventArgs;
 
 
 /***/ }),
-/* 163 */
+/* 167 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SpeechSynthesisBoundaryType = void 0;
+/**
+ * Defines the boundary type of speech synthesis boundary event.
+ * @class SpeechSynthesisBoundaryType
+ * Added in version 1.21.0
+ */
+var SpeechSynthesisBoundaryType;
+(function (SpeechSynthesisBoundaryType) {
+    /**
+     * Indicates the boundary text is a word.
+     * @member SpeechSynthesisBoundaryType.Word
+     */
+    SpeechSynthesisBoundaryType["Word"] = "WordBoundary";
+    /**
+     * Indicates the boundary text is a punctuation.
+     * @member SpeechSynthesisBoundaryType.Punctuation
+     */
+    SpeechSynthesisBoundaryType["Punctuation"] = "PunctuationBoundary";
+    /**
+     * Indicates the boundary text is a sentence.
+     * @member SpeechSynthesisBoundaryType.Sentence
+     */
+    SpeechSynthesisBoundaryType["Sentence"] = "SentenceBoundary";
+})(SpeechSynthesisBoundaryType = exports.SpeechSynthesisBoundaryType || (exports.SpeechSynthesisBoundaryType = {}));
+
+
+
+/***/ }),
+/* 168 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19414,7 +19762,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesisVoicesResult = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 /**
  * Defines result of speech synthesis.
  * @class SynthesisVoicesResult
@@ -19428,7 +19776,7 @@ var SynthesisVoicesResult = /** @class */ (function (_super) {
      * @param requestId - result id for request.
      * @param json - json payload from endpoint.
      */
-    function SynthesisVoicesResult(requestId, json) {
+    function SynthesisVoicesResult(requestId, json, errorDetails) {
         var _this = this;
         if (Array.isArray(json)) {
             _this = _super.call(this, requestId, Exports_1.ResultReason.VoicesListRetrieved, undefined, new Exports_1.PropertyCollection()) || this;
@@ -19439,7 +19787,7 @@ var SynthesisVoicesResult = /** @class */ (function (_super) {
             }
         }
         else {
-            _this = _super.call(this, requestId, Exports_1.ResultReason.Canceled, !!json.errorDetails ? json.errorDetails : "Error information unavailable", new Exports_1.PropertyCollection()) || this;
+            _this = _super.call(this, requestId, Exports_1.ResultReason.Canceled, errorDetails ? errorDetails : "Error information unavailable", new Exports_1.PropertyCollection()) || this;
         }
         return _this;
     }
@@ -19464,7 +19812,7 @@ exports.SynthesisVoicesResult = SynthesisVoicesResult;
 
 
 /***/ }),
-/* 164 */
+/* 169 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19474,8 +19822,8 @@ exports.SynthesisVoicesResult = SynthesisVoicesResult;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VoiceInfo = exports.SynthesisVoiceType = exports.SynthesisVoiceGender = void 0;
 /**
- *  Defines the gender of synthesis voices.
- *  Added in version 1.20.0.
+ * Defines the gender of synthesis voices.
+ * Added in version 1.20.0.
  */
 var SynthesisVoiceGender;
 (function (SynthesisVoiceGender) {
@@ -19580,7 +19928,7 @@ exports.VoiceInfo = VoiceInfo;
 
 
 /***/ }),
-/* 165 */
+/* 170 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19626,10 +19974,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeakerAudioDestination = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var AudioOutputStream_1 = __webpack_require__(73);
-var AudioStreamFormat_1 = __webpack_require__(72);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var AudioOutputStream_1 = __webpack_require__(75);
+var AudioStreamFormat_1 = __webpack_require__(74);
 var MediaDurationPlaceholderSeconds = 60 * 30;
 var AudioFormatToMimeType = (_a = {},
     _a[AudioStreamFormat_1.AudioFormatTag.PCM] = "audio/wav",
@@ -19692,10 +20040,10 @@ var SpeakerAudioDestination = /** @class */ (function () {
                 }
             });
         }
-        else if (this.privAudioOutputStream !== undefined) {
+        else if (this.privAudioOutputStream !== undefined && typeof window !== "undefined") {
             if ((this.privFormat.formatTag === AudioStreamFormat_1.AudioFormatTag.PCM || this.privFormat.formatTag === AudioStreamFormat_1.AudioFormatTag.MuLaw
                 || this.privFormat.formatTag === AudioStreamFormat_1.AudioFormatTag.ALaw) && this.privFormat.hasHeader === false) {
-                // tslint:disable-next-line:no-console
+                // eslint-disable-next-line no-console
                 console.warn("Play back is not supported for raw PCM, mulaw or alaw format without header.");
                 if (!!this.onAudioEnd) {
                     this.onAudioEnd(this);
@@ -19703,7 +20051,7 @@ var SpeakerAudioDestination = /** @class */ (function () {
             }
             else {
                 var receivedAudio_1 = new ArrayBuffer(this.privBytesReceived);
-                this.privAudioOutputStream.read(receivedAudio_1).then(function (_) {
+                this.privAudioOutputStream.read(receivedAudio_1).then(function () {
                     receivedAudio_1 = Exports_1.SynthesisAdapterBase.addHeader(receivedAudio_1, _this.privFormat);
                     var audioBlob = new Blob([receivedAudio_1], { type: AudioFormatToMimeType[_this.privFormat.formatTag] });
                     _this.privAudio.src = window.URL.createObjectURL(audioBlob);
@@ -19733,11 +20081,12 @@ var SpeakerAudioDestination = /** @class */ (function () {
     Object.defineProperty(SpeakerAudioDestination.prototype, "format", {
         set: function (format) {
             var _this = this;
-            if (typeof (AudioContext) !== "undefined" || typeof (window.webkitAudioContext) !== "undefined") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            if (typeof (AudioContext) !== "undefined" || (typeof (window) !== "undefined" && typeof (window.webkitAudioContext) !== "undefined")) {
                 this.privFormat = format;
                 var mimeType_1 = AudioFormatToMimeType[this.privFormat.formatTag];
                 if (mimeType_1 === undefined) {
-                    // tslint:disable-next-line:no-console
+                    // eslint-disable-next-line no-console
                     console.warn("Unknown mimeType for format " + AudioStreamFormat_1.AudioFormatTag[this.privFormat.formatTag] + "; playback is not supported.");
                 }
                 else if (typeof (MediaSource) !== "undefined" && MediaSource.isTypeSupported(mimeType_1)) {
@@ -19746,21 +20095,21 @@ var SpeakerAudioDestination = /** @class */ (function () {
                     this.privMediaSource = new MediaSource();
                     this.privAudio.src = URL.createObjectURL(this.privMediaSource);
                     this.privAudio.load();
-                    this.privMediaSource.onsourceopen = function (event) {
+                    this.privMediaSource.onsourceopen = function () {
                         _this.privMediaSourceOpened = true;
                         _this.privMediaSource.duration = MediaDurationPlaceholderSeconds;
                         _this.privSourceBuffer = _this.privMediaSource.addSourceBuffer(mimeType_1);
-                        _this.privSourceBuffer.onupdate = function (_) {
+                        _this.privSourceBuffer.onupdate = function () {
                             _this.updateSourceBuffer().catch(function (reason) {
                                 Exports_2.Events.instance.onEvent(new Exports_2.BackgroundEvent(reason));
                             });
                         };
-                        _this.privSourceBuffer.onupdateend = function (_) {
+                        _this.privSourceBuffer.onupdateend = function () {
                             _this.handleSourceBufferUpdateEnd().catch(function (reason) {
                                 Exports_2.Events.instance.onEvent(new Exports_2.BackgroundEvent(reason));
                             });
                         };
-                        _this.privSourceBuffer.onupdatestart = function (_) {
+                        _this.privSourceBuffer.onupdatestart = function () {
                             _this.privAppendingToBuffer = false;
                         };
                     };
@@ -19769,7 +20118,7 @@ var SpeakerAudioDestination = /** @class */ (function () {
                     });
                 }
                 else {
-                    // tslint:disable-next-line:no-console
+                    // eslint-disable-next-line no-console
                     console.warn("Format " + AudioStreamFormat_1.AudioFormatTag[this.privFormat.formatTag] + " could not be played by MSE, streaming playback is not enabled.");
                     this.privAudioOutputStream = new AudioOutputStream_1.PullAudioOutputStreamImpl();
                     this.privAudioOutputStream.format = this.privFormat;
@@ -19782,19 +20131,26 @@ var SpeakerAudioDestination = /** @class */ (function () {
     });
     Object.defineProperty(SpeakerAudioDestination.prototype, "volume", {
         get: function () {
-            return this.privAudio.volume;
+            var _a, _b;
+            return (_b = (_a = this.privAudio) === null || _a === void 0 ? void 0 : _a.volume) !== null && _b !== void 0 ? _b : -1;
         },
         set: function (volume) {
-            this.privAudio.volume = volume;
+            if (!!this.privAudio) {
+                this.privAudio.volume = volume;
+            }
         },
         enumerable: false,
         configurable: true
     });
     SpeakerAudioDestination.prototype.mute = function () {
-        this.privAudio.muted = true;
+        if (!!this.privAudio) {
+            this.privAudio.muted = true;
+        }
     };
     SpeakerAudioDestination.prototype.unmute = function () {
-        this.privAudio.muted = false;
+        if (!!this.privAudio) {
+            this.privAudio.muted = false;
+        }
     };
     Object.defineProperty(SpeakerAudioDestination.prototype, "isClosed", {
         get: function () {
@@ -19854,7 +20210,7 @@ var SpeakerAudioDestination = /** @class */ (function () {
                         }
                         catch (error) {
                             this.privAudioBuffer.unshift(binary);
-                            // tslint:disable-next-line:no-console
+                            // eslint-disable-next-line no-console
                             console.log("buffer filled, pausing addition of binaries until space is made");
                             return [2 /*return*/];
                         }
@@ -19929,7 +20285,7 @@ exports.SpeakerAudioDestination = SpeakerAudioDestination;
 
 
 /***/ }),
-/* 166 */
+/* 171 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19951,7 +20307,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranscriptionCanceledEventArgs = void 0;
-var CancellationEventArgsBase_1 = __webpack_require__(90);
+var CancellationEventArgsBase_1 = __webpack_require__(92);
 /**
  * Defines content of a RecognitionErrorEvent.
  * @class ConversationTranscriptionCanceledEventArgs
@@ -19968,7 +20324,7 @@ exports.ConversationTranscriptionCanceledEventArgs = ConversationTranscriptionCa
 
 
 /***/ }),
-/* 167 */
+/* 172 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19999,7 +20355,7 @@ var PronunciationAssessmentGradingSystem;
 
 
 /***/ }),
-/* 168 */
+/* 173 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20035,7 +20391,7 @@ var PronunciationAssessmentGranularity;
 
 
 /***/ }),
-/* 169 */
+/* 174 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20044,8 +20400,8 @@ var PronunciationAssessmentGranularity;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PronunciationAssessmentConfig = void 0;
-var Contracts_1 = __webpack_require__(63);
-var Exports_1 = __webpack_require__(61);
+var Contracts_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(64);
 /**
  * Pronunciation assessment configuration.
  * @class PronunciationAssessmentConfig
@@ -20205,7 +20561,7 @@ exports.PronunciationAssessmentConfig = PronunciationAssessmentConfig;
 
 
 /***/ }),
-/* 170 */
+/* 175 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20214,8 +20570,8 @@ exports.PronunciationAssessmentConfig = PronunciationAssessmentConfig;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PronunciationAssessmentResult = void 0;
-var Contracts_1 = __webpack_require__(63);
-var Exports_1 = __webpack_require__(61);
+var Contracts_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(64);
 /**
  * Pronunciation assessment results.
  * @class PronunciationAssessmentResult
@@ -20247,7 +20603,7 @@ var PronunciationAssessmentResult = /** @class */ (function () {
          * @member PronunciationAssessmentConfig.prototype.detailResult
          * @function
          * @public
-         * @returns {any} detail result.
+         * @returns {DetailResult} detail result.
          */
         get: function () {
             return this.privPronJson;
@@ -20320,13 +20676,56 @@ exports.PronunciationAssessmentResult = PronunciationAssessmentResult;
 
 
 /***/ }),
-/* 171 */
+/* 176 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE.md file in the project root for full license information.
+//
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Diagnostics = void 0;
+var Exports_1 = __webpack_require__(2);
+var Exports_2 = __webpack_require__(6);
+/**
+ * Defines diagnostics API for managing console output
+ * Added in version 1.21.0
+ */
+var Diagnostics = /** @class */ (function () {
+    function Diagnostics() {
+    }
+    Diagnostics.SetLoggingLevel = function (logLevel) {
+        this.privListener = new Exports_1.ConsoleLoggingListener(logLevel);
+        Exports_2.Events.instance.attachConsoleListener(this.privListener);
+    };
+    Diagnostics.SetLogOutputPath = function (path) {
+        if (typeof window === "undefined") {
+            if (!!this.privListener) {
+                this.privListener.logPath = path;
+            }
+        }
+        else {
+            throw new Error("File system logging not available in browser.");
+        }
+    };
+    Diagnostics.privListener = undefined;
+    return Diagnostics;
+}());
+exports.Diagnostics = Diagnostics;
+
+
+
+/***/ }),
+/* 177 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
+/* eslint-disable max-classes-per-file */
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -20342,8 +20741,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecognitionEndedEvent = exports.RecognitionCompletionStatus = exports.RecognitionStartedEvent = exports.ConnectingToServiceEvent = exports.ListeningStartedEvent = exports.RecognitionTriggeredEvent = exports.SpeechRecognitionEvent = void 0;
-// tslint:disable:max-classes-per-file
-var Exports_1 = __webpack_require__(4);
+var Exports_1 = __webpack_require__(6);
 var SpeechRecognitionEvent = /** @class */ (function (_super) {
     __extends(SpeechRecognitionEvent, _super);
     function SpeechRecognitionEvent(eventName, requestId, sessionId, eventType) {
@@ -20544,7 +20942,7 @@ exports.RecognitionEndedEvent = RecognitionEndedEvent;
 
 
 /***/ }),
-/* 172 */
+/* 178 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -20590,51 +20988,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceRecognizerBase = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(4);
-var Exports_3 = __webpack_require__(61);
-var Exports_4 = __webpack_require__(53);
-var SpeechConnectionMessage_Internal_1 = __webpack_require__(173);
+var Exports_2 = __webpack_require__(6);
+var Exports_3 = __webpack_require__(64);
+var Exports_4 = __webpack_require__(56);
+var SpeechConnectionMessage_Internal_1 = __webpack_require__(179);
 var ServiceRecognizerBase = /** @class */ (function () {
     function ServiceRecognizerBase(authentication, connectionFactory, audioSource, recognizerConfig, recognizer) {
         var _this = this;
+        // A promise for a configured connection.
+        // Do not consume directly, call fetchConnection instead.
+        this.privConnectionConfigurationPromise = undefined;
+        // A promise for a connection, but one that has not had the speech context sent yet.
+        // Do not consume directly, call fetchConnection instead.
+        this.privConnectionPromise = undefined;
         this.privSetTimeout = setTimeout;
         this.privIsLiveAudio = false;
         this.recognizeOverride = undefined;
         this.disconnectOverride = undefined;
         this.receiveMessageOverride = undefined;
-        this.sendSpeechContext = function (connection) {
-            var speechContextJson = _this.speechContext.toJSON();
-            _this.privRequestSession.onSpeechContext();
-            if (speechContextJson) {
-                return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "speech.context", _this.privRequestSession.requestId, "application/json", speechContextJson));
-            }
-            return;
-        };
         this.sendPrePayloadJSONOverride = undefined;
         this.postConnectImplOverride = undefined;
         this.configConnectionOverride = undefined;
-        this.sendSpeechServiceConfig = function (connection, requestSession, SpeechServiceConfigJson) {
-            // filter out anything that is not required for the service to work.
-            if (ServiceRecognizerBase.telemetryDataEnabled !== true) {
-                var withTelemetry = JSON.parse(SpeechServiceConfigJson);
-                var replacement = {
-                    context: {
-                        system: withTelemetry.context.system,
-                    },
-                };
-                SpeechServiceConfigJson = JSON.stringify(replacement);
-            }
-            if (_this.privRecognizerConfig.parameters.getProperty("TranscriptionService_SingleChannel", "false").toLowerCase() === "true") {
-                var json = JSON.parse(SpeechServiceConfigJson);
-                json.context.DisableReferenceChannel = "True";
-                json.context.MicSpec = "1_0_0";
-                SpeechServiceConfigJson = JSON.stringify(json);
-            }
-            if (SpeechServiceConfigJson) {
-                return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "speech.config", requestSession.requestId, "application/json", SpeechServiceConfigJson));
-            }
-            return;
-        };
         if (!authentication) {
             throw new Exports_2.ArgumentNullError("authentication");
         }
@@ -20663,26 +21037,18 @@ var ServiceRecognizerBase = /** @class */ (function () {
         if (typeof (Blob) !== "undefined" && typeof (Worker) !== "undefined") {
             this.privSetTimeout = Exports_2.Timeout.setTimeout;
         }
-        this.connectionEvents.attach(function (connectionEvent) { return __awaiter(_this, void 0, void 0, function () {
-            var connectionClosedEvent;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!(connectionEvent.name === "ConnectionClosedEvent")) return [3 /*break*/, 2];
-                        connectionClosedEvent = connectionEvent;
-                        if (!(connectionClosedEvent.statusCode === 1003 ||
-                            connectionClosedEvent.statusCode === 1007 ||
-                            connectionClosedEvent.statusCode === 1002 ||
-                            connectionClosedEvent.statusCode === 4000 ||
-                            this.privRequestSession.numConnectionAttempts > this.privRecognizerConfig.maxRetryCount)) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.cancelRecognitionLocal(Exports_3.CancellationReason.Error, connectionClosedEvent.statusCode === 1007 ? Exports_3.CancellationErrorCode.BadRequestParameters : Exports_3.CancellationErrorCode.ConnectionFailure, connectionClosedEvent.reason + " websocket error code: " + connectionClosedEvent.statusCode)];
-                    case 1:
-                        _a.sent();
-                        _a.label = 2;
-                    case 2: return [2 /*return*/];
+        this.connectionEvents.attach(function (connectionEvent) {
+            if (connectionEvent.name === "ConnectionClosedEvent") {
+                var connectionClosedEvent = connectionEvent;
+                if (connectionClosedEvent.statusCode === 1003 ||
+                    connectionClosedEvent.statusCode === 1007 ||
+                    connectionClosedEvent.statusCode === 1002 ||
+                    connectionClosedEvent.statusCode === 4000 ||
+                    _this.privRequestSession.numConnectionAttempts > _this.privRecognizerConfig.maxRetryCount) {
+                    void _this.cancelRecognitionLocal(Exports_3.CancellationReason.Error, connectionClosedEvent.statusCode === 1007 ? Exports_3.CancellationErrorCode.BadRequestParameters : Exports_3.CancellationErrorCode.ConnectionFailure, connectionClosedEvent.reason + " websocket error code: " + connectionClosedEvent.statusCode);
                 }
-            });
-        }); });
+            }
+        });
     }
     Object.defineProperty(ServiceRecognizerBase.prototype, "audioSource", {
         get: function () {
@@ -20736,7 +21102,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         this.privIsDisposed = true;
-                        if (!this.privConnectionConfigurationPromise) return [3 /*break*/, 5];
+                        if (!(this.privConnectionConfigurationPromise !== undefined)) return [3 /*break*/, 5];
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 4, , 5]);
@@ -20779,65 +21145,68 @@ var ServiceRecognizerBase = /** @class */ (function () {
     });
     ServiceRecognizerBase.prototype.recognize = function (recoMode, successCallback, errorCallBack) {
         return __awaiter(this, void 0, void 0, function () {
-            var conPromise, audioNode, audioStreamNode, format, deviceInfo, error_2, error_3, sessionStartEventArgs, messageRetrievalPromise, audioSendPromise;
+            var conPromise, audioNode, audioStreamNode, format, deviceInfo, error_2, error_3, sessionStartEventArgs, audioSendPromise;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this.recognizeOverride !== undefined) {
-                            return [2 /*return*/, this.recognizeOverride(recoMode, successCallback, errorCallBack)];
-                        }
+                        if (!(this.recognizeOverride !== undefined)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.recognizeOverride(recoMode, successCallback, errorCallBack)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 2:
                         // Clear the existing configuration promise to force a re-transmission of config and context.
-                        this.privConnectionConfigurationPromise = null;
+                        this.privConnectionConfigurationPromise = undefined;
                         this.privRecognizerConfig.recognitionMode = recoMode;
                         this.privSuccessCallback = successCallback;
                         this.privErrorCallback = errorCallBack;
                         this.privRequestSession.startNewRecognition();
                         this.privRequestSession.listenForServiceTelemetry(this.privAudioSource.events);
                         conPromise = this.connectImpl();
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 6, , 8]);
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 8, , 10]);
                         return [4 /*yield*/, this.audioSource.attach(this.privRequestSession.audioNodeId)];
-                    case 2:
+                    case 4:
                         audioStreamNode = _a.sent();
                         return [4 /*yield*/, this.audioSource.format];
-                    case 3:
+                    case 5:
                         format = _a.sent();
                         return [4 /*yield*/, this.audioSource.deviceInfo];
-                    case 4:
+                    case 6:
                         deviceInfo = _a.sent();
                         this.privIsLiveAudio = deviceInfo.type && deviceInfo.type === Exports_4.type.Microphones;
                         audioNode = new Exports_1.ReplayableAudioNode(audioStreamNode, format.avgBytesPerSec);
                         return [4 /*yield*/, this.privRequestSession.onAudioSourceAttachCompleted(audioNode, false)];
-                    case 5:
-                        _a.sent();
-                        this.privRecognizerConfig.SpeechServiceConfig.Context.audio = { source: deviceInfo };
-                        return [3 /*break*/, 8];
-                    case 6:
-                        error_2 = _a.sent();
-                        return [4 /*yield*/, this.privRequestSession.onStopRecognizing()];
                     case 7:
                         _a.sent();
-                        throw error_2;
+                        this.privRecognizerConfig.SpeechServiceConfig.Context.audio = { source: deviceInfo };
+                        return [3 /*break*/, 10];
                     case 8:
-                        _a.trys.push([8, 10, , 12]);
-                        return [4 /*yield*/, conPromise];
+                        error_2 = _a.sent();
+                        return [4 /*yield*/, this.privRequestSession.onStopRecognizing()];
                     case 9:
                         _a.sent();
-                        return [3 /*break*/, 12];
+                        throw error_2;
                     case 10:
-                        error_3 = _a.sent();
-                        return [4 /*yield*/, this.cancelRecognitionLocal(Exports_3.CancellationReason.Error, Exports_3.CancellationErrorCode.ConnectionFailure, error_3)];
+                        _a.trys.push([10, 12, , 14]);
+                        return [4 /*yield*/, conPromise];
                     case 11:
                         _a.sent();
-                        return [2 /*return*/];
+                        return [3 /*break*/, 14];
                     case 12:
+                        error_3 = _a.sent();
+                        return [4 /*yield*/, this.cancelRecognitionLocal(Exports_3.CancellationReason.Error, Exports_3.CancellationErrorCode.ConnectionFailure, error_3)];
+                    case 13:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 14:
                         sessionStartEventArgs = new Exports_3.SessionEventArgs(this.privRequestSession.sessionId);
                         if (!!this.privRecognizer.sessionStarted) {
                             this.privRecognizer.sessionStarted(this.privRecognizer, sessionStartEventArgs);
                         }
-                        messageRetrievalPromise = this.receiveMessage();
+                        void this.receiveMessage();
                         audioSendPromise = this.sendAudio(audioNode);
                         audioSendPromise.catch(function (error) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
@@ -20898,7 +21267,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
         });
     };
     ServiceRecognizerBase.prototype.connectAsync = function (cb, err) {
-        this.connectImpl().then(function (connection) {
+        this.connectImpl().then(function () {
             try {
                 if (!!cb) {
                     cb();
@@ -20914,7 +21283,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
                 if (!!err) {
                     err(reason);
                 }
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (error) {
             }
@@ -20934,23 +21303,29 @@ var ServiceRecognizerBase = /** @class */ (function () {
                         _a.sent();
                         _a.label = 3;
                     case 3:
-                        _a.trys.push([3, 6, , 7]);
+                        if (!(this.privConnectionPromise !== undefined)) return [3 /*break*/, 8];
+                        _a.label = 4;
+                    case 4:
+                        _a.trys.push([4, 7, , 8]);
                         return [4 /*yield*/, this.privConnectionPromise];
-                    case 4: return [4 /*yield*/, (_a.sent()).dispose()];
-                    case 5:
-                        _a.sent();
-                        return [3 /*break*/, 7];
+                    case 5: return [4 /*yield*/, (_a.sent()).dispose()];
                     case 6:
-                        error_4 = _a.sent();
-                        return [3 /*break*/, 7];
+                        _a.sent();
+                        return [3 /*break*/, 8];
                     case 7:
-                        this.privConnectionPromise = null;
+                        error_4 = _a.sent();
+                        return [3 /*break*/, 8];
+                    case 8:
+                        this.privConnectionPromise = undefined;
                         return [2 /*return*/];
                 }
             });
         });
     };
-    ServiceRecognizerBase.prototype.sendMessage = function (message) { };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ServiceRecognizerBase.prototype.sendMessage = function (message) {
+        return;
+    };
     ServiceRecognizerBase.prototype.sendNetworkMessage = function (path, payload) {
         return __awaiter(this, void 0, void 0, function () {
             var type, contentType, connection;
@@ -20968,8 +21343,12 @@ var ServiceRecognizerBase = /** @class */ (function () {
         });
     };
     Object.defineProperty(ServiceRecognizerBase.prototype, "activityTemplate", {
-        get: function () { return this.privActivityTemplate; },
-        set: function (messagePayload) { this.privActivityTemplate = messagePayload; },
+        get: function () {
+            return this.privActivityTemplate;
+        },
+        set: function (messagePayload) {
+            this.privActivityTemplate = messagePayload;
+        },
         enumerable: false,
         configurable: true
     });
@@ -20988,7 +21367,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
                         if (!!ServiceRecognizerBase.telemetryData) {
                             try {
                                 ServiceRecognizerBase.telemetryData(telemetryData);
-                                /* tslint:disable:no-empty */
+                                /* eslint-disable no-empty */
                             }
                             catch (_b) { }
                         }
@@ -21136,8 +21515,19 @@ var ServiceRecognizerBase = /** @class */ (function () {
             });
         });
     };
+    ServiceRecognizerBase.prototype.sendSpeechContext = function (connection, generateNewRequestId) {
+        var speechContextJson = this.speechContext.toJSON();
+        if (generateNewRequestId) {
+            this.privRequestSession.onSpeechContext();
+        }
+        if (speechContextJson) {
+            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "speech.context", this.privRequestSession.requestId, "application/json", speechContextJson));
+        }
+        return;
+    };
     // Encapsulated for derived service recognizers that need to send additional JSON
-    ServiceRecognizerBase.prototype.sendPrePayloadJSON = function (connection) {
+    ServiceRecognizerBase.prototype.sendPrePayloadJSON = function (connection, generateNewRequestId) {
+        if (generateNewRequestId === void 0) { generateNewRequestId = true; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -21145,7 +21535,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
                         if (this.sendPrePayloadJSONOverride !== undefined) {
                             return [2 /*return*/, this.sendPrePayloadJSONOverride(connection)];
                         }
-                        return [4 /*yield*/, this.sendSpeechContext(connection)];
+                        return [4 /*yield*/, this.sendSpeechContext(connection, generateNewRequestId)];
                     case 1:
                         _a.sent();
                         return [4 /*yield*/, this.sendWaveHeader(connection)];
@@ -21173,18 +21563,18 @@ var ServiceRecognizerBase = /** @class */ (function () {
     // Establishes a websocket connection to the end point.
     ServiceRecognizerBase.prototype.connectImpl = function () {
         var _this = this;
-        if (this.privConnectionPromise) {
+        if (this.privConnectionPromise !== undefined) {
             return this.privConnectionPromise.then(function (connection) {
                 if (connection.state() === Exports_2.ConnectionState.Disconnected) {
                     _this.privConnectionId = null;
-                    _this.privConnectionPromise = null;
+                    _this.privConnectionPromise = undefined;
                     _this.privServiceHasSentMessage = false;
                     return _this.connectImpl();
                 }
                 return _this.privConnectionPromise;
-            }, function (error) {
+            }, function () {
                 _this.privConnectionId = null;
-                _this.privConnectionPromise = null;
+                _this.privConnectionPromise = undefined;
                 _this.privServiceHasSentMessage = false;
                 return _this.connectImpl();
             });
@@ -21192,11 +21582,35 @@ var ServiceRecognizerBase = /** @class */ (function () {
         this.privConnectionPromise = this.retryableConnect();
         // Attach an empty handler to allow the promise to run in the background while
         // other startup events happen. It'll eventually be awaited on.
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         this.privConnectionPromise.catch(function () { });
         if (this.postConnectImplOverride !== undefined) {
             return this.postConnectImplOverride(this.privConnectionPromise);
         }
         return this.privConnectionPromise;
+    };
+    ServiceRecognizerBase.prototype.sendSpeechServiceConfig = function (connection, requestSession, SpeechServiceConfigJson) {
+        requestSession.onSpeechContext();
+        // filter out anything that is not required for the service to work.
+        if (ServiceRecognizerBase.telemetryDataEnabled !== true) {
+            var withTelemetry = JSON.parse(SpeechServiceConfigJson);
+            var replacement = {
+                context: {
+                    system: withTelemetry.context.system,
+                },
+            };
+            SpeechServiceConfigJson = JSON.stringify(replacement);
+        }
+        if (this.privRecognizerConfig.parameters.getProperty("TranscriptionService_SingleChannel", "false").toLowerCase() === "true") {
+            var json = JSON.parse(SpeechServiceConfigJson);
+            json.context.DisableReferenceChannel = "True";
+            json.context.MicSpec = "1_0_0";
+            SpeechServiceConfigJson = JSON.stringify(json);
+        }
+        if (SpeechServiceConfigJson) {
+            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "speech.config", requestSession.requestId, "application/json", SpeechServiceConfigJson));
+        }
+        return;
     };
     ServiceRecognizerBase.prototype.fetchConnection = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -21204,18 +21618,18 @@ var ServiceRecognizerBase = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this.privConnectionConfigurationPromise) {
+                        if (this.privConnectionConfigurationPromise !== undefined) {
                             return [2 /*return*/, this.privConnectionConfigurationPromise.then(function (connection) {
                                     if (connection.state() === Exports_2.ConnectionState.Disconnected) {
                                         _this.privConnectionId = null;
-                                        _this.privConnectionConfigurationPromise = null;
+                                        _this.privConnectionConfigurationPromise = undefined;
                                         _this.privServiceHasSentMessage = false;
                                         return _this.fetchConnection();
                                     }
                                     return _this.privConnectionConfigurationPromise;
-                                }, function (error) {
+                                }, function () {
                                     _this.privConnectionId = null;
-                                    _this.privConnectionConfigurationPromise = null;
+                                    _this.privConnectionConfigurationPromise = undefined;
                                     _this.privServiceHasSentMessage = false;
                                     return _this.fetchConnection();
                                 })];
@@ -21292,6 +21706,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
                                             this.privRequestSession.isRecognizing &&
                                             this.privRequestSession.recogNumber === startRecogNumber) {
                                             connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Binary, "audio", this.privRequestSession.requestId, null, payload)).catch(function () {
+                                                // eslint-disable-next-line @typescript-eslint/no-empty-function
                                                 _this.privRequestSession.onServiceTurnEndResponse(_this.privRecognizerConfig.isContinuousRecognition).catch(function () { });
                                             });
                                             if (!(audioStreamChunk === null || audioStreamChunk === void 0 ? void 0 : audioStreamChunk.isEnd)) {
@@ -21379,9 +21794,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
     };
     ServiceRecognizerBase.prototype.delay = function (delayMs) {
         var _this = this;
-        return new Promise(function (resolve, reject) {
-            _this.privSetTimeout(resolve, delayMs);
-        });
+        return new Promise(function (resolve) { return _this.privSetTimeout(resolve, delayMs); });
     };
     ServiceRecognizerBase.prototype.writeBufferToConsole = function (buffer) {
         var out = "Buffer Size: ";
@@ -21395,7 +21808,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
                 out += readView[i].toString(16).padStart(2, "0") + " ";
             }
         }
-        // tslint:disable-next-line:no-console
+        // eslint-disable-next-line no-console
         console.info(out);
     };
     ServiceRecognizerBase.prototype.sendFinalAudio = function () {
@@ -21429,7 +21842,7 @@ var ServiceRecognizerBase = /** @class */ (function () {
                         return [4 /*yield*/, this.sendSpeechServiceConfig(connection, this.privRequestSession, this.privRecognizerConfig.SpeechServiceConfig.serialize())];
                     case 2:
                         _a.sent();
-                        return [4 /*yield*/, this.sendPrePayloadJSON(connection)];
+                        return [4 /*yield*/, this.sendPrePayloadJSON(connection, false)];
                     case 3:
                         _a.sent();
                         return [2 /*return*/, connection];
@@ -21445,7 +21858,7 @@ exports.ServiceRecognizerBase = ServiceRecognizerBase;
 
 
 /***/ }),
-/* 173 */
+/* 179 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21467,8 +21880,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechConnectionMessage = void 0;
-var Exports_1 = __webpack_require__(4);
-var HeaderNames_1 = __webpack_require__(55);
+var Exports_1 = __webpack_require__(6);
+var HeaderNames_1 = __webpack_require__(58);
 var SpeechConnectionMessage = /** @class */ (function (_super) {
     __extends(SpeechConnectionMessage, _super);
     function SpeechConnectionMessage(messageType, path, requestId, contentType, body, streamId, additionalHeaders, id) {
@@ -21548,7 +21961,7 @@ var SpeechConnectionMessage = /** @class */ (function (_super) {
         var path = null;
         var requestId = null;
         var contentType = null;
-        var requestTimestamp = null;
+        // let requestTimestamp = null;
         var streamId = null;
         var additionalHeaders = {};
         if (message.headers) {
@@ -21559,9 +21972,8 @@ var SpeechConnectionMessage = /** @class */ (function (_super) {
                     }
                     else if (headerName.toLowerCase() === HeaderNames_1.HeaderNames.RequestId.toLowerCase()) {
                         requestId = message.headers[headerName];
-                    }
-                    else if (headerName.toLowerCase() === HeaderNames_1.HeaderNames.RequestTimestamp.toLowerCase()) {
-                        requestTimestamp = message.headers[headerName];
+                        // } else if (headerName.toLowerCase() === HeaderNames.RequestTimestamp.toLowerCase()) {
+                        //  requestTimestamp = message.headers[headerName];
                     }
                     else if (headerName.toLowerCase() === HeaderNames_1.HeaderNames.ContentType.toLowerCase()) {
                         contentType = message.headers[headerName];
@@ -21584,7 +21996,7 @@ exports.SpeechConnectionMessage = SpeechConnectionMessage;
 
 
 /***/ }),
-/* 174 */
+/* 180 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21593,8 +22005,8 @@ exports.SpeechConnectionMessage = SpeechConnectionMessage;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.type = exports.connectivity = exports.Device = exports.OS = exports.System = exports.Context = exports.SpeechServiceConfig = exports.RecognizerConfig = exports.SpeechResultFormat = exports.RecognitionMode = void 0;
-// tslint:disable:max-classes-per-file
-var Exports_1 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(64);
 var RecognitionMode;
 (function (RecognitionMode) {
     RecognitionMode[RecognitionMode["Interactive"] = 0] = "Interactive";
@@ -21608,10 +22020,14 @@ var SpeechResultFormat;
 })(SpeechResultFormat = exports.SpeechResultFormat || (exports.SpeechResultFormat = {}));
 var RecognizerConfig = /** @class */ (function () {
     function RecognizerConfig(speechServiceConfig, parameters) {
-        this.privRecognitionMode = RecognitionMode.Interactive;
         this.privSpeechServiceConfig = speechServiceConfig ? speechServiceConfig : new SpeechServiceConfig(new Context(null));
         this.privParameters = parameters;
         this.privMaxRetryCount = parseInt(parameters.getProperty("SPEECH-Error-MaxRetryCount", "4"), 10);
+        this.privLanguageIdPriority = parameters.getProperty(Exports_1.PropertyId.SpeechServiceConnection_ContinuousLanguageIdPriority, undefined);
+        this.privLanguageIdMode = this.privLanguageIdPriority === "Latency" ? "DetectContinuous" : "DetectAtAudioStart";
+        if (this.privLanguageIdMode === "DetectAtAudioStart") {
+            this.privLanguageIdPriority = parameters.getProperty(Exports_1.PropertyId.SpeechServiceConnection_AtStartLanguageIdPriority, undefined);
+        }
     }
     Object.defineProperty(RecognizerConfig.prototype, "parameters", {
         get: function () {
@@ -21653,9 +22069,53 @@ var RecognizerConfig = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(RecognizerConfig.prototype, "languageIdPriority", {
+        get: function () {
+            return !!this.privLanguageIdPriority ? "Prioritize" + this.privLanguageIdPriority : "";
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(RecognizerConfig.prototype, "languageIdMode", {
+        get: function () {
+            return this.privLanguageIdMode;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(RecognizerConfig.prototype, "autoDetectSourceLanguages", {
         get: function () {
             return this.parameters.getProperty(Exports_1.PropertyId.SpeechServiceConnection_AutoDetectSourceLanguages, undefined);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(RecognizerConfig.prototype, "recognitionEndpointVersion", {
+        get: function () {
+            return this.parameters.getProperty(Exports_1.PropertyId.SpeechServiceConnection_RecognitionEndpointVersion, undefined);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(RecognizerConfig.prototype, "sourceLanguageModels", {
+        get: function () {
+            var models = [];
+            var modelsExist = false;
+            if (this.autoDetectSourceLanguages !== undefined) {
+                for (var _i = 0, _a = this.autoDetectSourceLanguages.split(","); _i < _a.length; _i++) {
+                    var language = _a[_i];
+                    var customProperty = language + Exports_1.PropertyId.SpeechServiceConnection_EndpointId.toString();
+                    var modelId = this.parameters.getProperty(customProperty, undefined);
+                    if (modelId !== undefined) {
+                        models.push({ language: language, endpoint: modelId });
+                        modelsExist = true;
+                    }
+                    else {
+                        models.push({ language: language, endpoint: "" });
+                    }
+                }
+            }
+            return modelsExist ? models : undefined;
         },
         enumerable: false,
         configurable: true
@@ -21673,23 +22133,23 @@ exports.RecognizerConfig = RecognizerConfig;
 // The config is serialized and sent as the Speech.Config
 var SpeechServiceConfig = /** @class */ (function () {
     function SpeechServiceConfig(context) {
-        var _this = this;
-        this.serialize = function () {
-            return JSON.stringify(_this, function (key, value) {
-                if (value && typeof value === "object") {
-                    var replacement = {};
-                    for (var k in value) {
-                        if (Object.hasOwnProperty.call(value, k)) {
-                            replacement[k && k.charAt(0).toLowerCase() + k.substring(1)] = value[k];
-                        }
-                    }
-                    return replacement;
-                }
-                return value;
-            });
-        };
         this.context = context;
     }
+    SpeechServiceConfig.prototype.serialize = function () {
+        return JSON.stringify(this, function (key, value) {
+            if (value && typeof value === "object") {
+                var replacement = {};
+                for (var k in value) {
+                    if (Object.hasOwnProperty.call(value, k)) {
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        replacement[k && k.charAt(0).toLowerCase() + k.substring(1)] = value[k];
+                    }
+                }
+                return replacement;
+            }
+            return value;
+        });
+    };
     Object.defineProperty(SpeechServiceConfig.prototype, "Context", {
         get: function () {
             return this.context;
@@ -21721,7 +22181,7 @@ exports.Context = Context;
 var System = /** @class */ (function () {
     function System() {
         // Note: below will be patched for official builds.
-        var SPEECHSDK_CLIENTSDK_VERSION = "1.20.0";
+        var SPEECHSDK_CLIENTSDK_VERSION = "1.21.0";
         this.name = "SpeechSDK";
         this.version = SPEECHSDK_CLIENTSDK_VERSION;
         this.build = "JavaScript";
@@ -21775,7 +22235,7 @@ var type;
 
 
 /***/ }),
-/* 175 */
+/* 181 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21787,7 +22247,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 /***/ }),
-/* 176 */
+/* 182 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21796,127 +22256,126 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebsocketMessageFormatter = void 0;
-var Exports_1 = __webpack_require__(4);
+var Exports_1 = __webpack_require__(6);
 var CRLF = "\r\n";
 var WebsocketMessageFormatter = /** @class */ (function () {
     function WebsocketMessageFormatter() {
-        var _this = this;
-        this.toConnectionMessage = function (message) {
-            var deferral = new Exports_1.Deferred();
-            try {
-                if (message.messageType === Exports_1.MessageType.Text) {
-                    var textMessage = message.textContent;
-                    var headers = {};
-                    var body = null;
-                    if (textMessage) {
-                        var headerBodySplit = textMessage.split("\r\n\r\n");
-                        if (headerBodySplit && headerBodySplit.length > 0) {
-                            headers = _this.parseHeaders(headerBodySplit[0]);
-                            if (headerBodySplit.length > 1) {
-                                body = headerBodySplit[1];
-                            }
-                        }
-                    }
-                    deferral.resolve(new Exports_1.ConnectionMessage(message.messageType, body, headers, message.id));
-                }
-                else if (message.messageType === Exports_1.MessageType.Binary) {
-                    var binaryMessage = message.binaryContent;
-                    var headers = {};
-                    var body = null;
-                    if (!binaryMessage || binaryMessage.byteLength < 2) {
-                        throw new Error("Invalid binary message format. Header length missing.");
-                    }
-                    var dataView = new DataView(binaryMessage);
-                    var headerLength = dataView.getInt16(0);
-                    if (binaryMessage.byteLength < headerLength + 2) {
-                        throw new Error("Invalid binary message format. Header content missing.");
-                    }
-                    var headersString = "";
-                    for (var i = 0; i < headerLength; i++) {
-                        headersString += String.fromCharCode((dataView).getInt8(i + 2));
-                    }
-                    headers = _this.parseHeaders(headersString);
-                    if (binaryMessage.byteLength > headerLength + 2) {
-                        body = binaryMessage.slice(2 + headerLength);
-                    }
-                    deferral.resolve(new Exports_1.ConnectionMessage(message.messageType, body, headers, message.id));
-                }
-            }
-            catch (e) {
-                deferral.reject("Error formatting the message. Error: " + e);
-            }
-            return deferral.promise;
-        };
-        this.fromConnectionMessage = function (message) {
-            var deferral = new Exports_1.Deferred();
-            try {
-                if (message.messageType === Exports_1.MessageType.Text) {
-                    var payload = "" + _this.makeHeaders(message) + CRLF + (message.textBody ? message.textBody : "");
-                    deferral.resolve(new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Text, payload, message.id));
-                }
-                else if (message.messageType === Exports_1.MessageType.Binary) {
-                    var headersString = _this.makeHeaders(message);
-                    var content = message.binaryBody;
-                    var headerBuffer = _this.stringToArrayBuffer(headersString);
-                    var headerInt8Array = new Int8Array(headerBuffer);
-                    var headerLength = headerInt8Array.byteLength;
-                    var payloadInt8Array = new Int8Array(2 + headerLength + (content ? content.byteLength : 0));
-                    payloadInt8Array[0] = ((headerLength >> 8) & 0xff);
-                    payloadInt8Array[1] = headerLength & 0xff;
-                    payloadInt8Array.set(headerInt8Array, 2);
-                    if (content) {
-                        var bodyInt8Array = new Int8Array(content);
-                        payloadInt8Array.set(bodyInt8Array, 2 + headerLength);
-                    }
-                    var payload = payloadInt8Array.buffer;
-                    deferral.resolve(new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Binary, payload, message.id));
-                }
-            }
-            catch (e) {
-                deferral.reject("Error formatting the message. " + e);
-            }
-            return deferral.promise;
-        };
-        this.makeHeaders = function (message) {
-            var headersString = "";
-            if (message.headers) {
-                for (var header in message.headers) {
-                    if (header) {
-                        headersString += header + ": " + message.headers[header] + CRLF;
-                    }
-                }
-            }
-            return headersString;
-        };
-        this.parseHeaders = function (headersString) {
-            var headers = {};
-            if (headersString) {
-                var headerMatches = headersString.match(/[^\r\n]+/g);
-                if (headers) {
-                    for (var _i = 0, headerMatches_1 = headerMatches; _i < headerMatches_1.length; _i++) {
-                        var header = headerMatches_1[_i];
-                        if (header) {
-                            var separatorIndex = header.indexOf(":");
-                            var headerName = separatorIndex > 0 ? header.substr(0, separatorIndex).trim().toLowerCase() : header;
-                            var headerValue = separatorIndex > 0 && header.length > (separatorIndex + 1) ?
-                                header.substr(separatorIndex + 1).trim() :
-                                "";
-                            headers[headerName] = headerValue;
-                        }
-                    }
-                }
-            }
-            return headers;
-        };
-        this.stringToArrayBuffer = function (str) {
-            var buffer = new ArrayBuffer(str.length);
-            var view = new DataView(buffer);
-            for (var i = 0; i < str.length; i++) {
-                view.setUint8(i, str.charCodeAt(i));
-            }
-            return buffer;
-        };
     }
+    WebsocketMessageFormatter.prototype.toConnectionMessage = function (message) {
+        var deferral = new Exports_1.Deferred();
+        try {
+            if (message.messageType === Exports_1.MessageType.Text) {
+                var textMessage = message.textContent;
+                var headers = {};
+                var body = null;
+                if (textMessage) {
+                    var headerBodySplit = textMessage.split("\r\n\r\n");
+                    if (headerBodySplit && headerBodySplit.length > 0) {
+                        headers = this.parseHeaders(headerBodySplit[0]);
+                        if (headerBodySplit.length > 1) {
+                            body = headerBodySplit[1];
+                        }
+                    }
+                }
+                deferral.resolve(new Exports_1.ConnectionMessage(message.messageType, body, headers, message.id));
+            }
+            else if (message.messageType === Exports_1.MessageType.Binary) {
+                var binaryMessage = message.binaryContent;
+                var headers = {};
+                var body = null;
+                if (!binaryMessage || binaryMessage.byteLength < 2) {
+                    throw new Error("Invalid binary message format. Header length missing.");
+                }
+                var dataView = new DataView(binaryMessage);
+                var headerLength = dataView.getInt16(0);
+                if (binaryMessage.byteLength < headerLength + 2) {
+                    throw new Error("Invalid binary message format. Header content missing.");
+                }
+                var headersString = "";
+                for (var i = 0; i < headerLength; i++) {
+                    headersString += String.fromCharCode((dataView).getInt8(i + 2));
+                }
+                headers = this.parseHeaders(headersString);
+                if (binaryMessage.byteLength > headerLength + 2) {
+                    body = binaryMessage.slice(2 + headerLength);
+                }
+                deferral.resolve(new Exports_1.ConnectionMessage(message.messageType, body, headers, message.id));
+            }
+        }
+        catch (e) {
+            deferral.reject("Error formatting the message. Error: " + e);
+        }
+        return deferral.promise;
+    };
+    WebsocketMessageFormatter.prototype.fromConnectionMessage = function (message) {
+        var deferral = new Exports_1.Deferred();
+        try {
+            if (message.messageType === Exports_1.MessageType.Text) {
+                var payload = "" + this.makeHeaders(message) + CRLF + (message.textBody ? message.textBody : "");
+                deferral.resolve(new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Text, payload, message.id));
+            }
+            else if (message.messageType === Exports_1.MessageType.Binary) {
+                var headersString = this.makeHeaders(message);
+                var content = message.binaryBody;
+                var headerBuffer = this.stringToArrayBuffer(headersString);
+                var headerInt8Array = new Int8Array(headerBuffer);
+                var headerLength = headerInt8Array.byteLength;
+                var payloadInt8Array = new Int8Array(2 + headerLength + (content ? content.byteLength : 0));
+                payloadInt8Array[0] = ((headerLength >> 8) & 0xff);
+                payloadInt8Array[1] = headerLength & 0xff;
+                payloadInt8Array.set(headerInt8Array, 2);
+                if (content) {
+                    var bodyInt8Array = new Int8Array(content);
+                    payloadInt8Array.set(bodyInt8Array, 2 + headerLength);
+                }
+                var payload = payloadInt8Array.buffer;
+                deferral.resolve(new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Binary, payload, message.id));
+            }
+        }
+        catch (e) {
+            deferral.reject("Error formatting the message. " + e);
+        }
+        return deferral.promise;
+    };
+    WebsocketMessageFormatter.prototype.makeHeaders = function (message) {
+        var headersString = "";
+        if (message.headers) {
+            for (var header in message.headers) {
+                if (header) {
+                    headersString += header + ": " + message.headers[header] + CRLF;
+                }
+            }
+        }
+        return headersString;
+    };
+    WebsocketMessageFormatter.prototype.parseHeaders = function (headersString) {
+        var headers = {};
+        if (headersString) {
+            var headerMatches = headersString.match(/[^\r\n]+/g);
+            if (headers) {
+                for (var _i = 0, headerMatches_1 = headerMatches; _i < headerMatches_1.length; _i++) {
+                    var header = headerMatches_1[_i];
+                    if (header) {
+                        var separatorIndex = header.indexOf(":");
+                        var headerName = separatorIndex > 0 ? header.substr(0, separatorIndex).trim().toLowerCase() : header;
+                        var headerValue = separatorIndex > 0 && header.length > (separatorIndex + 1) ?
+                            header.substr(separatorIndex + 1).trim() :
+                            "";
+                        headers[headerName] = headerValue;
+                    }
+                }
+            }
+        }
+        return headers;
+    };
+    WebsocketMessageFormatter.prototype.stringToArrayBuffer = function (str) {
+        var buffer = new ArrayBuffer(str.length);
+        var view = new DataView(buffer);
+        for (var i = 0; i < str.length; i++) {
+            view.setUint8(i, str.charCodeAt(i));
+        }
+        return buffer;
+    };
     return WebsocketMessageFormatter;
 }());
 exports.WebsocketMessageFormatter = WebsocketMessageFormatter;
@@ -21924,7 +22383,7 @@ exports.WebsocketMessageFormatter = WebsocketMessageFormatter;
 
 
 /***/ }),
-/* 177 */
+/* 183 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21947,12 +22406,12 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechConnectionFactory = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(53);
-var Exports_3 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var Exports_4 = __webpack_require__(53);
-var HeaderNames_1 = __webpack_require__(55);
-var QueryParameterNames_1 = __webpack_require__(124);
+var Exports_2 = __webpack_require__(56);
+var Exports_3 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var Exports_4 = __webpack_require__(56);
+var HeaderNames_1 = __webpack_require__(58);
+var QueryParameterNames_1 = __webpack_require__(126);
 var SpeechConnectionFactory = /** @class */ (function (_super) {
     __extends(SpeechConnectionFactory, _super);
     function SpeechConnectionFactory() {
@@ -21960,60 +22419,71 @@ var SpeechConnectionFactory = /** @class */ (function (_super) {
         _this.interactiveRelativeUri = "/speech/recognition/interactive/cognitiveservices/v1";
         _this.conversationRelativeUri = "/speech/recognition/conversation/cognitiveservices/v1";
         _this.dictationRelativeUri = "/speech/recognition/dictation/cognitiveservices/v1";
-        _this.create = function (config, authInfo, connectionId) {
-            var endpoint = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Endpoint, undefined);
-            var region = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Region, undefined);
-            var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
-            var host = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Host, "wss://" + region + ".stt.speech" + hostSuffix);
-            var queryParams = {};
-            var endpointId = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_EndpointId, undefined);
-            var language = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_RecoLanguage, undefined);
-            if (endpointId) {
-                if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId) === -1) {
-                    queryParams[QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId] = endpointId;
-                }
-            }
-            else if (language) {
-                if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.Language) === -1) {
-                    queryParams[QueryParameterNames_1.QueryParameterNames.Language] = language;
-                }
-            }
-            if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.Format) === -1) {
-                queryParams[QueryParameterNames_1.QueryParameterNames.Format] = config.parameters.getProperty(Exports_2.OutputFormatPropertyName, Exports_3.OutputFormat[Exports_3.OutputFormat.Simple]).toLowerCase();
-            }
-            if (config.autoDetectSourceLanguages !== undefined) {
-                queryParams[QueryParameterNames_1.QueryParameterNames.EnableLanguageId] = "true";
-            }
-            _this.setCommonUrlParams(config, queryParams, endpoint);
-            if (!endpoint) {
-                switch (config.recognitionMode) {
-                    case Exports_4.RecognitionMode.Conversation:
-                        if (config.parameters.getProperty(Exports_2.ForceDictationPropertyName, "false") === "true") {
-                            endpoint = host + _this.dictationRelativeUri;
-                        }
-                        else {
-                            endpoint = host + _this.conversationRelativeUri;
-                        }
-                        break;
-                    case Exports_4.RecognitionMode.Dictation:
-                        endpoint = host + _this.dictationRelativeUri;
-                        break;
-                    default:
-                        endpoint = host + _this.interactiveRelativeUri; // default is interactive
-                        break;
-                }
-            }
-            var headers = {};
-            if (authInfo.token !== undefined && authInfo.token !== "") {
-                headers[authInfo.headerName] = authInfo.token;
-            }
-            headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
-            config.parameters.setProperty(Exports_3.PropertyId.SpeechServiceConnection_Url, endpoint);
-            var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
-            return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_4.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
-        };
+        _this.universalUri = "/speech/universal/v";
         return _this;
     }
+    SpeechConnectionFactory.prototype.create = function (config, authInfo, connectionId) {
+        var endpoint = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Endpoint, undefined);
+        var region = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Region, undefined);
+        var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
+        var host = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_Host, "wss://" + region + ".stt.speech" + hostSuffix);
+        var queryParams = {};
+        var endpointId = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_EndpointId, undefined);
+        var language = config.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_RecoLanguage, undefined);
+        if (endpointId) {
+            if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId) === -1) {
+                queryParams[QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId] = endpointId;
+            }
+        }
+        else if (language) {
+            if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.Language) === -1) {
+                queryParams[QueryParameterNames_1.QueryParameterNames.Language] = language;
+            }
+        }
+        if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.Format) === -1) {
+            queryParams[QueryParameterNames_1.QueryParameterNames.Format] = config.parameters.getProperty(Exports_2.OutputFormatPropertyName, Exports_3.OutputFormat[Exports_3.OutputFormat.Simple]).toLowerCase();
+        }
+        if (config.autoDetectSourceLanguages !== undefined) {
+            queryParams[QueryParameterNames_1.QueryParameterNames.EnableLanguageId] = "true";
+        }
+        this.setCommonUrlParams(config, queryParams, endpoint);
+        if (!endpoint) {
+            switch (config.recognitionMode) {
+                case Exports_4.RecognitionMode.Conversation:
+                    if (config.parameters.getProperty(Exports_2.ForceDictationPropertyName, "false") === "true") {
+                        endpoint = host + this.dictationRelativeUri;
+                    }
+                    else {
+                        if (config.recognitionEndpointVersion !== undefined && parseInt(config.recognitionEndpointVersion, 10) > 1) {
+                            endpoint = "" + host + this.universalUri + config.recognitionEndpointVersion;
+                        }
+                        else {
+                            endpoint = host + this.conversationRelativeUri;
+                        }
+                    }
+                    break;
+                case Exports_4.RecognitionMode.Dictation:
+                    endpoint = host + this.dictationRelativeUri;
+                    break;
+                default:
+                    if (config.recognitionEndpointVersion !== undefined && parseInt(config.recognitionEndpointVersion, 10) > 1) {
+                        endpoint = "" + host + this.universalUri + config.recognitionEndpointVersion;
+                    }
+                    else {
+                        endpoint = host + this.interactiveRelativeUri; // default is interactive
+                    }
+                    break;
+            }
+        }
+        var headers = {};
+        if (authInfo.token !== undefined && authInfo.token !== "") {
+            headers[authInfo.headerName] = authInfo.token;
+        }
+        headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
+        config.parameters.setProperty(Exports_3.PropertyId.SpeechServiceConnection_Url, endpoint);
+        var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
+        return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_4.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
+    };
     return SpeechConnectionFactory;
 }(ConnectionFactoryBase_1.ConnectionFactoryBase));
 exports.SpeechConnectionFactory = SpeechConnectionFactory;
@@ -22021,7 +22491,7 @@ exports.SpeechConnectionFactory = SpeechConnectionFactory;
 
 
 /***/ }),
-/* 178 */
+/* 184 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22044,50 +22514,50 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranscriberConnectionFactory = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var Exports_3 = __webpack_require__(53);
-var HeaderNames_1 = __webpack_require__(55);
-var QueryParameterNames_1 = __webpack_require__(124);
+var Exports_2 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var Exports_3 = __webpack_require__(56);
+var HeaderNames_1 = __webpack_require__(58);
+var QueryParameterNames_1 = __webpack_require__(126);
 var TranscriberConnectionFactory = /** @class */ (function (_super) {
     __extends(TranscriberConnectionFactory, _super);
     function TranscriberConnectionFactory() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.multiaudioRelativeUri = "/speech/recognition/multiaudio";
-        _this.create = function (config, authInfo, connectionId) {
-            var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint, undefined);
-            var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Region, "centralus");
-            var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
-            var hostDefault = "wss://transcribe." + region + ".cts.speech" + hostSuffix + _this.multiaudioRelativeUri;
-            var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, hostDefault);
-            var queryParams = {};
-            var endpointId = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_EndpointId, undefined);
-            var language = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage, undefined);
-            if (endpointId) {
-                if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId) === -1) {
-                    queryParams[QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId] = endpointId;
-                }
-            }
-            else if (language) {
-                if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.Language) === -1) {
-                    queryParams[QueryParameterNames_1.QueryParameterNames.Language] = language;
-                }
-            }
-            _this.setCommonUrlParams(config, queryParams, endpoint);
-            if (!endpoint) {
-                endpoint = host;
-            }
-            var headers = {};
-            if (authInfo.token !== undefined && authInfo.token !== "") {
-                headers[authInfo.headerName] = authInfo.token;
-            }
-            headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
-            config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
-            var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
-            return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
-        };
         return _this;
     }
+    TranscriberConnectionFactory.prototype.create = function (config, authInfo, connectionId) {
+        var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint, undefined);
+        var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Region, "centralus");
+        var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
+        var hostDefault = "wss://transcribe." + region + ".cts.speech" + hostSuffix + this.multiaudioRelativeUri;
+        var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, hostDefault);
+        var queryParams = {};
+        var endpointId = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_EndpointId, undefined);
+        var language = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage, undefined);
+        if (endpointId) {
+            if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId) === -1) {
+                queryParams[QueryParameterNames_1.QueryParameterNames.CustomSpeechDeploymentId] = endpointId;
+            }
+        }
+        else if (language) {
+            if (!endpoint || endpoint.search(QueryParameterNames_1.QueryParameterNames.Language) === -1) {
+                queryParams[QueryParameterNames_1.QueryParameterNames.Language] = language;
+            }
+        }
+        this.setCommonUrlParams(config, queryParams, endpoint);
+        if (!endpoint) {
+            endpoint = host;
+        }
+        var headers = {};
+        if (authInfo.token !== undefined && authInfo.token !== "") {
+            headers[authInfo.headerName] = authInfo.token;
+        }
+        headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
+        config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
+        var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
+        return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
+    };
     return TranscriberConnectionFactory;
 }(ConnectionFactoryBase_1.ConnectionFactoryBase));
 exports.TranscriberConnectionFactory = TranscriberConnectionFactory;
@@ -22095,7 +22565,7 @@ exports.TranscriberConnectionFactory = TranscriberConnectionFactory;
 
 
 /***/ }),
-/* 179 */
+/* 185 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22118,46 +22588,45 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationConnectionFactory = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var Exports_3 = __webpack_require__(53);
-var HeaderNames_1 = __webpack_require__(55);
-var QueryParameterNames_1 = __webpack_require__(124);
+var Exports_2 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var Exports_3 = __webpack_require__(56);
+var HeaderNames_1 = __webpack_require__(58);
+var QueryParameterNames_1 = __webpack_require__(126);
 var TranslationConnectionFactory = /** @class */ (function (_super) {
     __extends(TranslationConnectionFactory, _super);
     function TranslationConnectionFactory() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.create = function (config, authInfo, connectionId) {
-            var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint, undefined);
-            if (!endpoint) {
-                var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Region, undefined);
-                var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
-                var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, "wss://" + region + ".s2s.speech" + hostSuffix);
-                endpoint = host + "/speech/translation/cognitiveservices/v1";
-            }
-            var queryParams = {
-                from: config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage),
-                to: config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_TranslationToLanguages),
-            };
-            _this.setCommonUrlParams(config, queryParams, endpoint);
-            _this.setUrlParameter(Exports_2.PropertyId.SpeechServiceResponse_TranslationRequestStablePartialResult, QueryParameterNames_1.QueryParameterNames.StableTranslation, config, queryParams, endpoint);
-            var voiceName = "voice";
-            var featureName = "features";
-            if (config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_TranslationVoice, undefined) !== undefined) {
-                queryParams[voiceName] = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_TranslationVoice);
-                queryParams[featureName] = "texttospeech";
-            }
-            var headers = {};
-            if (authInfo.token !== undefined && authInfo.token !== "") {
-                headers[authInfo.headerName] = authInfo.token;
-            }
-            headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
-            config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
-            var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
-            return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
-        };
-        return _this;
+        return _super !== null && _super.apply(this, arguments) || this;
     }
+    TranslationConnectionFactory.prototype.create = function (config, authInfo, connectionId) {
+        var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint, undefined);
+        if (!endpoint) {
+            var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Region, undefined);
+            var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
+            var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, "wss://" + region + ".s2s.speech" + hostSuffix);
+            endpoint = host + "/speech/translation/cognitiveservices/v1";
+        }
+        var queryParams = {
+            from: config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage),
+            to: config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_TranslationToLanguages),
+        };
+        this.setCommonUrlParams(config, queryParams, endpoint);
+        this.setUrlParameter(Exports_2.PropertyId.SpeechServiceResponse_TranslationRequestStablePartialResult, QueryParameterNames_1.QueryParameterNames.StableTranslation, config, queryParams, endpoint);
+        var voiceName = "voice";
+        var featureName = "features";
+        if (config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_TranslationVoice, undefined) !== undefined) {
+            queryParams[voiceName] = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_TranslationVoice);
+            queryParams[featureName] = "texttospeech";
+        }
+        var headers = {};
+        if (authInfo.token !== undefined && authInfo.token !== "") {
+            headers[authInfo.headerName] = authInfo.token;
+        }
+        headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
+        config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
+        var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
+        return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromRecognizerConfig(config), enableCompression, connectionId);
+    };
     return TranslationConnectionFactory;
 }(ConnectionFactoryBase_1.ConnectionFactoryBase));
 exports.TranslationConnectionFactory = TranslationConnectionFactory;
@@ -22165,7 +22634,7 @@ exports.TranslationConnectionFactory = TranslationConnectionFactory;
 
 
 /***/ }),
-/* 180 */
+/* 186 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22175,39 +22644,38 @@ exports.TranslationConnectionFactory = TranslationConnectionFactory;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechSynthesisConnectionFactory = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var Exports_3 = __webpack_require__(53);
-var HeaderNames_1 = __webpack_require__(55);
-var QueryParameterNames_1 = __webpack_require__(124);
+var Exports_2 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var Exports_3 = __webpack_require__(56);
+var HeaderNames_1 = __webpack_require__(58);
+var QueryParameterNames_1 = __webpack_require__(126);
 var SpeechSynthesisConnectionFactory = /** @class */ (function () {
     function SpeechSynthesisConnectionFactory() {
-        var _this = this;
         this.synthesisUri = "/cognitiveservices/websocket/v1";
-        this.create = function (config, authInfo, connectionId) {
-            var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint, undefined);
-            var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Region, undefined);
-            var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
-            var endpointId = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_EndpointId, undefined);
-            var hostPrefix = (endpointId === undefined) ? "tts" : "voice";
-            var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, "wss://" + region + "." + hostPrefix + ".speech" + hostSuffix);
-            var queryParams = {};
-            if (!endpoint) {
-                endpoint = host + _this.synthesisUri;
-            }
-            var headers = {};
-            if (authInfo.token !== undefined && authInfo.token !== "") {
-                headers[authInfo.headerName] = authInfo.token;
-            }
-            headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
-            if (endpointId !== undefined) {
-                headers[QueryParameterNames_1.QueryParameterNames.CustomVoiceDeploymentId] = endpointId;
-            }
-            config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
-            var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
-            return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromParameters(config.parameters), enableCompression, connectionId);
-        };
     }
+    SpeechSynthesisConnectionFactory.prototype.create = function (config, authInfo, connectionId) {
+        var endpoint = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint, undefined);
+        var region = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Region, undefined);
+        var hostSuffix = ConnectionFactoryBase_1.ConnectionFactoryBase.getHostSuffix(region);
+        var endpointId = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_EndpointId, undefined);
+        var hostPrefix = (endpointId === undefined) ? "tts" : "voice";
+        var host = config.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Host, "wss://" + region + "." + hostPrefix + ".speech" + hostSuffix);
+        var queryParams = {};
+        if (!endpoint) {
+            endpoint = host + this.synthesisUri;
+        }
+        var headers = {};
+        if (authInfo.token !== undefined && authInfo.token !== "") {
+            headers[authInfo.headerName] = authInfo.token;
+        }
+        headers[HeaderNames_1.HeaderNames.ConnectionId] = connectionId;
+        if (endpointId !== undefined) {
+            headers[QueryParameterNames_1.QueryParameterNames.CustomVoiceDeploymentId] = endpointId;
+        }
+        config.parameters.setProperty(Exports_2.PropertyId.SpeechServiceConnection_Url, endpoint);
+        var enableCompression = config.parameters.getProperty("SPEECH-EnableWebsocketCompression", "false") === "true";
+        return new Exports_1.WebsocketConnection(endpoint, queryParams, headers, new Exports_3.WebsocketMessageFormatter(), Exports_1.ProxyInfo.fromParameters(config.parameters), enableCompression, connectionId);
+    };
     return SpeechSynthesisConnectionFactory;
 }());
 exports.SpeechSynthesisConnectionFactory = SpeechSynthesisConnectionFactory;
@@ -22215,7 +22683,7 @@ exports.SpeechSynthesisConnectionFactory = SpeechSynthesisConnectionFactory;
 
 
 /***/ }),
-/* 181 */
+/* 187 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22224,8 +22692,8 @@ exports.SpeechSynthesisConnectionFactory = SpeechSynthesisConnectionFactory;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EnumTranslation = void 0;
-var Exports_1 = __webpack_require__(61);
-var Exports_2 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(64);
+var Exports_2 = __webpack_require__(56);
 var EnumTranslation = /** @class */ (function () {
     function EnumTranslation() {
     }
@@ -22314,7 +22782,7 @@ exports.EnumTranslation = EnumTranslation;
 
 
 /***/ }),
-/* 182 */
+/* 188 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22361,7 +22829,7 @@ var RecognitionStatus;
 
 
 /***/ }),
-/* 183 */
+/* 189 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22370,7 +22838,7 @@ var RecognitionStatus;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationSynthesisEnd = void 0;
-var Exports_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(56);
 var TranslationSynthesisEnd = /** @class */ (function () {
     function TranslationSynthesisEnd(json) {
         this.privSynthesisEnd = JSON.parse(json);
@@ -22400,7 +22868,7 @@ exports.TranslationSynthesisEnd = TranslationSynthesisEnd;
 
 
 /***/ }),
-/* 184 */
+/* 190 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22409,7 +22877,7 @@ exports.TranslationSynthesisEnd = TranslationSynthesisEnd;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationHypothesis = void 0;
-var TranslationStatus_1 = __webpack_require__(45);
+var TranslationStatus_1 = __webpack_require__(47);
 var TranslationHypothesis = /** @class */ (function () {
     function TranslationHypothesis(json) {
         this.privTranslationHypothesis = JSON.parse(json);
@@ -22453,7 +22921,7 @@ exports.TranslationHypothesis = TranslationHypothesis;
 
 
 /***/ }),
-/* 185 */
+/* 191 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22462,9 +22930,9 @@ exports.TranslationHypothesis = TranslationHypothesis;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationPhrase = void 0;
-var Contracts_1 = __webpack_require__(63);
-var Exports_1 = __webpack_require__(53);
-var TranslationStatus_1 = __webpack_require__(45);
+var Contracts_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(56);
+var TranslationStatus_1 = __webpack_require__(47);
 var TranslationPhrase = /** @class */ (function () {
     function TranslationPhrase(phrase) {
         this.privTranslationPhrase = phrase;
@@ -22526,7 +22994,7 @@ exports.TranslationPhrase = TranslationPhrase;
 
 
 /***/ }),
-/* 186 */
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22584,32 +23052,23 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranslationServiceRecognizer = void 0;
-var Exports_1 = __webpack_require__(4);
-var Exports_2 = __webpack_require__(61);
-var Exports_3 = __webpack_require__(53);
-// tslint:disable-next-line:max-classes-per-file
+var Exports_1 = __webpack_require__(6);
+var Exports_2 = __webpack_require__(64);
+var Exports_3 = __webpack_require__(56);
+// eslint-disable-next-line max-classes-per-file
 var TranslationServiceRecognizer = /** @class */ (function (_super) {
     __extends(TranslationServiceRecognizer, _super);
     function TranslationServiceRecognizer(authentication, connectionFactory, audioSource, recognizerConfig, translationRecognizer) {
         var _this = _super.call(this, authentication, connectionFactory, audioSource, recognizerConfig, translationRecognizer) || this;
         _this.privTranslationRecognizer = translationRecognizer;
-        _this.connectionEvents.attach(function (connectionEvent) { return __awaiter(_this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!(connectionEvent.name === "ConnectionEstablishedEvent")) return [3 /*break*/, 1];
-                        this.privTranslationRecognizer.onConnection();
-                        return [3 /*break*/, 3];
-                    case 1:
-                        if (!(connectionEvent.name === "ConnectionClosedEvent")) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.privTranslationRecognizer.onDisconnection()];
-                    case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3: return [2 /*return*/];
-                }
-            });
-        }); });
+        _this.connectionEvents.attach(function (connectionEvent) {
+            if (connectionEvent.name === "ConnectionEstablishedEvent") {
+                _this.privTranslationRecognizer.onConnection();
+            }
+            else if (connectionEvent.name === "ConnectionClosedEvent") {
+                void _this.privTranslationRecognizer.onDisconnection();
+            }
+        });
         return _this;
     }
     TranslationServiceRecognizer.prototype.processTypeSpecificMessages = function (connectionMessage) {
@@ -22632,7 +23091,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
                                         if (!!this.privTranslationRecognizer.recognized) {
                                             try {
                                                 this.privTranslationRecognizer.recognized(this.privTranslationRecognizer, result);
-                                                /* tslint:disable:no-empty */
+                                                /* eslint-disable no-empty */
                                             }
                                             catch (error) {
                                                 // Not going to let errors in the event handler
@@ -22672,7 +23131,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
                                             if (!!this.privTranslationRecognizer.recognized) {
                                                 try {
                                                     this.privTranslationRecognizer.recognized(this.privTranslationRecognizer, ev);
-                                                    /* tslint:disable:no-empty */
+                                                    /* eslint-disable no-empty */
                                                 }
                                                 catch (error) {
                                                     // Not going to let errors in the event handler
@@ -22722,7 +23181,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
                         if (!!this.privTranslationRecognizer.recognizing) {
                             try {
                                 this.privTranslationRecognizer.recognizing(this.privTranslationRecognizer, result);
-                                /* tslint:disable:no-empty */
+                                /* eslint-disable no-empty */
                             }
                             catch (error) {
                                 // Not going to let errors in the event handler
@@ -22756,7 +23215,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
                                     retEvent = new Exports_2.TranslationSynthesisEventArgs(result_1, this.privRequestSession.sessionId);
                                     try {
                                         this.privTranslationRecognizer.synthesizing(this.privTranslationRecognizer, retEvent);
-                                        /* tslint:disable:no-empty */
+                                        /* eslint-disable no-empty */
                                     }
                                     catch (error) {
                                         // Not going to let errors in the event handler
@@ -22767,7 +23226,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
                                     canceledResult = new Exports_2.TranslationRecognitionCanceledEventArgs(this.privRequestSession.sessionId, Exports_2.CancellationReason.Error, synthEnd.FailureReason, Exports_2.CancellationErrorCode.ServiceError, null);
                                     try {
                                         this.privTranslationRecognizer.canceled(this.privTranslationRecognizer, canceledResult);
-                                        /* tslint:disable:no-empty */
+                                        /* eslint-disable no-empty */
                                     }
                                     catch (error) {
                                         // Not going to let errors in the event handler
@@ -22797,7 +23256,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
             var cancelEvent = new Exports_2.TranslationRecognitionCanceledEventArgs(sessionId, cancellationReason, error, errorCode, undefined);
             try {
                 this.privTranslationRecognizer.canceled(this.privTranslationRecognizer, cancelEvent);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_a) { }
         }
@@ -22810,7 +23269,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
             properties);
             try {
                 this.privSuccessCallback(result);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
                 this.privSuccessCallback = undefined;
             }
             catch (_b) { }
@@ -22849,7 +23308,7 @@ var TranslationServiceRecognizer = /** @class */ (function (_super) {
         if (!!this.privTranslationRecognizer.synthesizing) {
             try {
                 this.privTranslationRecognizer.synthesizing(this.privTranslationRecognizer, retEvent);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (error) {
                 // Not going to let errors in the event handler
@@ -22864,7 +23323,7 @@ exports.TranslationServiceRecognizer = TranslationServiceRecognizer;
 
 
 /***/ }),
-/* 187 */
+/* 193 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22894,7 +23353,7 @@ exports.SpeechDetected = SpeechDetected;
 
 
 /***/ }),
-/* 188 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22959,7 +23418,7 @@ exports.SpeechHypothesis = SpeechHypothesis;
 
 
 /***/ }),
-/* 189 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23010,7 +23469,7 @@ exports.SpeechKeyword = SpeechKeyword;
 
 
 /***/ }),
-/* 190 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23068,9 +23527,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeechServiceRecognizer = void 0;
-var Exports_1 = __webpack_require__(61);
-var Exports_2 = __webpack_require__(53);
-// tslint:disable-next-line:max-classes-per-file
+var Exports_1 = __webpack_require__(64);
+var Exports_2 = __webpack_require__(56);
+// eslint-disable-next-line max-classes-per-file
 var SpeechServiceRecognizer = /** @class */ (function (_super) {
     __extends(SpeechServiceRecognizer, _super);
     function SpeechServiceRecognizer(authentication, connectionFactory, audioSource, recognizerConfig, speechRecognizer) {
@@ -23079,7 +23538,9 @@ var SpeechServiceRecognizer = /** @class */ (function (_super) {
         if (recognizerConfig.autoDetectSourceLanguages !== undefined) {
             var sourceLanguages = recognizerConfig.autoDetectSourceLanguages.split(",");
             _this.privSpeechContext.setSection("languageId", {
+                Priority: recognizerConfig.languageIdPriority,
                 languages: sourceLanguages,
+                mode: recognizerConfig.languageIdMode,
                 onSuccess: { action: "Recognize" },
                 onUnknown: { action: "None" }
             });
@@ -23091,6 +23552,14 @@ var SpeechServiceRecognizer = /** @class */ (function (_super) {
                     resultType: "Always"
                 }
             });
+            var customModels = recognizerConfig.sourceLanguageModels;
+            if (customModels !== undefined) {
+                _this.privSpeechContext.setSection("phraseDetection", {
+                    customModels: customModels,
+                    onInterim: { action: "None" },
+                    onSuccess: { action: "None" },
+                });
+            }
         }
         return _this;
     }
@@ -23120,7 +23589,7 @@ var SpeechServiceRecognizer = /** @class */ (function (_super) {
                         if (!!this.privSpeechRecognizer.recognizing) {
                             try {
                                 this.privSpeechRecognizer.recognizing(this.privSpeechRecognizer, ev);
-                                /* tslint:disable:no-empty */
+                                /* eslint-disable no-empty */
                             }
                             catch (error) {
                                 // Not going to let errors in the event handler
@@ -23157,7 +23626,7 @@ var SpeechServiceRecognizer = /** @class */ (function (_super) {
                             if (!!this.privSpeechRecognizer.recognized) {
                                 try {
                                     this.privSpeechRecognizer.recognized(this.privSpeechRecognizer, event_1);
-                                    /* tslint:disable:no-empty */
+                                    /* eslint-disable no-empty */
                                 }
                                 catch (error) {
                                     // Not going to let errors in the event handler
@@ -23198,7 +23667,7 @@ var SpeechServiceRecognizer = /** @class */ (function (_super) {
             var cancelEvent = new Exports_1.SpeechRecognitionCanceledEventArgs(cancellationReason, error, errorCode, undefined, sessionId);
             try {
                 this.privSpeechRecognizer.canceled(this.privSpeechRecognizer, cancelEvent);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_a) { }
         }
@@ -23214,7 +23683,7 @@ var SpeechServiceRecognizer = /** @class */ (function (_super) {
             try {
                 this.privSuccessCallback(result);
                 this.privSuccessCallback = undefined;
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_b) { }
         }
@@ -23226,7 +23695,7 @@ exports.SpeechServiceRecognizer = SpeechServiceRecognizer;
 
 
 /***/ }),
-/* 191 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23284,24 +23753,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranscriptionServiceRecognizer = void 0;
-var Exports_1 = __webpack_require__(4);
-var Exports_2 = __webpack_require__(61);
-var Exports_3 = __webpack_require__(53);
-var SpeechConnectionMessage_Internal_1 = __webpack_require__(173);
-// tslint:disable-next-line:max-classes-per-file
+var Exports_1 = __webpack_require__(6);
+var Exports_2 = __webpack_require__(64);
+var Exports_3 = __webpack_require__(56);
+var SpeechConnectionMessage_Internal_1 = __webpack_require__(179);
+// eslint-disable-next-line max-classes-per-file
 var TranscriptionServiceRecognizer = /** @class */ (function (_super) {
     __extends(TranscriptionServiceRecognizer, _super);
     function TranscriptionServiceRecognizer(authentication, connectionFactory, audioSource, recognizerConfig, transcriber) {
         var _this = _super.call(this, authentication, connectionFactory, audioSource, recognizerConfig, transcriber) || this;
-        _this.sendSpeechEvent = function (connection, payload) {
-            var speechEventJson = JSON.stringify(payload);
-            if (speechEventJson) {
-                return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "speech.event", _this.privRequestSession.requestId, "application/json", speechEventJson));
-            }
-            return;
-        };
         _this.privTranscriberRecognizer = transcriber;
-        _this.sendPrePayloadJSONOverride = _this.sendTranscriptionStartJSON;
+        _this.sendPrePayloadJSONOverride = function (connection) { return _this.sendTranscriptionStartJSON(connection); };
         return _this;
     }
     TranscriptionServiceRecognizer.prototype.sendSpeechEventAsync = function (info, command) {
@@ -23348,7 +23810,7 @@ var TranscriptionServiceRecognizer = /** @class */ (function (_super) {
                         if (!!this.privTranscriberRecognizer.recognizing) {
                             try {
                                 this.privTranscriberRecognizer.recognizing(this.privTranscriberRecognizer, ev);
-                                /* tslint:disable:no-empty */
+                                /* eslint-disable no-empty */
                             }
                             catch (error) {
                                 // Not going to let errors in the event handler
@@ -23383,7 +23845,7 @@ var TranscriptionServiceRecognizer = /** @class */ (function (_super) {
                             if (!!this.privTranscriberRecognizer.recognized) {
                                 try {
                                     this.privTranscriberRecognizer.recognized(this.privTranscriberRecognizer, event_1);
-                                    /* tslint:disable:no-empty */
+                                    /* eslint-disable no-empty */
                                 }
                                 catch (error) {
                                     // Not going to let errors in the event handler
@@ -23424,7 +23886,7 @@ var TranscriptionServiceRecognizer = /** @class */ (function (_super) {
             var cancelEvent = new Exports_2.ConversationTranscriptionCanceledEventArgs(cancellationReason, error, errorCode, undefined, sessionId);
             try {
                 this.privTranscriberRecognizer.canceled(this.privTranscriberRecognizer, cancelEvent);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_a) { }
         }
@@ -23440,7 +23902,7 @@ var TranscriptionServiceRecognizer = /** @class */ (function (_super) {
             try {
                 this.privSuccessCallback(result);
                 this.privSuccessCallback = undefined;
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_b) { }
         }
@@ -23451,7 +23913,7 @@ var TranscriptionServiceRecognizer = /** @class */ (function (_super) {
             var info, payload;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.sendSpeechContext(connection)];
+                    case 0: return [4 /*yield*/, this.sendSpeechContext(connection, true)];
                     case 1:
                         _a.sent();
                         info = this.privTranscriberRecognizer.getConversationInfo();
@@ -23467,15 +23929,18 @@ var TranscriptionServiceRecognizer = /** @class */ (function (_super) {
             });
         });
     };
+    TranscriptionServiceRecognizer.prototype.sendSpeechEvent = function (connection, payload) {
+        var speechEventJson = JSON.stringify(payload);
+        if (speechEventJson) {
+            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "speech.event", this.privRequestSession.requestId, "application/json", speechEventJson));
+        }
+        return;
+    };
     TranscriptionServiceRecognizer.prototype.createSpeechEventPayload = function (info, command) {
-        var meeting = "meeting";
-        var eventDict = { id: meeting, name: command, meeting: info.conversationProperties };
-        var idString = "id";
-        var attendees = "attendees";
-        var record = "record";
-        eventDict[meeting][idString] = info.id;
-        eventDict[meeting][attendees] = info.participants;
-        eventDict[meeting][record] = info.conversationProperties.audiorecording === "on" ? "true" : "false";
+        var eventDict = { id: "meeting", name: command, meeting: info.conversationProperties };
+        eventDict.meeting.id = info.id;
+        eventDict.meeting.attendees = info.participants;
+        eventDict.meeting.record = info.conversationProperties.audiorecording === "on" ? "true" : "false";
         return eventDict;
     };
     return TranscriptionServiceRecognizer;
@@ -23485,7 +23950,7 @@ exports.TranscriptionServiceRecognizer = TranscriptionServiceRecognizer;
 
 
 /***/ }),
-/* 192 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23494,7 +23959,7 @@ exports.TranscriptionServiceRecognizer = TranscriptionServiceRecognizer;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DetailedSpeechPhrase = void 0;
-var Exports_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(56);
 var DetailedSpeechPhrase = /** @class */ (function () {
     function DetailedSpeechPhrase(json) {
         this.privDetailedSpeechPhrase = JSON.parse(json);
@@ -23591,7 +24056,7 @@ exports.DetailedSpeechPhrase = DetailedSpeechPhrase;
 
 
 /***/ }),
-/* 193 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23600,7 +24065,7 @@ exports.DetailedSpeechPhrase = DetailedSpeechPhrase;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SimpleSpeechPhrase = void 0;
-var Exports_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(56);
 var SimpleSpeechPhrase = /** @class */ (function () {
     function SimpleSpeechPhrase(json) {
         this.privSimpleSpeechPhrase = JSON.parse(json);
@@ -23665,7 +24130,7 @@ exports.SimpleSpeechPhrase = SimpleSpeechPhrase;
 
 
 /***/ }),
-/* 194 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23677,7 +24142,7 @@ exports.AddedLmIntent = void 0;
 /**
  * @class AddedLmIntent
  */
-// tslint:disable-next-line:max-classes-per-file
+// eslint-disable-next-line max-classes-per-file
 var AddedLmIntent = /** @class */ (function () {
     /**
      * Creates and initializes an instance of this class.
@@ -23696,7 +24161,7 @@ exports.AddedLmIntent = AddedLmIntent;
 
 
 /***/ }),
-/* 195 */
+/* 201 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23716,48 +24181,12 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IntentServiceRecognizer = void 0;
-var Exports_1 = __webpack_require__(4);
-var Exports_2 = __webpack_require__(61);
-var Exports_3 = __webpack_require__(53);
-// tslint:disable-next-line:max-classes-per-file
+var Exports_1 = __webpack_require__(6);
+var Exports_2 = __webpack_require__(64);
+var Exports_3 = __webpack_require__(56);
+// eslint-disable-next-line max-classes-per-file
 var IntentServiceRecognizer = /** @class */ (function (_super) {
     __extends(IntentServiceRecognizer, _super);
     function IntentServiceRecognizer(authentication, connectionFactory, audioSource, recognizerConfig, recognizer) {
@@ -23772,143 +24201,146 @@ var IntentServiceRecognizer = /** @class */ (function (_super) {
         this.privIntentDataSent = true;
     };
     IntentServiceRecognizer.prototype.processTypeSpecificMessages = function (connectionMessage) {
-        return __awaiter(this, void 0, void 0, function () {
-            var result, ev, processed, resultProps, speechHypothesis, simple, sendEvent, intentResponse, addedIntent, intentId, reason, properties;
-            var _this = this;
-            return __generator(this, function (_a) {
-                processed = false;
-                resultProps = new Exports_2.PropertyCollection();
-                if (connectionMessage.messageType === Exports_1.MessageType.Text) {
-                    resultProps.setProperty(Exports_2.PropertyId.SpeechServiceResponse_JsonResult, connectionMessage.textBody);
+        var _this = this;
+        var result;
+        var ev;
+        var processed = false;
+        var resultProps = new Exports_2.PropertyCollection();
+        if (connectionMessage.messageType === Exports_1.MessageType.Text) {
+            resultProps.setProperty(Exports_2.PropertyId.SpeechServiceResponse_JsonResult, connectionMessage.textBody);
+        }
+        switch (connectionMessage.path.toLowerCase()) {
+            case "speech.hypothesis":
+                var speechHypothesis = Exports_3.SpeechHypothesis.fromJSON(connectionMessage.textBody);
+                result = new Exports_2.IntentRecognitionResult(undefined, this.privRequestSession.requestId, Exports_2.ResultReason.RecognizingIntent, speechHypothesis.Text, speechHypothesis.Duration, speechHypothesis.Offset + this.privRequestSession.currentTurnAudioOffset, speechHypothesis.Language, speechHypothesis.LanguageDetectionConfidence, undefined, connectionMessage.textBody, resultProps);
+                this.privRequestSession.onHypothesis(result.offset);
+                ev = new Exports_2.IntentRecognitionEventArgs(result, speechHypothesis.Offset + this.privRequestSession.currentTurnAudioOffset, this.privRequestSession.sessionId);
+                if (!!this.privIntentRecognizer.recognizing) {
+                    try {
+                        this.privIntentRecognizer.recognizing(this.privIntentRecognizer, ev);
+                        /* eslint-disable no-empty */
+                    }
+                    catch (error) {
+                        // Not going to let errors in the event handler
+                        // trip things up.
+                    }
                 }
-                switch (connectionMessage.path.toLowerCase()) {
-                    case "speech.hypothesis":
-                        speechHypothesis = Exports_3.SpeechHypothesis.fromJSON(connectionMessage.textBody);
-                        result = new Exports_2.IntentRecognitionResult(undefined, this.privRequestSession.requestId, Exports_2.ResultReason.RecognizingIntent, speechHypothesis.Text, speechHypothesis.Duration, speechHypothesis.Offset + this.privRequestSession.currentTurnAudioOffset, speechHypothesis.Language, speechHypothesis.LanguageDetectionConfidence, undefined, connectionMessage.textBody, resultProps);
-                        this.privRequestSession.onHypothesis(result.offset);
-                        ev = new Exports_2.IntentRecognitionEventArgs(result, speechHypothesis.Offset + this.privRequestSession.currentTurnAudioOffset, this.privRequestSession.sessionId);
-                        if (!!this.privIntentRecognizer.recognizing) {
-                            try {
-                                this.privIntentRecognizer.recognizing(this.privIntentRecognizer, ev);
-                                /* tslint:disable:no-empty */
-                            }
-                            catch (error) {
-                                // Not going to let errors in the event handler
-                                // trip things up.
+                processed = true;
+                break;
+            case "speech.phrase":
+                var simple = Exports_3.SimpleSpeechPhrase.fromJSON(connectionMessage.textBody);
+                result = new Exports_2.IntentRecognitionResult(undefined, this.privRequestSession.requestId, Exports_3.EnumTranslation.implTranslateRecognitionResult(simple.RecognitionStatus), simple.DisplayText, simple.Duration, simple.Offset + this.privRequestSession.currentTurnAudioOffset, simple.Language, simple.LanguageDetectionConfidence, undefined, connectionMessage.textBody, resultProps);
+                ev = new Exports_2.IntentRecognitionEventArgs(result, result.offset, this.privRequestSession.sessionId);
+                var sendEvent = function () {
+                    if (!!_this.privIntentRecognizer.recognized) {
+                        try {
+                            _this.privIntentRecognizer.recognized(_this.privIntentRecognizer, ev);
+                            /* eslint-disable no-empty */
+                        }
+                        catch (error) {
+                            // Not going to let errors in the event handler
+                            // trip things up.
+                        }
+                    }
+                    // report result to promise.
+                    if (!!_this.privSuccessCallback) {
+                        try {
+                            _this.privSuccessCallback(result);
+                        }
+                        catch (e) {
+                            if (!!_this.privErrorCallback) {
+                                _this.privErrorCallback(e);
                             }
                         }
-                        processed = true;
-                        break;
-                    case "speech.phrase":
-                        simple = Exports_3.SimpleSpeechPhrase.fromJSON(connectionMessage.textBody);
-                        result = new Exports_2.IntentRecognitionResult(undefined, this.privRequestSession.requestId, Exports_3.EnumTranslation.implTranslateRecognitionResult(simple.RecognitionStatus), simple.DisplayText, simple.Duration, simple.Offset + this.privRequestSession.currentTurnAudioOffset, simple.Language, simple.LanguageDetectionConfidence, undefined, connectionMessage.textBody, resultProps);
-                        ev = new Exports_2.IntentRecognitionEventArgs(result, result.offset, this.privRequestSession.sessionId);
-                        sendEvent = function () {
-                            if (!!_this.privIntentRecognizer.recognized) {
-                                try {
-                                    _this.privIntentRecognizer.recognized(_this.privIntentRecognizer, ev);
-                                    /* tslint:disable:no-empty */
-                                }
-                                catch (error) {
-                                    // Not going to let errors in the event handler
-                                    // trip things up.
-                                }
-                            }
-                            // report result to promise.
-                            if (!!_this.privSuccessCallback) {
-                                try {
-                                    _this.privSuccessCallback(result);
-                                }
-                                catch (e) {
-                                    if (!!_this.privErrorCallback) {
-                                        _this.privErrorCallback(e);
-                                    }
-                                }
-                                // Only invoke the call back once.
-                                // and if it's successful don't invoke the
-                                // error after that.
-                                _this.privSuccessCallback = undefined;
-                                _this.privErrorCallback = undefined;
-                            }
-                        };
-                        // If intent data was sent, the terminal result for this recognizer is an intent being found.
-                        // If no intent data was sent, the terminal event is speech recognition being successful.
-                        if (false === this.privIntentDataSent || Exports_2.ResultReason.NoMatch === ev.result.reason) {
-                            // Advance the buffers.
-                            this.privRequestSession.onPhraseRecognized(ev.offset + ev.result.duration);
-                            sendEvent();
-                        }
-                        else {
-                            // Squirrel away the args, when the response event arrives it will build upon them
-                            // and then return
-                            this.privPendingIntentArgs = ev;
-                        }
-                        processed = true;
-                        break;
-                    case "response":
-                        // Response from LUIS
-                        ev = this.privPendingIntentArgs;
-                        this.privPendingIntentArgs = undefined;
-                        if (undefined === ev) {
-                            if ("" === connectionMessage.textBody) {
-                                // This condition happens if there is nothing but silence in the
-                                // audio sent to the service.
-                                return [2 /*return*/];
-                            }
-                            // Odd... Not sure this can happen
-                            ev = new Exports_2.IntentRecognitionEventArgs(new Exports_2.IntentRecognitionResult(), 0 /*TODO*/, this.privRequestSession.sessionId);
-                        }
-                        intentResponse = Exports_3.IntentResponse.fromJSON(connectionMessage.textBody);
-                        addedIntent = this.privAddedLmIntents[intentResponse.topScoringIntent.intent];
-                        if (this.privUmbrellaIntent !== undefined) {
-                            addedIntent = this.privUmbrellaIntent;
-                        }
-                        if (null !== intentResponse && addedIntent !== undefined) {
-                            intentId = addedIntent.intentName === undefined ? intentResponse.topScoringIntent.intent : addedIntent.intentName;
-                            reason = ev.result.reason;
-                            if (undefined !== intentId) {
-                                reason = Exports_2.ResultReason.RecognizedIntent;
-                            }
-                            properties = (undefined !== ev.result.properties) ?
-                                ev.result.properties : new Exports_2.PropertyCollection();
-                            properties.setProperty(Exports_2.PropertyId.LanguageUnderstandingServiceResponse_JsonResult, connectionMessage.textBody);
-                            ev = new Exports_2.IntentRecognitionEventArgs(new Exports_2.IntentRecognitionResult(intentId, ev.result.resultId, reason, ev.result.text, ev.result.duration, ev.result.offset, undefined, undefined, ev.result.errorDetails, ev.result.json, properties), ev.offset, ev.sessionId);
-                        }
-                        this.privRequestSession.onPhraseRecognized(ev.offset + ev.result.duration);
-                        if (!!this.privIntentRecognizer.recognized) {
-                            try {
-                                this.privIntentRecognizer.recognized(this.privIntentRecognizer, ev);
-                                /* tslint:disable:no-empty */
-                            }
-                            catch (error) {
-                                // Not going to let errors in the event handler
-                                // trip things up.
-                            }
-                        }
-                        // report result to promise.
-                        if (!!this.privSuccessCallback) {
-                            try {
-                                this.privSuccessCallback(ev.result);
-                            }
-                            catch (e) {
-                                if (!!this.privErrorCallback) {
-                                    this.privErrorCallback(e);
-                                }
-                            }
-                            // Only invoke the call back once.
-                            // and if it's successful don't invoke the
-                            // error after that.
-                            this.privSuccessCallback = undefined;
-                            this.privErrorCallback = undefined;
-                        }
-                        processed = true;
-                        break;
-                    default:
-                        break;
+                        // Only invoke the call back once.
+                        // and if it's successful don't invoke the
+                        // error after that.
+                        _this.privSuccessCallback = undefined;
+                        _this.privErrorCallback = undefined;
+                    }
+                };
+                // If intent data was sent, the terminal result for this recognizer is an intent being found.
+                // If no intent data was sent, the terminal event is speech recognition being successful.
+                if (false === this.privIntentDataSent || Exports_2.ResultReason.NoMatch === ev.result.reason) {
+                    // Advance the buffers.
+                    this.privRequestSession.onPhraseRecognized(ev.offset + ev.result.duration);
+                    sendEvent();
                 }
-                return [2 /*return*/, processed];
-            });
-        });
+                else {
+                    // Squirrel away the args, when the response event arrives it will build upon them
+                    // and then return
+                    this.privPendingIntentArgs = ev;
+                }
+                processed = true;
+                break;
+            case "response":
+                // Response from LUIS
+                ev = this.privPendingIntentArgs;
+                this.privPendingIntentArgs = undefined;
+                if (undefined === ev) {
+                    if ("" === connectionMessage.textBody) {
+                        // This condition happens if there is nothing but silence in the
+                        // audio sent to the service.
+                        return;
+                    }
+                    // Odd... Not sure this can happen
+                    ev = new Exports_2.IntentRecognitionEventArgs(new Exports_2.IntentRecognitionResult(), 0, this.privRequestSession.sessionId);
+                }
+                var intentResponse = Exports_3.IntentResponse.fromJSON(connectionMessage.textBody);
+                // If LUIS didn't return anything, send the existing event, else
+                // modify it to show the match.
+                // See if the intent found is in the list of intents asked for.
+                var addedIntent = this.privAddedLmIntents[intentResponse.topScoringIntent.intent];
+                if (this.privUmbrellaIntent !== undefined) {
+                    addedIntent = this.privUmbrellaIntent;
+                }
+                if (null !== intentResponse && addedIntent !== undefined) {
+                    var intentId = addedIntent.intentName === undefined ? intentResponse.topScoringIntent.intent : addedIntent.intentName;
+                    var reason = ev.result.reason;
+                    if (undefined !== intentId) {
+                        reason = Exports_2.ResultReason.RecognizedIntent;
+                    }
+                    // make sure, properties is set.
+                    var properties = (undefined !== ev.result.properties) ?
+                        ev.result.properties : new Exports_2.PropertyCollection();
+                    properties.setProperty(Exports_2.PropertyId.LanguageUnderstandingServiceResponse_JsonResult, connectionMessage.textBody);
+                    ev = new Exports_2.IntentRecognitionEventArgs(new Exports_2.IntentRecognitionResult(intentId, ev.result.resultId, reason, ev.result.text, ev.result.duration, ev.result.offset, undefined, undefined, ev.result.errorDetails, ev.result.json, properties), ev.offset, ev.sessionId);
+                }
+                this.privRequestSession.onPhraseRecognized(ev.offset + ev.result.duration);
+                if (!!this.privIntentRecognizer.recognized) {
+                    try {
+                        this.privIntentRecognizer.recognized(this.privIntentRecognizer, ev);
+                        /* eslint-disable no-empty */
+                    }
+                    catch (error) {
+                        // Not going to let errors in the event handler
+                        // trip things up.
+                    }
+                }
+                // report result to promise.
+                if (!!this.privSuccessCallback) {
+                    try {
+                        this.privSuccessCallback(ev.result);
+                    }
+                    catch (e) {
+                        if (!!this.privErrorCallback) {
+                            this.privErrorCallback(e);
+                        }
+                    }
+                    // Only invoke the call back once.
+                    // and if it's successful don't invoke the
+                    // error after that.
+                    this.privSuccessCallback = undefined;
+                    this.privErrorCallback = undefined;
+                }
+                processed = true;
+                break;
+            default:
+                break;
+        }
+        var defferal = new Exports_1.Deferred();
+        defferal.resolve(processed);
+        return defferal.promise;
     };
     // Cancels recognition.
     IntentServiceRecognizer.prototype.cancelRecognition = function (sessionId, requestId, cancellationReason, errorCode, error) {
@@ -23918,7 +24350,7 @@ var IntentServiceRecognizer = /** @class */ (function (_super) {
             var cancelEvent = new Exports_2.IntentRecognitionCanceledEventArgs(cancellationReason, error, errorCode, undefined, undefined, sessionId);
             try {
                 this.privIntentRecognizer.canceled(this.privIntentRecognizer, cancelEvent);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_a) { }
         }
@@ -23934,7 +24366,7 @@ var IntentServiceRecognizer = /** @class */ (function (_super) {
             try {
                 this.privSuccessCallback(result);
                 this.privSuccessCallback = undefined;
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_b) { }
         }
@@ -23946,7 +24378,7 @@ exports.IntentServiceRecognizer = IntentServiceRecognizer;
 
 
 /***/ }),
-/* 196 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23991,7 +24423,7 @@ exports.IntentResponse = IntentResponse;
 
 
 /***/ }),
-/* 197 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24036,12 +24468,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RequestSession = void 0;
-var Exports_1 = __webpack_require__(4);
-var RecognitionEvents_1 = __webpack_require__(171);
-var ServiceTelemetryListener_Internal_1 = __webpack_require__(198);
+var Exports_1 = __webpack_require__(6);
+var RecognitionEvents_1 = __webpack_require__(177);
+var ServiceTelemetryListener_Internal_1 = __webpack_require__(204);
 var RequestSession = /** @class */ (function () {
     function RequestSession(audioSourceId) {
-        var _this = this;
         this.privIsDisposed = false;
         this.privDetachables = new Array();
         this.privIsAudioNodeDetached = false;
@@ -24054,39 +24485,6 @@ var RequestSession = /** @class */ (function () {
         this.privRecogNumber = 0;
         this.privInTurn = false;
         this.privConnectionAttempts = 0;
-        this.onPreConnectionStart = function (authFetchEventId, connectionId) {
-            _this.privAuthFetchEventId = authFetchEventId;
-            _this.privSessionId = connectionId;
-            _this.onEvent(new RecognitionEvents_1.ConnectingToServiceEvent(_this.privRequestId, _this.privAuthFetchEventId, _this.privSessionId));
-        };
-        this.onSpeechContext = function () {
-            _this.privRequestId = Exports_1.createNoDashGuid();
-        };
-        this.onServiceTurnStartResponse = function () {
-            if (!!_this.privTurnDeferral && !!_this.privInTurn) {
-                // What? How are we starting a turn with another not done?
-                _this.privTurnDeferral.reject("Another turn started before current completed.");
-                // Avoid UnhandledPromiseRejection if privTurnDeferral is not being awaited
-                /* tslint:disable:no-empty */
-                _this.privTurnDeferral.promise.then().catch(function () { });
-            }
-            _this.privInTurn = true;
-            _this.privTurnDeferral = new Exports_1.Deferred();
-        };
-        this.getTelemetry = function () {
-            if (_this.privServiceTelemetryListener.hasTelemetry) {
-                return _this.privServiceTelemetryListener.getTelemetry();
-            }
-            else {
-                return null;
-            }
-        };
-        this.onEvent = function (event) {
-            if (!!_this.privServiceTelemetryListener) {
-                _this.privServiceTelemetryListener.onEvent(event);
-            }
-            Exports_1.Events.instance.onEvent(event);
-        };
         this.privAudioSourceId = audioSourceId;
         this.privRequestId = Exports_1.createNoDashGuid();
         this.privAudioNodeId = Exports_1.createNoDashGuid();
@@ -24180,7 +24578,7 @@ var RequestSession = /** @class */ (function () {
         this.privServiceTelemetryListener = new ServiceTelemetryListener_Internal_1.ServiceTelemetryListener(this.privRequestId, this.privAudioSourceId, this.privAudioNodeId);
         this.onEvent(new RecognitionEvents_1.RecognitionTriggeredEvent(this.requestId, this.privSessionId, this.privAudioSourceId, this.privAudioNodeId));
     };
-    RequestSession.prototype.onAudioSourceAttachCompleted = function (audioNode, isError, error) {
+    RequestSession.prototype.onAudioSourceAttachCompleted = function (audioNode, isError) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -24200,7 +24598,12 @@ var RequestSession = /** @class */ (function () {
             });
         });
     };
-    RequestSession.prototype.onAuthCompleted = function (isError, error) {
+    RequestSession.prototype.onPreConnectionStart = function (authFetchEventId, connectionId) {
+        this.privAuthFetchEventId = authFetchEventId;
+        this.privSessionId = connectionId;
+        this.onEvent(new RecognitionEvents_1.ConnectingToServiceEvent(this.privRequestId, this.privAuthFetchEventId, this.privSessionId));
+    };
+    RequestSession.prototype.onAuthCompleted = function (isError) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -24215,6 +24618,7 @@ var RequestSession = /** @class */ (function () {
             });
         });
     };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     RequestSession.prototype.onConnectionEstablishCompleted = function (statusCode, reason) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
@@ -24261,6 +24665,20 @@ var RequestSession = /** @class */ (function () {
             });
         });
     };
+    RequestSession.prototype.onSpeechContext = function () {
+        this.privRequestId = Exports_1.createNoDashGuid();
+    };
+    RequestSession.prototype.onServiceTurnStartResponse = function () {
+        if (!!this.privTurnDeferral && !!this.privInTurn) {
+            // What? How are we starting a turn with another not done?
+            this.privTurnDeferral.reject("Another turn started before current completed.");
+            // Avoid UnhandledPromiseRejection if privTurnDeferral is not being awaited
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            this.privTurnDeferral.promise.then().catch(function () { });
+        }
+        this.privInTurn = true;
+        this.privTurnDeferral = new Exports_1.Deferred();
+    };
     RequestSession.prototype.onHypothesis = function (offset) {
         if (!this.privHypothesisReceived) {
             this.privHypothesisReceived = true;
@@ -24283,36 +24701,45 @@ var RequestSession = /** @class */ (function () {
     RequestSession.prototype.onRetryConnection = function () {
         this.privConnectionAttempts++;
     };
-    RequestSession.prototype.dispose = function (error) {
-        var _a;
+    RequestSession.prototype.dispose = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _i, _b, detachable;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _i, _a, detachable;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
                         if (!!this.privIsDisposed) return [3 /*break*/, 5];
                         // we should have completed by now. If we did not its an unknown error.
                         this.privIsDisposed = true;
-                        _i = 0, _b = this.privDetachables;
-                        _c.label = 1;
+                        _i = 0, _a = this.privDetachables;
+                        _b.label = 1;
                     case 1:
-                        if (!(_i < _b.length)) return [3 /*break*/, 4];
-                        detachable = _b[_i];
+                        if (!(_i < _a.length)) return [3 /*break*/, 4];
+                        detachable = _a[_i];
                         return [4 /*yield*/, detachable.detach()];
                     case 2:
-                        _c.sent();
-                        _c.label = 3;
+                        _b.sent();
+                        _b.label = 3;
                     case 3:
                         _i++;
                         return [3 /*break*/, 1];
                     case 4:
-                        (_a = this.privServiceTelemetryListener) === null || _a === void 0 ? void 0 : _a.dispose();
+                        if (!!this.privServiceTelemetryListener) {
+                            this.privServiceTelemetryListener.dispose();
+                        }
                         this.privIsRecognizing = false;
-                        _c.label = 5;
+                        _b.label = 5;
                     case 5: return [2 /*return*/];
                 }
             });
         });
+    };
+    RequestSession.prototype.getTelemetry = function () {
+        if (this.privServiceTelemetryListener.hasTelemetry) {
+            return this.privServiceTelemetryListener.getTelemetry();
+        }
+        else {
+            return null;
+        }
     };
     RequestSession.prototype.onStopRecognizing = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -24329,6 +24756,12 @@ var RequestSession = /** @class */ (function () {
     // Should be called with the audioNode for this session has indicated that it is out of speech.
     RequestSession.prototype.onSpeechEnded = function () {
         this.privIsSpeechEnded = true;
+    };
+    RequestSession.prototype.onEvent = function (event) {
+        if (!!this.privServiceTelemetryListener) {
+            this.privServiceTelemetryListener.onEvent(event);
+        }
+        Exports_1.Events.instance.onEvent(event);
     };
     RequestSession.prototype.onComplete = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -24370,7 +24803,7 @@ exports.RequestSession = RequestSession;
 
 
 /***/ }),
-/* 198 */
+/* 204 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24379,172 +24812,15 @@ exports.RequestSession = RequestSession;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceTelemetryListener = void 0;
-// tslint:disable:max-classes-per-file
-var Exports_1 = __webpack_require__(4);
-var RecognitionEvents_1 = __webpack_require__(171);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(6);
+var RecognitionEvents_1 = __webpack_require__(177);
 var ServiceTelemetryListener = /** @class */ (function () {
     function ServiceTelemetryListener(requestId, audioSourceId, audioNodeId) {
-        var _this = this;
         this.privIsDisposed = false;
         this.privListeningTriggerMetric = null;
         this.privMicMetric = null;
         this.privConnectionEstablishMetric = null;
-        this.onEvent = function (e) {
-            if (_this.privIsDisposed) {
-                return;
-            }
-            if (e instanceof RecognitionEvents_1.RecognitionTriggeredEvent && e.requestId === _this.privRequestId) {
-                _this.privListeningTriggerMetric = {
-                    End: e.eventTime,
-                    Name: "ListeningTrigger",
-                    Start: e.eventTime,
-                };
-            }
-            if (e instanceof Exports_1.AudioStreamNodeAttachingEvent && e.audioSourceId === _this.privAudioSourceId && e.audioNodeId === _this.privAudioNodeId) {
-                _this.privMicStartTime = e.eventTime;
-            }
-            if (e instanceof Exports_1.AudioStreamNodeAttachedEvent && e.audioSourceId === _this.privAudioSourceId && e.audioNodeId === _this.privAudioNodeId) {
-                _this.privMicStartTime = e.eventTime;
-            }
-            if (e instanceof Exports_1.AudioSourceErrorEvent && e.audioSourceId === _this.privAudioSourceId) {
-                if (!_this.privMicMetric) {
-                    _this.privMicMetric = {
-                        End: e.eventTime,
-                        Error: e.error,
-                        Name: "Microphone",
-                        Start: _this.privMicStartTime,
-                    };
-                }
-            }
-            if (e instanceof Exports_1.AudioStreamNodeErrorEvent && e.audioSourceId === _this.privAudioSourceId && e.audioNodeId === _this.privAudioNodeId) {
-                if (!_this.privMicMetric) {
-                    _this.privMicMetric = {
-                        End: e.eventTime,
-                        Error: e.error,
-                        Name: "Microphone",
-                        Start: _this.privMicStartTime,
-                    };
-                }
-            }
-            if (e instanceof Exports_1.AudioStreamNodeDetachedEvent && e.audioSourceId === _this.privAudioSourceId && e.audioNodeId === _this.privAudioNodeId) {
-                if (!_this.privMicMetric) {
-                    _this.privMicMetric = {
-                        End: e.eventTime,
-                        Name: "Microphone",
-                        Start: _this.privMicStartTime,
-                    };
-                }
-            }
-            if (e instanceof RecognitionEvents_1.ConnectingToServiceEvent && e.requestId === _this.privRequestId) {
-                _this.privConnectionId = e.sessionId;
-            }
-            if (e instanceof Exports_1.ConnectionStartEvent && e.connectionId === _this.privConnectionId) {
-                _this.privConnectionStartTime = e.eventTime;
-            }
-            if (e instanceof Exports_1.ConnectionEstablishedEvent && e.connectionId === _this.privConnectionId) {
-                if (!_this.privConnectionEstablishMetric) {
-                    _this.privConnectionEstablishMetric = {
-                        End: e.eventTime,
-                        Id: _this.privConnectionId,
-                        Name: "Connection",
-                        Start: _this.privConnectionStartTime,
-                    };
-                }
-            }
-            if (e instanceof Exports_1.ConnectionEstablishErrorEvent && e.connectionId === _this.privConnectionId) {
-                if (!_this.privConnectionEstablishMetric) {
-                    _this.privConnectionEstablishMetric = {
-                        End: e.eventTime,
-                        Error: _this.getConnectionError(e.statusCode),
-                        Id: _this.privConnectionId,
-                        Name: "Connection",
-                        Start: _this.privConnectionStartTime,
-                    };
-                }
-            }
-            if (e instanceof Exports_1.ConnectionMessageReceivedEvent && e.connectionId === _this.privConnectionId) {
-                if (e.message && e.message.headers && e.message.headers.path) {
-                    if (!_this.privReceivedMessages[e.message.headers.path]) {
-                        _this.privReceivedMessages[e.message.headers.path] = new Array();
-                    }
-                    var maxMessagesToSend = 50;
-                    if (_this.privReceivedMessages[e.message.headers.path].length < maxMessagesToSend) {
-                        _this.privReceivedMessages[e.message.headers.path].push(e.networkReceivedTime);
-                    }
-                }
-            }
-        };
-        this.getTelemetry = function () {
-            var metrics = new Array();
-            if (_this.privListeningTriggerMetric) {
-                metrics.push(_this.privListeningTriggerMetric);
-            }
-            if (_this.privMicMetric) {
-                metrics.push(_this.privMicMetric);
-            }
-            if (_this.privConnectionEstablishMetric) {
-                metrics.push(_this.privConnectionEstablishMetric);
-            }
-            if (_this.privPhraseLatencies.length > 0) {
-                metrics.push({
-                    PhraseLatencyMs: _this.privPhraseLatencies,
-                });
-            }
-            if (_this.privHypothesisLatencies.length > 0) {
-                metrics.push({
-                    FirstHypothesisLatencyMs: _this.privHypothesisLatencies,
-                });
-            }
-            var telemetry = {
-                Metrics: metrics,
-                ReceivedMessages: _this.privReceivedMessages,
-            };
-            var json = JSON.stringify(telemetry);
-            // We dont want to send the same telemetry again. So clean those out.
-            _this.privReceivedMessages = {};
-            _this.privListeningTriggerMetric = null;
-            _this.privMicMetric = null;
-            _this.privConnectionEstablishMetric = null;
-            _this.privPhraseLatencies = [];
-            _this.privHypothesisLatencies = [];
-            return json;
-        };
-        this.dispose = function () {
-            _this.privIsDisposed = true;
-        };
-        this.getConnectionError = function (statusCode) {
-            /*
-            -- Websocket status codes --
-            NormalClosure = 1000,
-            EndpointUnavailable = 1001,
-            ProtocolError = 1002,
-            InvalidMessageType = 1003,
-            Empty = 1005,
-            InvalidPayloadData = 1007,
-            PolicyViolation = 1008,
-            MessageTooBig = 1009,
-            MandatoryExtension = 1010,
-            InternalServerError = 1011
-            */
-            switch (statusCode) {
-                case 400:
-                case 1002:
-                case 1003:
-                case 1005:
-                case 1007:
-                case 1008:
-                case 1009: return "BadRequest";
-                case 401: return "Unauthorized";
-                case 403: return "Forbidden";
-                case 503:
-                case 1001: return "ServerUnavailable";
-                case 500:
-                case 1011: return "ServerError";
-                case 408:
-                case 504: return "Timeout";
-                default: return "statuscode:" + statusCode.toString();
-            }
-        };
         this.privRequestId = requestId;
         this.privAudioSourceId = audioSourceId;
         this.privAudioNodeId = audioNodeId;
@@ -24562,6 +24838,126 @@ var ServiceTelemetryListener = /** @class */ (function () {
             this.privHypothesisLatencies.push(Date.now() - audioReceivedTime);
         }
     };
+    ServiceTelemetryListener.prototype.onEvent = function (e) {
+        if (this.privIsDisposed) {
+            return;
+        }
+        if (e instanceof RecognitionEvents_1.RecognitionTriggeredEvent && e.requestId === this.privRequestId) {
+            this.privListeningTriggerMetric = {
+                End: e.eventTime,
+                Name: "ListeningTrigger",
+                Start: e.eventTime,
+            };
+        }
+        if (e instanceof Exports_1.AudioStreamNodeAttachingEvent && e.audioSourceId === this.privAudioSourceId && e.audioNodeId === this.privAudioNodeId) {
+            this.privMicStartTime = e.eventTime;
+        }
+        if (e instanceof Exports_1.AudioStreamNodeAttachedEvent && e.audioSourceId === this.privAudioSourceId && e.audioNodeId === this.privAudioNodeId) {
+            this.privMicStartTime = e.eventTime;
+        }
+        if (e instanceof Exports_1.AudioSourceErrorEvent && e.audioSourceId === this.privAudioSourceId) {
+            if (!this.privMicMetric) {
+                this.privMicMetric = {
+                    End: e.eventTime,
+                    Error: e.error,
+                    Name: "Microphone",
+                    Start: this.privMicStartTime,
+                };
+            }
+        }
+        if (e instanceof Exports_1.AudioStreamNodeErrorEvent && e.audioSourceId === this.privAudioSourceId && e.audioNodeId === this.privAudioNodeId) {
+            if (!this.privMicMetric) {
+                this.privMicMetric = {
+                    End: e.eventTime,
+                    Error: e.error,
+                    Name: "Microphone",
+                    Start: this.privMicStartTime,
+                };
+            }
+        }
+        if (e instanceof Exports_1.AudioStreamNodeDetachedEvent && e.audioSourceId === this.privAudioSourceId && e.audioNodeId === this.privAudioNodeId) {
+            if (!this.privMicMetric) {
+                this.privMicMetric = {
+                    End: e.eventTime,
+                    Name: "Microphone",
+                    Start: this.privMicStartTime,
+                };
+            }
+        }
+        if (e instanceof RecognitionEvents_1.ConnectingToServiceEvent && e.requestId === this.privRequestId) {
+            this.privConnectionId = e.sessionId;
+        }
+        if (e instanceof Exports_1.ConnectionStartEvent && e.connectionId === this.privConnectionId) {
+            this.privConnectionStartTime = e.eventTime;
+        }
+        if (e instanceof Exports_1.ConnectionEstablishedEvent && e.connectionId === this.privConnectionId) {
+            if (!this.privConnectionEstablishMetric) {
+                this.privConnectionEstablishMetric = {
+                    End: e.eventTime,
+                    Id: this.privConnectionId,
+                    Name: "Connection",
+                    Start: this.privConnectionStartTime,
+                };
+            }
+        }
+        if (e instanceof Exports_1.ConnectionEstablishErrorEvent && e.connectionId === this.privConnectionId) {
+            if (!this.privConnectionEstablishMetric) {
+                this.privConnectionEstablishMetric = {
+                    End: e.eventTime,
+                    Error: this.getConnectionError(e.statusCode),
+                    Id: this.privConnectionId,
+                    Name: "Connection",
+                    Start: this.privConnectionStartTime,
+                };
+            }
+        }
+        if (e instanceof Exports_1.ConnectionMessageReceivedEvent && e.connectionId === this.privConnectionId) {
+            if (e.message && e.message.headers && e.message.headers.path) {
+                if (!this.privReceivedMessages[e.message.headers.path]) {
+                    this.privReceivedMessages[e.message.headers.path] = new Array();
+                }
+                var maxMessagesToSend = 50;
+                if (this.privReceivedMessages[e.message.headers.path].length < maxMessagesToSend) {
+                    this.privReceivedMessages[e.message.headers.path].push(e.networkReceivedTime);
+                }
+            }
+        }
+    };
+    ServiceTelemetryListener.prototype.getTelemetry = function () {
+        var metrics = new Array();
+        if (this.privListeningTriggerMetric) {
+            metrics.push(this.privListeningTriggerMetric);
+        }
+        if (this.privMicMetric) {
+            metrics.push(this.privMicMetric);
+        }
+        if (this.privConnectionEstablishMetric) {
+            metrics.push(this.privConnectionEstablishMetric);
+        }
+        if (this.privPhraseLatencies.length > 0) {
+            metrics.push({
+                PhraseLatencyMs: this.privPhraseLatencies,
+            });
+        }
+        if (this.privHypothesisLatencies.length > 0) {
+            metrics.push({
+                FirstHypothesisLatencyMs: this.privHypothesisLatencies,
+            });
+        }
+        var telemetry = {
+            Metrics: metrics,
+            ReceivedMessages: this.privReceivedMessages,
+        };
+        var json = JSON.stringify(telemetry);
+        // We dont want to send the same telemetry again. So clean those out.
+        this.privReceivedMessages = {};
+        this.privListeningTriggerMetric = null;
+        this.privMicMetric = null;
+        this.privConnectionEstablishMetric = null;
+        this.privPhraseLatencies = [];
+        this.privHypothesisLatencies = [];
+        return json;
+    };
     Object.defineProperty(ServiceTelemetryListener.prototype, "hasTelemetry", {
         // Determines if there are any telemetry events to send to the service.
         get: function () {
@@ -24575,6 +24971,42 @@ var ServiceTelemetryListener = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    ServiceTelemetryListener.prototype.dispose = function () {
+        this.privIsDisposed = true;
+    };
+    ServiceTelemetryListener.prototype.getConnectionError = function (statusCode) {
+        /*
+        -- Websocket status codes --
+        NormalClosure = 1000,
+        EndpointUnavailable = 1001,
+        ProtocolError = 1002,
+        InvalidMessageType = 1003,
+        Empty = 1005,
+        InvalidPayloadData = 1007,
+        PolicyViolation = 1008,
+        MessageTooBig = 1009,
+        MandatoryExtension = 1010,
+        InternalServerError = 1011
+        */
+        switch (statusCode) {
+            case 400:
+            case 1002:
+            case 1003:
+            case 1005:
+            case 1007:
+            case 1008:
+            case 1009: return "BadRequest";
+            case 401: return "Unauthorized";
+            case 403: return "Forbidden";
+            case 503:
+            case 1001: return "ServerUnavailable";
+            case 500:
+            case 1011: return "ServerError";
+            case 408:
+            case 504: return "Timeout";
+            default: return "statuscode:" + statusCode.toString();
+        }
+    };
     return ServiceTelemetryListener;
 }());
 exports.ServiceTelemetryListener = ServiceTelemetryListener;
@@ -24582,7 +25014,7 @@ exports.ServiceTelemetryListener = ServiceTelemetryListener;
 
 
 /***/ }),
-/* 199 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24630,6 +25062,11 @@ var SpeechContext = /** @class */ (function () {
                 format: {}
             };
         }
+        if (this.privContext.phraseOutput.detailed === undefined) {
+            this.privContext.phraseOutput.detailed = {
+                options: []
+            };
+        }
         this.privContext.phraseOutput.format = "Detailed";
         this.privContext.phraseOutput.detailed.options.push("PronunciationAssessment");
         if (this.privContext.phraseOutput.detailed.options.indexOf("WordTimings") === -1) {
@@ -24652,7 +25089,7 @@ exports.SpeechContext = SpeechContext;
 
 
 /***/ }),
-/* 200 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24712,7 +25149,7 @@ var DynamicGrammarBuilder = /** @class */ (function () {
         retObj.ReferenceGrammars = this.privGrammars;
         if (undefined !== this.privPhrases && 0 !== this.privPhrases.length) {
             var retPhrases_1 = [];
-            this.privPhrases.forEach(function (value, index, array) {
+            this.privPhrases.forEach(function (value) {
                 retPhrases_1.push({
                     Text: value,
                 });
@@ -24728,7 +25165,7 @@ exports.DynamicGrammarBuilder = DynamicGrammarBuilder;
 
 
 /***/ }),
-/* 201 */
+/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24740,7 +25177,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 /***/ }),
-/* 202 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24799,113 +25236,37 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DialogServiceAdapter = void 0;
 var Exports_1 = __webpack_require__(2);
-var DialogEvents_1 = __webpack_require__(27);
-var Exports_2 = __webpack_require__(4);
-var AudioOutputFormat_1 = __webpack_require__(74);
-var Exports_3 = __webpack_require__(61);
-var DialogServiceTurnStateManager_1 = __webpack_require__(203);
-var Exports_4 = __webpack_require__(53);
-var ActivityResponsePayload_1 = __webpack_require__(205);
-var SpeechConnectionMessage_Internal_1 = __webpack_require__(173);
+var DialogEvents_1 = __webpack_require__(29);
+var Exports_2 = __webpack_require__(6);
+var AudioOutputFormat_1 = __webpack_require__(76);
+var Exports_3 = __webpack_require__(64);
+var DialogServiceTurnStateManager_1 = __webpack_require__(209);
+var Exports_4 = __webpack_require__(56);
+var ActivityResponsePayload_1 = __webpack_require__(211);
+var SpeechConnectionMessage_Internal_1 = __webpack_require__(179);
 var DialogServiceAdapter = /** @class */ (function (_super) {
     __extends(DialogServiceAdapter, _super);
     function DialogServiceAdapter(authentication, connectionFactory, audioSource, recognizerConfig, dialogServiceConnector) {
         var _this = _super.call(this, authentication, connectionFactory, audioSource, recognizerConfig, dialogServiceConnector) || this;
-        _this.sendAgentConfig = function (connection) {
-            if (_this.agentConfig && !_this.agentConfigSent) {
-                if (_this.privRecognizerConfig
-                    .parameters
-                    .getProperty(Exports_3.PropertyId.Conversation_DialogType) === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands) {
-                    var config = _this.agentConfig.get();
-                    config.botInfo.commandsCulture = _this.privRecognizerConfig.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_RecoLanguage, "en-us");
-                    _this.agentConfig.set(config);
-                }
-                _this.onEvent(new DialogEvents_1.SendingAgentContextMessageEvent(_this.agentConfig));
-                var agentConfigJson = _this.agentConfig.toJsonString();
-                // guard against sending this multiple times on one connection
-                _this.agentConfigSent = true;
-                return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "agent.config", _this.privRequestSession.requestId, "application/json", agentConfigJson));
-            }
-            return;
-        };
-        _this.sendAgentContext = function (connection) {
-            var guid = Exports_2.createGuid();
-            var speechActivityTemplate = _this.privDialogServiceConnector.properties.getProperty(Exports_3.PropertyId.Conversation_Speech_Activity_Template);
-            var agentContext = {
-                channelData: "",
-                context: {
-                    interactionId: guid
-                },
-                messagePayload: typeof speechActivityTemplate === undefined ? undefined : speechActivityTemplate,
-                version: 0.5
-            };
-            var agentContextJson = JSON.stringify(agentContext);
-            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "speech.agent.context", _this.privRequestSession.requestId, "application/json", agentContextJson));
-        };
-        _this.handleResponseMessage = function (responseMessage) {
-            // "response" messages can contain either "message" (activity) or "MessageStatus" data. Fire the appropriate
-            // event according to the message type that's specified.
-            var responsePayload = JSON.parse(responseMessage.textBody);
-            switch (responsePayload.messageType.toLowerCase()) {
-                case "message":
-                    var responseRequestId = responseMessage.requestId.toUpperCase();
-                    var activityPayload = ActivityResponsePayload_1.ActivityPayloadResponse.fromJSON(responseMessage.textBody);
-                    var turn = _this.privTurnStateManager.GetTurn(responseRequestId);
-                    // update the conversation Id
-                    if (activityPayload.conversationId) {
-                        var updateAgentConfig = _this.agentConfig.get();
-                        updateAgentConfig.botInfo.conversationId = activityPayload.conversationId;
-                        _this.agentConfig.set(updateAgentConfig);
-                    }
-                    var pullAudioOutputStream = turn.processActivityPayload(activityPayload, AudioOutputFormat_1.AudioOutputFormatImpl.fromSpeechSynthesisOutputFormatString(_this.privDialogServiceConnector.properties.getProperty(Exports_3.PropertyId.SpeechServiceConnection_SynthOutputFormat, undefined)));
-                    var activity = new Exports_3.ActivityReceivedEventArgs(activityPayload.messagePayload, pullAudioOutputStream);
-                    if (!!_this.privDialogServiceConnector.activityReceived) {
-                        try {
-                            _this.privDialogServiceConnector.activityReceived(_this.privDialogServiceConnector, activity);
-                            /* tslint:disable:no-empty */
-                        }
-                        catch (error) {
-                            // Not going to let errors in the event handler
-                            // trip things up.
-                        }
-                    }
-                    break;
-                case "messagestatus":
-                    if (!!_this.privDialogServiceConnector.turnStatusReceived) {
-                        try {
-                            _this.privDialogServiceConnector.turnStatusReceived(_this.privDialogServiceConnector, new Exports_3.TurnStatusReceivedEventArgs(responseMessage.textBody));
-                            /* tslint:disable:no-empty */
-                        }
-                        catch (error) {
-                            // Not going to let errors in the event handler
-                            // trip things up.
-                        }
-                    }
-                    break;
-                default:
-                    Exports_2.Events.instance.onEvent(new Exports_2.BackgroundEvent("Unexpected response of type " + responsePayload.messageType + ". Ignoring."));
-                    break;
-            }
-        };
         _this.privEvents = new Exports_2.EventSource();
         _this.privDialogServiceConnector = dialogServiceConnector;
-        _this.receiveMessageOverride = _this.receiveDialogMessageOverride;
+        _this.receiveMessageOverride = function () { return _this.receiveDialogMessageOverride(); };
         _this.privTurnStateManager = new DialogServiceTurnStateManager_1.DialogServiceTurnStateManager();
-        _this.recognizeOverride = _this.listenOnce;
-        _this.postConnectImplOverride = _this.dialogConnectImpl;
-        _this.configConnectionOverride = _this.configConnection;
-        _this.disconnectOverride = _this.privDisconnect;
+        _this.recognizeOverride =
+            function (recoMode, successCallback, errorCallback) {
+                return _this.listenOnce(recoMode, successCallback, errorCallback);
+            };
+        _this.postConnectImplOverride = function (connection) { return _this.dialogConnectImpl(connection); };
+        _this.configConnectionOverride = function (connection) { return _this.configConnection(connection); };
+        _this.disconnectOverride = function () { return _this.privDisconnect(); };
         _this.privDialogAudioSource = audioSource;
         _this.agentConfigSent = false;
         _this.privLastResult = null;
-        _this.connectionEvents.attach(function (connectionEvent) { return __awaiter(_this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                if (connectionEvent.name === "ConnectionClosedEvent") {
-                    this.terminateMessageLoop = true;
-                }
-                return [2 /*return*/];
-            });
-        }); });
+        _this.connectionEvents.attach(function (connectionEvent) {
+            if (connectionEvent.name === "ConnectionClosedEvent") {
+                _this.terminateMessageLoop = true;
+            }
+        });
         return _this;
     }
     DialogServiceAdapter.prototype.sendMessage = function (message) {
@@ -24920,6 +25281,7 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                             context: {
                                 interactionId: interactionGuid
                             },
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             messagePayload: JSON.parse(message),
                             version: 0.5
                         };
@@ -24950,102 +25312,101 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
         });
     };
     DialogServiceAdapter.prototype.processTypeSpecificMessages = function (connectionMessage) {
-        return __awaiter(this, void 0, void 0, function () {
-            var resultProps, result, processed, speechPhrase, args, hypothesis, offset, ev, keyword, event_1, audioRequestId, turn;
-            return __generator(this, function (_a) {
-                resultProps = new Exports_3.PropertyCollection();
-                if (connectionMessage.messageType === Exports_2.MessageType.Text) {
-                    resultProps.setProperty(Exports_3.PropertyId.SpeechServiceResponse_JsonResult, connectionMessage.textBody);
+        var resultProps = new Exports_3.PropertyCollection();
+        if (connectionMessage.messageType === Exports_2.MessageType.Text) {
+            resultProps.setProperty(Exports_3.PropertyId.SpeechServiceResponse_JsonResult, connectionMessage.textBody);
+        }
+        var result;
+        var processed;
+        switch (connectionMessage.path.toLowerCase()) {
+            case "speech.phrase":
+                var speechPhrase = Exports_4.SimpleSpeechPhrase.fromJSON(connectionMessage.textBody);
+                this.privRequestSession.onPhraseRecognized(this.privRequestSession.currentTurnAudioOffset + speechPhrase.Offset + speechPhrase.Duration);
+                if (speechPhrase.RecognitionStatus !== Exports_4.RecognitionStatus.TooManyRequests && speechPhrase.RecognitionStatus !== Exports_4.RecognitionStatus.Error) {
+                    var args = this.fireEventForResult(speechPhrase, resultProps);
+                    this.privLastResult = args.result;
+                    if (!!this.privDialogServiceConnector.recognized) {
+                        try {
+                            this.privDialogServiceConnector.recognized(this.privDialogServiceConnector, args);
+                            /* eslint-disable no-empty */
+                        }
+                        catch (error) {
+                            // Not going to let errors in the event handler
+                            // trip things up.
+                        }
+                    }
                 }
-                switch (connectionMessage.path.toLowerCase()) {
-                    case "speech.phrase":
-                        speechPhrase = Exports_4.SimpleSpeechPhrase.fromJSON(connectionMessage.textBody);
-                        this.privRequestSession.onPhraseRecognized(this.privRequestSession.currentTurnAudioOffset + speechPhrase.Offset + speechPhrase.Duration);
-                        if (speechPhrase.RecognitionStatus !== Exports_4.RecognitionStatus.TooManyRequests && speechPhrase.RecognitionStatus !== Exports_4.RecognitionStatus.Error) {
-                            args = this.fireEventForResult(speechPhrase, resultProps);
-                            this.privLastResult = args.result;
-                            if (!!this.privDialogServiceConnector.recognized) {
-                                try {
-                                    this.privDialogServiceConnector.recognized(this.privDialogServiceConnector, args);
-                                    /* tslint:disable:no-empty */
-                                }
-                                catch (error) {
-                                    // Not going to let errors in the event handler
-                                    // trip things up.
-                                }
-                            }
-                        }
-                        processed = true;
-                        break;
-                    case "speech.hypothesis":
-                        hypothesis = Exports_4.SpeechHypothesis.fromJSON(connectionMessage.textBody);
-                        offset = hypothesis.Offset + this.privRequestSession.currentTurnAudioOffset;
-                        result = new Exports_3.SpeechRecognitionResult(this.privRequestSession.requestId, Exports_3.ResultReason.RecognizingSpeech, hypothesis.Text, hypothesis.Duration, offset, hypothesis.Language, hypothesis.LanguageDetectionConfidence, undefined, undefined, connectionMessage.textBody, resultProps);
-                        this.privRequestSession.onHypothesis(offset);
-                        ev = new Exports_3.SpeechRecognitionEventArgs(result, hypothesis.Duration, this.privRequestSession.sessionId);
-                        if (!!this.privDialogServiceConnector.recognizing) {
-                            try {
-                                this.privDialogServiceConnector.recognizing(this.privDialogServiceConnector, ev);
-                                /* tslint:disable:no-empty */
-                            }
-                            catch (error) {
-                                // Not going to let errors in the event handler
-                                // trip things up.
-                            }
-                        }
-                        processed = true;
-                        break;
-                    case "speech.keyword":
-                        keyword = Exports_4.SpeechKeyword.fromJSON(connectionMessage.textBody);
-                        result = new Exports_3.SpeechRecognitionResult(this.privRequestSession.requestId, keyword.Status === "Accepted" ? Exports_3.ResultReason.RecognizedKeyword : Exports_3.ResultReason.NoMatch, keyword.Text, keyword.Duration, keyword.Offset, undefined, undefined, undefined, undefined, connectionMessage.textBody, resultProps);
-                        if (keyword.Status !== "Accepted") {
-                            this.privLastResult = result;
-                        }
-                        event_1 = new Exports_3.SpeechRecognitionEventArgs(result, result.duration, result.resultId);
-                        if (!!this.privDialogServiceConnector.recognized) {
-                            try {
-                                this.privDialogServiceConnector.recognized(this.privDialogServiceConnector, event_1);
-                                /* tslint:disable:no-empty */
-                            }
-                            catch (error) {
-                                // Not going to let errors in the event handler
-                                // trip things up.
-                            }
-                        }
-                        processed = true;
-                        break;
-                    case "audio":
-                        {
-                            audioRequestId = connectionMessage.requestId.toUpperCase();
-                            turn = this.privTurnStateManager.GetTurn(audioRequestId);
-                            try {
-                                // Empty binary message signals end of stream.
-                                if (!connectionMessage.binaryBody) {
-                                    turn.endAudioStream();
-                                }
-                                else {
-                                    turn.audioStream.write(connectionMessage.binaryBody);
-                                }
-                            }
-                            catch (error) {
-                                // Not going to let errors in the event handler
-                                // trip things up.
-                            }
-                        }
-                        processed = true;
-                        break;
-                    case "response":
-                        {
-                            this.handleResponseMessage(connectionMessage);
-                        }
-                        processed = true;
-                        break;
-                    default:
-                        break;
+                processed = true;
+                break;
+            case "speech.hypothesis":
+                var hypothesis = Exports_4.SpeechHypothesis.fromJSON(connectionMessage.textBody);
+                var offset = hypothesis.Offset + this.privRequestSession.currentTurnAudioOffset;
+                result = new Exports_3.SpeechRecognitionResult(this.privRequestSession.requestId, Exports_3.ResultReason.RecognizingSpeech, hypothesis.Text, hypothesis.Duration, offset, hypothesis.Language, hypothesis.LanguageDetectionConfidence, undefined, undefined, connectionMessage.textBody, resultProps);
+                this.privRequestSession.onHypothesis(offset);
+                var ev = new Exports_3.SpeechRecognitionEventArgs(result, hypothesis.Duration, this.privRequestSession.sessionId);
+                if (!!this.privDialogServiceConnector.recognizing) {
+                    try {
+                        this.privDialogServiceConnector.recognizing(this.privDialogServiceConnector, ev);
+                        /* eslint-disable no-empty */
+                    }
+                    catch (error) {
+                        // Not going to let errors in the event handler
+                        // trip things up.
+                    }
                 }
-                return [2 /*return*/, processed];
-            });
-        });
+                processed = true;
+                break;
+            case "speech.keyword":
+                var keyword = Exports_4.SpeechKeyword.fromJSON(connectionMessage.textBody);
+                result = new Exports_3.SpeechRecognitionResult(this.privRequestSession.requestId, keyword.Status === "Accepted" ? Exports_3.ResultReason.RecognizedKeyword : Exports_3.ResultReason.NoMatch, keyword.Text, keyword.Duration, keyword.Offset, undefined, undefined, undefined, undefined, connectionMessage.textBody, resultProps);
+                if (keyword.Status !== "Accepted") {
+                    this.privLastResult = result;
+                }
+                var event_1 = new Exports_3.SpeechRecognitionEventArgs(result, result.duration, result.resultId);
+                if (!!this.privDialogServiceConnector.recognized) {
+                    try {
+                        this.privDialogServiceConnector.recognized(this.privDialogServiceConnector, event_1);
+                        /* eslint-disable no-empty */
+                    }
+                    catch (error) {
+                        // Not going to let errors in the event handler
+                        // trip things up.
+                    }
+                }
+                processed = true;
+                break;
+            case "audio":
+                {
+                    var audioRequestId = connectionMessage.requestId.toUpperCase();
+                    var turn = this.privTurnStateManager.GetTurn(audioRequestId);
+                    try {
+                        // Empty binary message signals end of stream.
+                        if (!connectionMessage.binaryBody) {
+                            turn.endAudioStream();
+                        }
+                        else {
+                            turn.audioStream.write(connectionMessage.binaryBody);
+                        }
+                    }
+                    catch (error) {
+                        // Not going to let errors in the event handler
+                        // trip things up.
+                    }
+                }
+                processed = true;
+                break;
+            case "response":
+                {
+                    this.handleResponseMessage(connectionMessage);
+                }
+                processed = true;
+                break;
+            default:
+                break;
+        }
+        var defferal = new Exports_2.Deferred();
+        defferal.resolve(processed);
+        return defferal.promise;
     };
     // Cancels recognition.
     DialogServiceAdapter.prototype.cancelRecognition = function (sessionId, requestId, cancellationReason, errorCode, error) {
@@ -25067,7 +25428,7 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                             cancelEvent = new Exports_3.SpeechRecognitionCanceledEventArgs(cancellationReason, error, errorCode, undefined, sessionId);
                             try {
                                 this.privDialogServiceConnector.canceled(this.privDialogServiceConnector, cancelEvent);
-                                /* tslint:disable:no-empty */
+                                /* eslint-disable no-empty */
                             }
                             catch (_b) { }
                             if (!!this.privSuccessCallback) {
@@ -25083,7 +25444,7 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                                 try {
                                     this.privSuccessCallback(result);
                                     this.privSuccessCallback = undefined;
-                                    /* tslint:disable:no-empty */
+                                    /* eslint-disable no-empty */
                                 }
                                 catch (_c) { }
                             }
@@ -25144,7 +25505,7 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                             this.privRecognizer.sessionStarted(this.privRecognizer, sessionStartEventArgs);
                         }
                         audioSendPromise = this.sendAudio(audioNode);
-                        // /* tslint:disable:no-empty */
+                        // /* eslint-disable no-empty */
                         audioSendPromise.then(function () { }, function (error) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
@@ -25170,11 +25531,11 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
         // we won't rely on the cascading promises of the connection since we want to continually be available to receive messages
         var communicationCustodian = new Exports_2.Deferred();
         var loop = function () { return __awaiter(_this, void 0, void 0, function () {
-            var isDisposed, terminateMessageLoop, connection, message, connectionMessage, _a, turnRequestId, audioSessionReqId, speechStartDetected, speechStartEventArgs, json, speechStopDetected, speechStopEventArgs, turnEndRequestId, audioSessionReqId, sessionStopEventArgs, ret, error_2;
+            var isDisposed, terminateMessageLoop, connection, message, connectionMessage, _a, turnRequestId, audioSessionReqId, speechStartDetected, speechStartEventArgs, json, speechStopDetected, speechStopEventArgs, turnEndRequestId, audioSessionReqId, sessionStopEventArgs, processed, e_1, ret, error_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
-                        _b.trys.push([0, 12, , 13]);
+                        _b.trys.push([0, 14, , 15]);
                         isDisposed = this.isDisposed();
                         terminateMessageLoop = (!this.isDisposed() && this.terminateMessageLoop);
                         if (isDisposed || terminateMessageLoop) {
@@ -25212,14 +25573,14 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                                 this.privRequestSession.onServiceTurnStartResponse();
                             }
                         }
-                        return [3 /*break*/, 11];
+                        return [3 /*break*/, 13];
                     case 4:
                         speechStartDetected = Exports_4.SpeechDetected.fromJSON(connectionMessage.textBody);
                         speechStartEventArgs = new Exports_3.RecognitionEventArgs(speechStartDetected.Offset, this.privRequestSession.sessionId);
                         if (!!this.privRecognizer.speechStartDetected) {
                             this.privRecognizer.speechStartDetected(this.privRecognizer, speechStartEventArgs);
                         }
-                        return [3 /*break*/, 11];
+                        return [3 /*break*/, 13];
                     case 5:
                         json = void 0;
                         if (connectionMessage.textBody.length > 0) {
@@ -25235,7 +25596,7 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                         if (!!this.privRecognizer.speechEndDetected) {
                             this.privRecognizer.speechEndDetected(this.privRecognizer, speechStopEventArgs);
                         }
-                        return [3 /*break*/, 11];
+                        return [3 /*break*/, 13];
                     case 6:
                         turnEndRequestId = connectionMessage.requestId.toUpperCase();
                         audioSessionReqId = this.privRequestSession.requestId.toUpperCase();
@@ -25270,23 +25631,30 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                             this.privErrorCallback = undefined;
                         }
                         _b.label = 9;
-                    case 9: return [3 /*break*/, 11];
+                    case 9: return [3 /*break*/, 13];
                     case 10:
-                        if (!this.processTypeSpecificMessages(connectionMessage)) {
+                        _b.trys.push([10, 12, , 13]);
+                        return [4 /*yield*/, this.processTypeSpecificMessages(connectionMessage)];
+                    case 11:
+                        processed = _b.sent();
+                        if (!processed) {
                             if (!!this.serviceEvents) {
                                 this.serviceEvents.onEvent(new Exports_2.ServiceEvent(connectionMessage.path.toLowerCase(), connectionMessage.textBody));
                             }
                         }
-                        _b.label = 11;
-                    case 11:
+                        return [3 /*break*/, 13];
+                    case 12:
+                        e_1 = _b.sent();
+                        return [3 /*break*/, 13];
+                    case 13:
                         ret = loop();
                         return [2 /*return*/, ret];
-                    case 12:
+                    case 14:
                         error_2 = _b.sent();
                         this.terminateMessageLoop = true;
                         communicationCustodian.resolve();
-                        return [3 /*break*/, 13];
-                    case 13: return [2 /*return*/];
+                        return [3 /*break*/, 15];
+                    case 15: return [2 /*return*/];
                 }
             });
         }); };
@@ -25350,7 +25718,7 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
                     case 1:
                         connection = _a.sent();
                         this.addKeywordContextData();
-                        return [4 /*yield*/, this.sendSpeechContext(connection)];
+                        return [4 /*yield*/, this.sendSpeechContext(connection, true)];
                     case 2:
                         _a.sent();
                         return [4 /*yield*/, this.sendAgentContext(connection)];
@@ -25364,12 +25732,88 @@ var DialogServiceAdapter = /** @class */ (function (_super) {
             });
         });
     };
+    DialogServiceAdapter.prototype.sendAgentConfig = function (connection) {
+        if (this.agentConfig && !this.agentConfigSent) {
+            if (this.privRecognizerConfig
+                .parameters
+                .getProperty(Exports_3.PropertyId.Conversation_DialogType) === Exports_3.DialogServiceConfig.DialogTypes.CustomCommands) {
+                var config = this.agentConfig.get();
+                config.botInfo.commandsCulture = this.privRecognizerConfig.parameters.getProperty(Exports_3.PropertyId.SpeechServiceConnection_RecoLanguage, "en-us");
+                this.agentConfig.set(config);
+            }
+            this.onEvent(new DialogEvents_1.SendingAgentContextMessageEvent(this.agentConfig));
+            var agentConfigJson = this.agentConfig.toJsonString();
+            // guard against sending this multiple times on one connection
+            this.agentConfigSent = true;
+            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "agent.config", this.privRequestSession.requestId, "application/json", agentConfigJson));
+        }
+        return;
+    };
+    DialogServiceAdapter.prototype.sendAgentContext = function (connection) {
+        var guid = Exports_2.createGuid();
+        var speechActivityTemplate = this.privDialogServiceConnector.properties.getProperty(Exports_3.PropertyId.Conversation_Speech_Activity_Template);
+        var agentContext = {
+            channelData: "",
+            context: {
+                interactionId: guid
+            },
+            messagePayload: typeof speechActivityTemplate === undefined ? undefined : speechActivityTemplate,
+            version: 0.5
+        };
+        var agentContextJson = JSON.stringify(agentContext);
+        return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_2.MessageType.Text, "speech.agent.context", this.privRequestSession.requestId, "application/json", agentContextJson));
+    };
     DialogServiceAdapter.prototype.fireEventForResult = function (serviceResult, properties) {
         var resultReason = Exports_4.EnumTranslation.implTranslateRecognitionResult(serviceResult.RecognitionStatus);
         var offset = serviceResult.Offset + this.privRequestSession.currentTurnAudioOffset;
         var result = new Exports_3.SpeechRecognitionResult(this.privRequestSession.requestId, resultReason, serviceResult.DisplayText, serviceResult.Duration, offset, serviceResult.Language, serviceResult.LanguageDetectionConfidence, undefined, undefined, JSON.stringify(serviceResult), properties);
         var ev = new Exports_3.SpeechRecognitionEventArgs(result, offset, this.privRequestSession.sessionId);
         return ev;
+    };
+    DialogServiceAdapter.prototype.handleResponseMessage = function (responseMessage) {
+        // "response" messages can contain either "message" (activity) or "MessageStatus" data. Fire the appropriate
+        // event according to the message type that's specified.
+        var responsePayload = JSON.parse(responseMessage.textBody);
+        switch (responsePayload.messageType.toLowerCase()) {
+            case "message":
+                var responseRequestId = responseMessage.requestId.toUpperCase();
+                var activityPayload = ActivityResponsePayload_1.ActivityPayloadResponse.fromJSON(responseMessage.textBody);
+                var turn = this.privTurnStateManager.GetTurn(responseRequestId);
+                // update the conversation Id
+                if (activityPayload.conversationId) {
+                    var updateAgentConfig = this.agentConfig.get();
+                    updateAgentConfig.botInfo.conversationId = activityPayload.conversationId;
+                    this.agentConfig.set(updateAgentConfig);
+                }
+                var pullAudioOutputStream = turn.processActivityPayload(activityPayload, AudioOutputFormat_1.AudioOutputFormatImpl.fromSpeechSynthesisOutputFormatString(this.privDialogServiceConnector.properties.getProperty(Exports_3.PropertyId.SpeechServiceConnection_SynthOutputFormat, undefined)));
+                var activity = new Exports_3.ActivityReceivedEventArgs(activityPayload.messagePayload, pullAudioOutputStream);
+                if (!!this.privDialogServiceConnector.activityReceived) {
+                    try {
+                        this.privDialogServiceConnector.activityReceived(this.privDialogServiceConnector, activity);
+                        /* eslint-disable-next-line no-empty */
+                    }
+                    catch (error) {
+                        // Not going to let errors in the event handler
+                        // trip things up.
+                    }
+                }
+                break;
+            case "messagestatus":
+                if (!!this.privDialogServiceConnector.turnStatusReceived) {
+                    try {
+                        this.privDialogServiceConnector.turnStatusReceived(this.privDialogServiceConnector, new Exports_3.TurnStatusReceivedEventArgs(responseMessage.textBody));
+                        /* eslint-disable-next-line no-empty */
+                    }
+                    catch (error) {
+                        // Not going to let errors in the event handler
+                        // trip things up.
+                    }
+                }
+                break;
+            default:
+                Exports_2.Events.instance.onEvent(new Exports_2.BackgroundEvent("Unexpected response of type " + responsePayload.messageType + ". Ignoring."));
+                break;
+        }
     };
     DialogServiceAdapter.prototype.onEvent = function (event) {
         this.privEvents.onEvent(event);
@@ -25413,7 +25857,7 @@ exports.DialogServiceAdapter = DialogServiceAdapter;
 
 
 /***/ }),
-/* 203 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25422,8 +25866,8 @@ exports.DialogServiceAdapter = DialogServiceAdapter;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DialogServiceTurnStateManager = void 0;
-var Error_1 = __webpack_require__(25);
-var DialogServiceTurnState_1 = __webpack_require__(204);
+var Error_1 = __webpack_require__(27);
+var DialogServiceTurnState_1 = __webpack_require__(210);
 var DialogServiceTurnStateManager = /** @class */ (function () {
     function DialogServiceTurnStateManager() {
         this.privTurnMap = new Map();
@@ -25456,7 +25900,7 @@ exports.DialogServiceTurnStateManager = DialogServiceTurnStateManager;
 
 
 /***/ }),
-/* 204 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25465,9 +25909,9 @@ exports.DialogServiceTurnStateManager = DialogServiceTurnStateManager;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DialogServiceTurnState = void 0;
-var AudioOutputFormat_1 = __webpack_require__(74);
-var AudioOutputStream_1 = __webpack_require__(73);
-var ActivityResponsePayload_1 = __webpack_require__(205);
+var AudioOutputFormat_1 = __webpack_require__(76);
+var AudioOutputStream_1 = __webpack_require__(75);
+var ActivityResponsePayload_1 = __webpack_require__(211);
 var DialogServiceTurnState = /** @class */ (function () {
     function DialogServiceTurnState(manager, requestId) {
         this.privRequestId = requestId;
@@ -25475,8 +25919,6 @@ var DialogServiceTurnState = /** @class */ (function () {
         this.privAudioStream = null;
         this.privTurnManager = manager;
         this.resetTurnEndTimeout();
-        // tslint:disable-next-line:no-console
-        // console.info("DialogServiceTurnState debugturn start:" + this.privRequestId);
     }
     Object.defineProperty(DialogServiceTurnState.prototype, "audioStream", {
         get: function () {
@@ -25491,8 +25933,6 @@ var DialogServiceTurnState = /** @class */ (function () {
         if (payload.messageDataStreamType === ActivityResponsePayload_1.MessageDataStreamType.TextToSpeechAudio) {
             this.privAudioStream = AudioOutputStream_1.AudioOutputStream.createPullStream();
             this.privAudioStream.format = (audioFormat !== undefined) ? audioFormat : AudioOutputFormat_1.AudioOutputFormatImpl.getDefaultOutputFormat();
-            // tslint:disable-next-line:no-console
-            // console.info("Audio start debugturn:" + this.privRequestId);
         }
         return this.privAudioStream;
     };
@@ -25503,6 +25943,7 @@ var DialogServiceTurnState = /** @class */ (function () {
     };
     DialogServiceTurnState.prototype.complete = function () {
         if (this.privTimeoutToken !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearTimeout(this.privTimeoutToken);
         }
         this.endAudioStream();
@@ -25510,13 +25951,10 @@ var DialogServiceTurnState = /** @class */ (function () {
     DialogServiceTurnState.prototype.resetTurnEndTimeout = function () {
         var _this = this;
         if (this.privTimeoutToken !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearTimeout(this.privTimeoutToken);
         }
-        // tslint:disable-next-line:no-console
-        // console.info("Timeout reset debugturn:" + this.privRequestId);
         this.privTimeoutToken = setTimeout(function () {
-            // tslint:disable-next-line:no-console
-            // console.info("Timeout complete debugturn:" + this.privRequestId);
             _this.privTurnManager.CompleteTurn(_this.privRequestId);
             return;
         }, 2000);
@@ -25528,7 +25966,7 @@ exports.DialogServiceTurnState = DialogServiceTurnState;
 
 
 /***/ }),
-/* 205 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25585,7 +26023,7 @@ var MessageDataStreamType;
 
 
 /***/ }),
-/* 206 */
+/* 212 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25620,7 +26058,7 @@ exports.AgentConfig = AgentConfig;
 
 
 /***/ }),
-/* 207 */
+/* 213 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25628,22 +26066,22 @@ exports.AgentConfig = AgentConfig;
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
-var ConversationManager_1 = __webpack_require__(208);
+var ConversationManager_1 = __webpack_require__(214);
 Object.defineProperty(exports, "ConversationManager", { enumerable: true, get: function () { return ConversationManager_1.ConversationManager; } });
-var ConversationConnectionConfig_1 = __webpack_require__(209);
+var ConversationConnectionConfig_1 = __webpack_require__(215);
 Object.defineProperty(exports, "ConversationConnectionConfig", { enumerable: true, get: function () { return ConversationConnectionConfig_1.ConversationConnectionConfig; } });
-var ConversationTranslatorRecognizer_1 = __webpack_require__(211);
+var ConversationTranslatorRecognizer_1 = __webpack_require__(217);
 Object.defineProperty(exports, "ConversationRecognizerFactory", { enumerable: true, get: function () { return ConversationTranslatorRecognizer_1.ConversationRecognizerFactory; } });
-var TranscriberRecognizer_1 = __webpack_require__(223);
+var TranscriberRecognizer_1 = __webpack_require__(229);
 Object.defineProperty(exports, "TranscriberRecognizer", { enumerable: true, get: function () { return TranscriberRecognizer_1.TranscriberRecognizer; } });
-var ConversationTranslatorEventArgs_1 = __webpack_require__(217);
+var ConversationTranslatorEventArgs_1 = __webpack_require__(223);
 Object.defineProperty(exports, "ConversationReceivedTranslationEventArgs", { enumerable: true, get: function () { return ConversationTranslatorEventArgs_1.ConversationReceivedTranslationEventArgs; } });
 Object.defineProperty(exports, "LockRoomEventArgs", { enumerable: true, get: function () { return ConversationTranslatorEventArgs_1.LockRoomEventArgs; } });
 Object.defineProperty(exports, "MuteAllEventArgs", { enumerable: true, get: function () { return ConversationTranslatorEventArgs_1.MuteAllEventArgs; } });
 Object.defineProperty(exports, "ParticipantAttributeEventArgs", { enumerable: true, get: function () { return ConversationTranslatorEventArgs_1.ParticipantAttributeEventArgs; } });
 Object.defineProperty(exports, "ParticipantEventArgs", { enumerable: true, get: function () { return ConversationTranslatorEventArgs_1.ParticipantEventArgs; } });
 Object.defineProperty(exports, "ParticipantsListEventArgs", { enumerable: true, get: function () { return ConversationTranslatorEventArgs_1.ParticipantsListEventArgs; } });
-var ConversationTranslatorInterfaces_1 = __webpack_require__(218);
+var ConversationTranslatorInterfaces_1 = __webpack_require__(224);
 Object.defineProperty(exports, "ConversationTranslatorCommandTypes", { enumerable: true, get: function () { return ConversationTranslatorInterfaces_1.ConversationTranslatorCommandTypes; } });
 Object.defineProperty(exports, "ConversationTranslatorMessageTypes", { enumerable: true, get: function () { return ConversationTranslatorInterfaces_1.ConversationTranslatorMessageTypes; } });
 Object.defineProperty(exports, "InternalParticipants", { enumerable: true, get: function () { return ConversationTranslatorInterfaces_1.InternalParticipants; } });
@@ -25651,7 +26089,7 @@ Object.defineProperty(exports, "InternalParticipants", { enumerable: true, get: 
 
 
 /***/ }),
-/* 208 */
+/* 214 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25661,9 +26099,9 @@ Object.defineProperty(exports, "InternalParticipants", { enumerable: true, get: 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationManager = void 0;
 var Exports_1 = __webpack_require__(2);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
-var ConversationConnectionConfig_1 = __webpack_require__(209);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
+var ConversationConnectionConfig_1 = __webpack_require__(215);
 var ConversationManager = /** @class */ (function () {
     function ConversationManager() {
         //
@@ -25761,8 +26199,8 @@ var ConversationManager = /** @class */ (function () {
                     }
                     cb = undefined;
                 }
-                /* tslint:disable:no-empty */
-            }).catch(function (e) { });
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+            }).catch(function () { });
         }
         catch (error) {
             if (!!err) {
@@ -25807,8 +26245,8 @@ var ConversationManager = /** @class */ (function () {
                         // ignore errors on delete
                     }
                     resolve();
-                    /* tslint:disable:no-empty */
-                }).catch(function (e) { });
+                    // eslint-disable-next-line @typescript-eslint/no-empty-function
+                }).catch(function () { });
             }
             catch (error) {
                 if (error instanceof Error) {
@@ -25828,7 +26266,7 @@ exports.ConversationManager = ConversationManager;
 
 
 /***/ }),
-/* 209 */
+/* 215 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25850,7 +26288,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationConnectionConfig = void 0;
-var RestConfigBase_1 = __webpack_require__(210);
+var RestConfigBase_1 = __webpack_require__(216);
 var ConversationConnectionConfig = /** @class */ (function (_super) {
     __extends(ConversationConnectionConfig, _super);
     function ConversationConnectionConfig() {
@@ -25935,7 +26373,7 @@ exports.ConversationConnectionConfig = ConversationConnectionConfig;
 
 
 /***/ }),
-/* 210 */
+/* 216 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26010,7 +26448,7 @@ exports.RestConfigBase = RestConfigBase;
 
 
 /***/ }),
-/* 211 */
+/* 217 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26068,12 +26506,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationTranslatorRecognizer = exports.ConversationRecognizerFactory = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
-var ConversationConnectionFactory_1 = __webpack_require__(212);
-var ConversationServiceAdapter_1 = __webpack_require__(215);
+// eslint-disable-next-line max-classes-per-file
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
+var ConversationConnectionFactory_1 = __webpack_require__(218);
+var ConversationServiceAdapter_1 = __webpack_require__(221);
 var ConversationRecognizerFactory = /** @class */ (function () {
     function ConversationRecognizerFactory() {
     }
@@ -26087,7 +26526,6 @@ exports.ConversationRecognizerFactory = ConversationRecognizerFactory;
  * Sends messages to the Conversation Translator websocket and listens for incoming events containing websocket messages.
  * Based off the recognizers in the SDK folder.
  */
-// tslint:disable-next-line:max-classes-per-file
 var ConversationTranslatorRecognizer = /** @class */ (function (_super) {
     __extends(ConversationTranslatorRecognizer, _super);
     function ConversationTranslatorRecognizer(conversation, speechConfig, audioConfig) {
@@ -26173,6 +26611,7 @@ var ConversationTranslatorRecognizer = /** @class */ (function (_super) {
         try {
             Contracts_1.Contracts.throwIfDisposed(this.privIsDisposed);
             if (this.privTimeoutToken !== undefined) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.privClearTimeout(this.privTimeoutToken);
             }
             this.privReco.disconnect().then(function () {
@@ -26232,19 +26671,20 @@ var ConversationTranslatorRecognizer = /** @class */ (function (_super) {
      * Close and dispose the recognizer
      */
     ConversationTranslatorRecognizer.prototype.close = function () {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         if (!!this.privIsDisposed) return [3 /*break*/, 2];
-                        (_a = this.privConnection) === null || _a === void 0 ? void 0 : _a.closeConnection();
-                        (_b = this.privConnection) === null || _b === void 0 ? void 0 : _b.close();
+                        if (!!this.privConnection) {
+                            this.privConnection.closeConnection();
+                            this.privConnection.close();
+                        }
                         this.privConnection = undefined;
                         return [4 /*yield*/, this.dispose(true)];
                     case 1:
-                        _c.sent();
-                        _c.label = 2;
+                        _a.sent();
+                        _a.label = 2;
                     case 2: return [2 /*return*/];
                 }
             });
@@ -26264,6 +26704,7 @@ var ConversationTranslatorRecognizer = /** @class */ (function (_super) {
                         }
                         if (!disposing) return [3 /*break*/, 2];
                         if (this.privTimeoutToken !== undefined) {
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             this.privClearTimeout(this.privTimeoutToken);
                         }
                         this.privIsDisposed = true;
@@ -26302,9 +26743,9 @@ var ConversationTranslatorRecognizer = /** @class */ (function (_super) {
     };
     ConversationTranslatorRecognizer.prototype.sendMessage = function (msg, cb, err) {
         var withAsync = this.privReco;
-        function PromiseToEmptyCallback(promise, cb, err) {
-            if (!!promise) {
-                promise.then(function (result) {
+        var PromiseToEmptyCallback = function (promise, cb, err) {
+            if (promise !== undefined) {
+                promise.then(function () {
                     try {
                         if (!!cb) {
                             cb();
@@ -26320,10 +26761,9 @@ var ConversationTranslatorRecognizer = /** @class */ (function (_super) {
                         if (!!err) {
                             err(reason);
                         }
-                        /* tslint:disable:no-empty */
+                        // eslint-disable-next-line no-empty
                     }
-                    catch (error) {
-                    }
+                    catch (error) { }
                 });
             }
             else {
@@ -26331,13 +26771,14 @@ var ConversationTranslatorRecognizer = /** @class */ (function (_super) {
                     err("Null promise");
                 }
             }
-        }
+        };
         PromiseToEmptyCallback(withAsync.sendMessageAsync(msg), cb, err);
         this.resetConversationTimeout();
     };
     ConversationTranslatorRecognizer.prototype.resetConversationTimeout = function () {
         var _this = this;
         if (this.privTimeoutToken !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.privClearTimeout(this.privTimeoutToken);
         }
         this.privTimeoutToken = this.privSetTimeout(function () {
@@ -26351,7 +26792,7 @@ exports.ConversationTranslatorRecognizer = ConversationTranslatorRecognizer;
 
 
 /***/ }),
-/* 212 */
+/* 218 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26374,12 +26815,12 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationConnectionFactory = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_3 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var ConversationConnectionConfig_1 = __webpack_require__(209);
-var ConversationWebsocketMessageFormatter_1 = __webpack_require__(213);
+var Exports_2 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_3 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var ConversationConnectionConfig_1 = __webpack_require__(215);
+var ConversationWebsocketMessageFormatter_1 = __webpack_require__(219);
 /**
  * Create a connection to the Conversation Translator websocket for sending instant messages and commands, and for receiving translated messages.
  * The conversation must already have been started or joined.
@@ -26409,7 +26850,7 @@ exports.ConversationConnectionFactory = ConversationConnectionFactory;
 
 
 /***/ }),
-/* 213 */
+/* 219 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26418,49 +26859,49 @@ exports.ConversationConnectionFactory = ConversationConnectionFactory;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationWebsocketMessageFormatter = void 0;
-var Exports_1 = __webpack_require__(4);
-var ConversationConnectionMessage_1 = __webpack_require__(214);
+var Exports_1 = __webpack_require__(6);
+var ConversationConnectionMessage_1 = __webpack_require__(220);
 /**
  * Based off WebsocketMessageFormatter. The messages for Conversation Translator have some variations from the Speech messages.
  */
 var ConversationWebsocketMessageFormatter = /** @class */ (function () {
     function ConversationWebsocketMessageFormatter() {
-        /**
-         * Format incoming messages: text (speech partial/final, IM) or binary (tts)
-         */
-        this.toConnectionMessage = function (message) {
-            var deferral = new Exports_1.Deferred();
-            try {
-                if (message.messageType === Exports_1.MessageType.Text) {
-                    var incomingMessage = new ConversationConnectionMessage_1.ConversationConnectionMessage(message.messageType, message.textContent, {}, message.id);
-                    deferral.resolve(incomingMessage);
-                }
-                else if (message.messageType === Exports_1.MessageType.Binary) {
-                    deferral.resolve(new ConversationConnectionMessage_1.ConversationConnectionMessage(message.messageType, message.binaryContent, undefined, message.id));
-                }
-            }
-            catch (e) {
-                deferral.reject("Error formatting the message. Error: " + e);
-            }
-            return deferral.promise;
-        };
-        /**
-         * Format outgoing messages: text (commands or IM)
-         */
-        this.fromConnectionMessage = function (message) {
-            var deferral = new Exports_1.Deferred();
-            try {
-                if (message.messageType === Exports_1.MessageType.Text) {
-                    var payload = "" + (message.textBody ? message.textBody : "");
-                    deferral.resolve(new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Text, payload, message.id));
-                }
-            }
-            catch (e) {
-                deferral.reject("Error formatting the message. " + e);
-            }
-            return deferral.promise;
-        };
     }
+    /**
+     * Format incoming messages: text (speech partial/final, IM) or binary (tts)
+     */
+    ConversationWebsocketMessageFormatter.prototype.toConnectionMessage = function (message) {
+        var deferral = new Exports_1.Deferred();
+        try {
+            if (message.messageType === Exports_1.MessageType.Text) {
+                var incomingMessage = new ConversationConnectionMessage_1.ConversationConnectionMessage(message.messageType, message.textContent, {}, message.id);
+                deferral.resolve(incomingMessage);
+            }
+            else if (message.messageType === Exports_1.MessageType.Binary) {
+                deferral.resolve(new ConversationConnectionMessage_1.ConversationConnectionMessage(message.messageType, message.binaryContent, undefined, message.id));
+            }
+        }
+        catch (e) {
+            deferral.reject("Error formatting the message. Error: " + e);
+        }
+        return deferral.promise;
+    };
+    /**
+     * Format outgoing messages: text (commands or IM)
+     */
+    ConversationWebsocketMessageFormatter.prototype.fromConnectionMessage = function (message) {
+        var deferral = new Exports_1.Deferred();
+        try {
+            if (message.messageType === Exports_1.MessageType.Text) {
+                var payload = "" + (message.textBody ? message.textBody : "");
+                deferral.resolve(new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Text, payload, message.id));
+            }
+        }
+        catch (e) {
+            deferral.reject("Error formatting the message. " + e);
+        }
+        return deferral.promise;
+    };
     return ConversationWebsocketMessageFormatter;
 }());
 exports.ConversationWebsocketMessageFormatter = ConversationWebsocketMessageFormatter;
@@ -26468,7 +26909,7 @@ exports.ConversationWebsocketMessageFormatter = ConversationWebsocketMessageForm
 
 
 /***/ }),
-/* 214 */
+/* 220 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26490,7 +26931,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationConnectionMessage = void 0;
-var Exports_1 = __webpack_require__(4);
+var Exports_1 = __webpack_require__(6);
 var ConversationConnectionMessage = /** @class */ (function (_super) {
     __extends(ConversationConnectionMessage, _super);
     function ConversationConnectionMessage(messageType, body, headers, id) {
@@ -26515,7 +26956,7 @@ exports.ConversationConnectionMessage = ConversationConnectionMessage;
 
 
 /***/ }),
-/* 215 */
+/* 221 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26573,32 +27014,30 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationServiceAdapter = void 0;
-var Exports_1 = __webpack_require__(4);
-var Exports_2 = __webpack_require__(61);
-var Exports_3 = __webpack_require__(53);
-var ConversationConnectionMessage_1 = __webpack_require__(214);
-var ConversationRequestSession_1 = __webpack_require__(216);
-var ConversationTranslatorEventArgs_1 = __webpack_require__(217);
-var ConversationTranslatorInterfaces_1 = __webpack_require__(218);
-var Exports_4 = __webpack_require__(219);
-/***
+var Exports_1 = __webpack_require__(6);
+var Exports_2 = __webpack_require__(64);
+var Exports_3 = __webpack_require__(56);
+var ConversationConnectionMessage_1 = __webpack_require__(220);
+var ConversationRequestSession_1 = __webpack_require__(222);
+var ConversationTranslatorEventArgs_1 = __webpack_require__(223);
+var ConversationTranslatorInterfaces_1 = __webpack_require__(224);
+var Exports_4 = __webpack_require__(225);
+/**
  * The service adapter handles sending and receiving messages to the Conversation Translator websocket.
  */
 var ConversationServiceAdapter = /** @class */ (function (_super) {
     __extends(ConversationServiceAdapter, _super);
     function ConversationServiceAdapter(authentication, connectionFactory, audioSource, recognizerConfig, conversationServiceConnector) {
         var _this = _super.call(this, authentication, connectionFactory, audioSource, recognizerConfig, conversationServiceConnector) || this;
+        _this.privConnectionConfigPromise = undefined;
         _this.privLastPartialUtteranceId = "";
-        _this.noOp = function () {
-            // operation not supported
-        };
         _this.privConversationServiceConnector = conversationServiceConnector;
         _this.privConversationAuthentication = authentication;
-        _this.receiveMessageOverride = _this.receiveConversationMessageOverride;
-        _this.recognizeOverride = _this.noOp;
-        _this.postConnectImplOverride = _this.conversationConnectImpl;
-        _this.configConnectionOverride = _this.configConnection;
-        _this.disconnectOverride = _this.privDisconnect;
+        _this.receiveMessageOverride = function () { return _this.receiveConversationMessageOverride(); };
+        _this.recognizeOverride = function () { return _this.noOp(); };
+        _this.postConnectImplOverride = function (connection) { return _this.conversationConnectImpl(connection); };
+        _this.configConnectionOverride = function () { return _this.configConnection(); };
+        _this.disconnectOverride = function () { return _this.privDisconnect(); };
         _this.privConversationRequestSession = new ConversationRequestSession_1.ConversationRequestSession(Exports_1.createNoDashGuid());
         _this.privConversationConnectionFactory = connectionFactory;
         _this.privConversationIsDisposed = false;
@@ -26614,7 +27053,7 @@ var ConversationServiceAdapter = /** @class */ (function (_super) {
                 switch (_a.label) {
                     case 0:
                         this.privConversationIsDisposed = true;
-                        if (!this.privConnectionConfigPromise) return [3 /*break*/, 3];
+                        if (!(this.privConnectionConfigPromise !== undefined)) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.privConnectionConfigPromise];
                     case 1:
                         connection = _a.sent();
@@ -26645,12 +27084,10 @@ var ConversationServiceAdapter = /** @class */ (function (_super) {
     };
     ConversationServiceAdapter.prototype.sendMessageAsync = function (message) {
         return __awaiter(this, void 0, void 0, function () {
-            var sink, connection;
+            var connection;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        sink = new Exports_1.Deferred();
-                        return [4 /*yield*/, this.fetchConnection()];
+                    case 0: return [4 /*yield*/, this.fetchConnection()];
                     case 1:
                         connection = _a.sent();
                         return [4 /*yield*/, connection.send(new ConversationConnectionMessage_1.ConversationConnectionMessage(Exports_1.MessageType.Text, message))];
@@ -26669,7 +27106,8 @@ var ConversationServiceAdapter = /** @class */ (function (_super) {
         this.terminateMessageLoop = true;
         return Promise.resolve();
     };
-    ConversationServiceAdapter.prototype.processTypeSpecificMessages = function (connectionMessage, successCallback, errorCallBack) {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    ConversationServiceAdapter.prototype.processTypeSpecificMessages = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 return [2 /*return*/, true];
@@ -26688,6 +27126,10 @@ var ConversationServiceAdapter = /** @class */ (function (_super) {
         catch (_a) {
             // continue on error
         }
+    };
+    ConversationServiceAdapter.prototype.noOp = function () {
+        // operation not supported
+        return;
     };
     /**
      * Establishes a websocket connection to the end point.
@@ -26871,10 +27313,10 @@ var ConversationServiceAdapter = /** @class */ (function (_super) {
                                             };
                                             break;
                                         case "token":
-                                            token = new Exports_3.CognitiveTokenAuthentication(function (authFetchEventId) {
+                                            token = new Exports_3.CognitiveTokenAuthentication(function () {
                                                 var authorizationToken = commandPayload_1.token;
                                                 return Promise.resolve(authorizationToken);
-                                            }, function (authFetchEventId) {
+                                            }, function () {
                                                 var authorizationToken = commandPayload_1.token;
                                                 return Promise.resolve(authorizationToken);
                                             });
@@ -26984,26 +27426,24 @@ var ConversationServiceAdapter = /** @class */ (function (_super) {
         if (this.isDisposed()) {
             return Promise.resolve(undefined);
         }
-        if (this.privConnectionConfigPromise) {
+        if (this.privConnectionConfigPromise !== undefined) {
             return this.privConnectionConfigPromise.then(function (connection) {
                 if (connection.state() === Exports_1.ConnectionState.Disconnected) {
                     _this.privConnectionId = null;
-                    _this.privConnectionConfigPromise = null;
+                    _this.privConnectionConfigPromise = undefined;
                     return _this.configConnection();
                 }
                 return _this.privConnectionConfigPromise;
-            }, function (error) {
+            }, function () {
                 _this.privConnectionId = null;
-                _this.privConnectionConfigPromise = null;
+                _this.privConnectionConfigPromise = undefined;
                 return _this.configConnection();
             });
         }
         if (this.terminateMessageLoop) {
             return Promise.resolve(undefined);
         }
-        this.privConnectionConfigPromise = this.connectImpl().then(function (connection) {
-            return connection;
-        });
+        this.privConnectionConfigPromise = this.connectImpl().then(function (connection) { return connection; });
         return this.privConnectionConfigPromise;
     };
     ConversationServiceAdapter.prototype.getTranslations = function (serviceResultTranslations) {
@@ -27024,7 +27464,7 @@ exports.ConversationServiceAdapter = ConversationServiceAdapter;
 
 
 /***/ }),
-/* 216 */
+/* 222 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27069,43 +27509,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationRequestSession = void 0;
-var Exports_1 = __webpack_require__(4);
+var Exports_1 = __webpack_require__(6);
 /**
  * Placeholder class for the Conversation Request Session. Based off RequestSession.
  * TODO: define what telemetry is required.
  */
 var ConversationRequestSession = /** @class */ (function () {
     function ConversationRequestSession(sessionId) {
-        var _this = this;
         this.privIsDisposed = false;
         this.privDetachables = new Array();
-        this.onPreConnectionStart = function (authFetchEventId, connectionId) {
-            _this.privSessionId = connectionId;
-        };
-        this.onAuthCompleted = function (isError, error) {
-            if (isError) {
-                _this.onComplete();
-            }
-        };
-        this.onConnectionEstablishCompleted = function (statusCode, reason) {
-            if (statusCode === 200) {
-                return;
-            }
-            else if (statusCode === 403) {
-                _this.onComplete();
-            }
-        };
-        this.onServiceTurnEndResponse = function (continuousRecognition) {
-            if (!continuousRecognition) {
-                _this.onComplete();
-            }
-            else {
-                _this.privRequestId = Exports_1.createNoDashGuid();
-            }
-        };
-        this.onComplete = function () {
-            //
-        };
         this.privSessionId = sessionId;
         this.privRequestId = Exports_1.createNoDashGuid();
         this.privRequestCompletionDeferral = new Exports_1.Deferred();
@@ -27131,7 +27543,31 @@ var ConversationRequestSession = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
-    ConversationRequestSession.prototype.dispose = function (error) {
+    ConversationRequestSession.prototype.onPreConnectionStart = function (authFetchEventId, connectionId) {
+        this.privSessionId = connectionId;
+    };
+    ConversationRequestSession.prototype.onAuthCompleted = function (isError) {
+        if (isError) {
+            this.onComplete();
+        }
+    };
+    ConversationRequestSession.prototype.onConnectionEstablishCompleted = function (statusCode) {
+        if (statusCode === 200) {
+            return;
+        }
+        else if (statusCode === 403) {
+            this.onComplete();
+        }
+    };
+    ConversationRequestSession.prototype.onServiceTurnEndResponse = function (continuousRecognition) {
+        if (!continuousRecognition) {
+            this.onComplete();
+        }
+        else {
+            this.privRequestId = Exports_1.createNoDashGuid();
+        }
+    };
+    ConversationRequestSession.prototype.dispose = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _i, _a, detachable;
             return __generator(this, function (_b) {
@@ -27157,6 +27593,9 @@ var ConversationRequestSession = /** @class */ (function () {
             });
         });
     };
+    ConversationRequestSession.prototype.onComplete = function () {
+        //
+    };
     return ConversationRequestSession;
 }());
 exports.ConversationRequestSession = ConversationRequestSession;
@@ -27164,7 +27603,7 @@ exports.ConversationRequestSession = ConversationRequestSession;
 
 
 /***/ }),
-/* 217 */
+/* 223 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27186,7 +27625,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationReceivedTranslationEventArgs = exports.ParticipantsListEventArgs = exports.ParticipantAttributeEventArgs = exports.ParticipantEventArgs = exports.LockRoomEventArgs = exports.MuteAllEventArgs = void 0;
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
-var Exports_1 = __webpack_require__(61);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(64);
 var MuteAllEventArgs = /** @class */ (function (_super) {
     __extends(MuteAllEventArgs, _super);
     function MuteAllEventArgs(isMuted, sessionId) {
@@ -27204,7 +27644,6 @@ var MuteAllEventArgs = /** @class */ (function (_super) {
     return MuteAllEventArgs;
 }(Exports_1.SessionEventArgs));
 exports.MuteAllEventArgs = MuteAllEventArgs;
-// tslint:disable-next-line: max-classes-per-file
 var LockRoomEventArgs = /** @class */ (function (_super) {
     __extends(LockRoomEventArgs, _super);
     function LockRoomEventArgs(isLocked, sessionId) {
@@ -27222,7 +27661,6 @@ var LockRoomEventArgs = /** @class */ (function (_super) {
     return LockRoomEventArgs;
 }(Exports_1.SessionEventArgs));
 exports.LockRoomEventArgs = LockRoomEventArgs;
-// tslint:disable-next-line: max-classes-per-file
 var ParticipantEventArgs = /** @class */ (function (_super) {
     __extends(ParticipantEventArgs, _super);
     function ParticipantEventArgs(participant, sessionId) {
@@ -27240,7 +27678,6 @@ var ParticipantEventArgs = /** @class */ (function (_super) {
     return ParticipantEventArgs;
 }(Exports_1.SessionEventArgs));
 exports.ParticipantEventArgs = ParticipantEventArgs;
-// tslint:disable-next-line: max-classes-per-file
 var ParticipantAttributeEventArgs = /** @class */ (function (_super) {
     __extends(ParticipantAttributeEventArgs, _super);
     function ParticipantAttributeEventArgs(participantId, key, value, sessionId) {
@@ -27274,7 +27711,6 @@ var ParticipantAttributeEventArgs = /** @class */ (function (_super) {
     return ParticipantAttributeEventArgs;
 }(Exports_1.SessionEventArgs));
 exports.ParticipantAttributeEventArgs = ParticipantAttributeEventArgs;
-// tslint:disable-next-line: max-classes-per-file
 var ParticipantsListEventArgs = /** @class */ (function (_super) {
     __extends(ParticipantsListEventArgs, _super);
     function ParticipantsListEventArgs(conversationId, token, translateTo, profanityFilter, roomProfanityFilter, isRoomLocked, isMuteAll, participants, sessionId) {
@@ -27348,7 +27784,6 @@ var ParticipantsListEventArgs = /** @class */ (function (_super) {
     return ParticipantsListEventArgs;
 }(Exports_1.SessionEventArgs));
 exports.ParticipantsListEventArgs = ParticipantsListEventArgs;
-// tslint:disable-next-line: max-classes-per-file
 var ConversationReceivedTranslationEventArgs = /** @class */ (function () {
     function ConversationReceivedTranslationEventArgs(command, payload, sessionId) {
         this.privPayload = payload;
@@ -27383,7 +27818,7 @@ exports.ConversationReceivedTranslationEventArgs = ConversationReceivedTranslati
 
 
 /***/ }),
-/* 218 */
+/* 224 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27431,14 +27866,14 @@ var InternalParticipants = /** @class */ (function () {
     InternalParticipants.prototype.getParticipant = function (id) {
         return this.participants.find(function (p) { return p.id === id; });
     };
-    /***
+    /**
      * Remove a participant from the participants list.
      */
     InternalParticipants.prototype.deleteParticipant = function (id) {
         this.participants = this.participants.filter(function (p) { return p.id !== id; });
     };
     Object.defineProperty(InternalParticipants.prototype, "host", {
-        /***
+        /**
          * Helper to return the conversation host.
          */
         get: function () {
@@ -27496,25 +27931,25 @@ exports.ConversationTranslatorCommandTypes = {
 
 
 /***/ }),
-/* 219 */
+/* 225 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var CommandResponsePayload_1 = __webpack_require__(220);
+var CommandResponsePayload_1 = __webpack_require__(226);
 Object.defineProperty(exports, "CommandResponsePayload", { enumerable: true, get: function () { return CommandResponsePayload_1.CommandResponsePayload; } });
-var ParticipantResponsePayload_1 = __webpack_require__(221);
+var ParticipantResponsePayload_1 = __webpack_require__(227);
 Object.defineProperty(exports, "ParticipantsListPayloadResponse", { enumerable: true, get: function () { return ParticipantResponsePayload_1.ParticipantsListPayloadResponse; } });
 Object.defineProperty(exports, "ParticipantPayloadResponse", { enumerable: true, get: function () { return ParticipantResponsePayload_1.ParticipantPayloadResponse; } });
-var TranslationResponsePayload_1 = __webpack_require__(222);
+var TranslationResponsePayload_1 = __webpack_require__(228);
 Object.defineProperty(exports, "SpeechResponsePayload", { enumerable: true, get: function () { return TranslationResponsePayload_1.SpeechResponsePayload; } });
 Object.defineProperty(exports, "TextResponsePayload", { enumerable: true, get: function () { return TranslationResponsePayload_1.TextResponsePayload; } });
 
 
 
 /***/ }),
-/* 220 */
+/* 226 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27523,13 +27958,11 @@ Object.defineProperty(exports, "TextResponsePayload", { enumerable: true, get: f
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommandResponsePayload = void 0;
+var parseCommandResponse = function (json) { return JSON.parse(json); };
 var CommandResponsePayload = /** @class */ (function () {
     function CommandResponsePayload(json) {
-        this.privCommandResponse = JSON.parse(json);
+        this.privCommandResponse = parseCommandResponse(json);
     }
-    CommandResponsePayload.fromJSON = function (json) {
-        return new CommandResponsePayload(json);
-    };
     Object.defineProperty(CommandResponsePayload.prototype, "type", {
         get: function () {
             return this.privCommandResponse.type;
@@ -27586,6 +28019,9 @@ var CommandResponsePayload = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    CommandResponsePayload.fromJSON = function (json) {
+        return new CommandResponsePayload(json);
+    };
     return CommandResponsePayload;
 }());
 exports.CommandResponsePayload = CommandResponsePayload;
@@ -27593,7 +28029,7 @@ exports.CommandResponsePayload = CommandResponsePayload;
 
 
 /***/ }),
-/* 221 */
+/* 227 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27602,13 +28038,12 @@ exports.CommandResponsePayload = CommandResponsePayload;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ParticipantPayloadResponse = exports.ParticipantsListPayloadResponse = void 0;
+var parseListResponse = function (json) { return JSON.parse(json); };
+var parseParticipantResponse = function (json) { return JSON.parse(json); };
 var ParticipantsListPayloadResponse = /** @class */ (function () {
     function ParticipantsListPayloadResponse(json) {
-        this.privParticipantsPayloadResponse = JSON.parse(json);
+        this.privParticipantsPayloadResponse = parseListResponse(json);
     }
-    ParticipantsListPayloadResponse.fromJSON = function (json) {
-        return new ParticipantsListPayloadResponse(json);
-    };
     Object.defineProperty(ParticipantsListPayloadResponse.prototype, "roomid", {
         get: function () {
             return this.privParticipantsPayloadResponse.roomid;
@@ -27686,17 +28121,16 @@ var ParticipantsListPayloadResponse = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    ParticipantsListPayloadResponse.fromJSON = function (json) {
+        return new ParticipantsListPayloadResponse(json);
+    };
     return ParticipantsListPayloadResponse;
 }());
 exports.ParticipantsListPayloadResponse = ParticipantsListPayloadResponse;
-// tslint:disable-next-line: max-classes-per-file
 var ParticipantPayloadResponse = /** @class */ (function () {
     function ParticipantPayloadResponse(json) {
-        this.privParticipantPayloadResponse = JSON.parse(json);
+        this.privParticipantPayloadResponse = parseParticipantResponse(json);
     }
-    ParticipantPayloadResponse.fromJSON = function (json) {
-        return new ParticipantPayloadResponse(json);
-    };
     Object.defineProperty(ParticipantPayloadResponse.prototype, "nickname", {
         get: function () {
             return this.privParticipantPayloadResponse.nickname;
@@ -27746,6 +28180,9 @@ var ParticipantPayloadResponse = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    ParticipantPayloadResponse.fromJSON = function (json) {
+        return new ParticipantPayloadResponse(json);
+    };
     return ParticipantPayloadResponse;
 }());
 exports.ParticipantPayloadResponse = ParticipantPayloadResponse;
@@ -27753,7 +28190,7 @@ exports.ParticipantPayloadResponse = ParticipantPayloadResponse;
 
 
 /***/ }),
-/* 222 */
+/* 228 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27762,13 +28199,12 @@ exports.ParticipantPayloadResponse = ParticipantPayloadResponse;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextResponsePayload = exports.SpeechResponsePayload = void 0;
+var parseSpeechResponse = function (json) { return JSON.parse(json); };
+var parseTextResponse = function (json) { return JSON.parse(json); };
 var SpeechResponsePayload = /** @class */ (function () {
     function SpeechResponsePayload(json) {
-        this.privSpeechResponse = JSON.parse(json);
+        this.privSpeechResponse = parseSpeechResponse(json);
     }
-    SpeechResponsePayload.fromJSON = function (json) {
-        return new SpeechResponsePayload(json);
-    };
     Object.defineProperty(SpeechResponsePayload.prototype, "recognition", {
         get: function () {
             return this.privSpeechResponse.recognition;
@@ -27839,17 +28275,16 @@ var SpeechResponsePayload = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    SpeechResponsePayload.fromJSON = function (json) {
+        return new SpeechResponsePayload(json);
+    };
     return SpeechResponsePayload;
 }());
 exports.SpeechResponsePayload = SpeechResponsePayload;
-// tslint:disable-next-line: max-classes-per-file
 var TextResponsePayload = /** @class */ (function () {
     function TextResponsePayload(json) {
-        this.privTextResponse = JSON.parse(json);
+        this.privTextResponse = parseTextResponse(json);
     }
-    TextResponsePayload.fromJSON = function (json) {
-        return new TextResponsePayload(json);
-    };
     Object.defineProperty(TextResponsePayload.prototype, "originalText", {
         get: function () {
             return this.privTextResponse.originalText;
@@ -27913,6 +28348,9 @@ var TextResponsePayload = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    TextResponsePayload.fromJSON = function (json) {
+        return new TextResponsePayload(json);
+    };
     return TextResponsePayload;
 }());
 exports.TextResponsePayload = TextResponsePayload;
@@ -27920,7 +28358,7 @@ exports.TextResponsePayload = TextResponsePayload;
 
 
 /***/ }),
-/* 223 */
+/* 229 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -27978,10 +28416,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TranscriberRecognizer = void 0;
-var Exports_1 = __webpack_require__(4);
-var Contracts_1 = __webpack_require__(63);
-var Exports_2 = __webpack_require__(61);
-var Exports_3 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(6);
+var Contracts_1 = __webpack_require__(53);
+var Exports_2 = __webpack_require__(64);
+var Exports_3 = __webpack_require__(56);
 var TranscriberRecognizer = /** @class */ (function (_super) {
     __extends(TranscriberRecognizer, _super);
     /**
@@ -27998,10 +28436,21 @@ var TranscriberRecognizer = /** @class */ (function (_super) {
         _this.privDisposedRecognizer = false;
         return _this;
     }
-    TranscriberRecognizer.prototype.getConversationInfo = function () {
-        Contracts_1.Contracts.throwIfNullOrUndefined(this.privConversation, "Conversation");
-        return this.privConversation.conversationInfo;
-    };
+    Object.defineProperty(TranscriberRecognizer.prototype, "speechRecognitionLanguage", {
+        get: function () {
+            Contracts_1.Contracts.throwIfDisposed(this.privDisposedRecognizer);
+            return this.properties.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(TranscriberRecognizer.prototype, "properties", {
+        get: function () {
+            return this.privProperties;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(TranscriberRecognizer.prototype, "authorizationToken", {
         get: function () {
             return this.properties.getProperty(Exports_2.PropertyId.SpeechServiceAuthorization_Token);
@@ -28021,21 +28470,10 @@ var TranscriberRecognizer = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    Object.defineProperty(TranscriberRecognizer.prototype, "speechRecognitionLanguage", {
-        get: function () {
-            Contracts_1.Contracts.throwIfDisposed(this.privDisposedRecognizer);
-            return this.properties.getProperty(Exports_2.PropertyId.SpeechServiceConnection_RecoLanguage);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(TranscriberRecognizer.prototype, "properties", {
-        get: function () {
-            return this.privProperties;
-        },
-        enumerable: false,
-        configurable: true
-    });
+    TranscriberRecognizer.prototype.getConversationInfo = function () {
+        Contracts_1.Contracts.throwIfNullOrUndefined(this.privConversation, "Conversation");
+        return this.privConversation.conversationInfo;
+    };
     TranscriberRecognizer.prototype.startContinuousRecognitionAsync = function (cb, err) {
         Exports_1.marshalPromiseToCallbacks(this.startContinuousRecognitionAsyncImpl(Exports_3.RecognitionMode.Conversation), cb, err);
     };
@@ -28169,7 +28607,7 @@ exports.TranscriberRecognizer = TranscriberRecognizer;
 
 
 /***/ }),
-/* 224 */
+/* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28183,6 +28621,8 @@ var MetadataType;
     MetadataType["WordBoundary"] = "WordBoundary";
     MetadataType["Bookmark"] = "Bookmark";
     MetadataType["Viseme"] = "Viseme";
+    MetadataType["SentenceBoundary"] = "SentenceBoundary";
+    MetadataType["SessionEnd"] = "SessionEnd";
 })(MetadataType = exports.MetadataType || (exports.MetadataType = {}));
 var SynthesisAudioMetadata = /** @class */ (function () {
     function SynthesisAudioMetadata(json) {
@@ -28205,7 +28645,7 @@ exports.SynthesisAudioMetadata = SynthesisAudioMetadata;
 
 
 /***/ }),
-/* 225 */
+/* 231 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28250,13 +28690,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesisTurn = void 0;
-var Exports_1 = __webpack_require__(4);
-var AudioOutputStream_1 = __webpack_require__(73);
-var SynthesisAdapterBase_1 = __webpack_require__(226);
-var SynthesisEvents_1 = __webpack_require__(227);
+var Exports_1 = __webpack_require__(6);
+var AudioOutputStream_1 = __webpack_require__(75);
+var SynthesisAudioMetadata_1 = __webpack_require__(230);
+var SynthesisAdapterBase_1 = __webpack_require__(232);
+var SynthesisEvents_1 = __webpack_require__(233);
 var SynthesisTurn = /** @class */ (function () {
     function SynthesisTurn() {
-        var _this = this;
         this.privIsDisposed = false;
         this.privIsSynthesizing = false;
         this.privIsSynthesisEnded = false;
@@ -28264,66 +28704,8 @@ var SynthesisTurn = /** @class */ (function () {
         this.privInTurn = false;
         this.privTextOffset = 0;
         this.privNextSearchTextIndex = 0;
-        this.onPreConnectionStart = function (authFetchEventId, connectionId) {
-            _this.privAuthFetchEventId = authFetchEventId;
-            _this.onEvent(new SynthesisEvents_1.ConnectingToSynthesisServiceEvent(_this.privRequestId, _this.privAuthFetchEventId));
-        };
-        this.onAuthCompleted = function (isError, error) {
-            if (isError) {
-                _this.onComplete();
-            }
-        };
-        this.onConnectionEstablishCompleted = function (statusCode, reason) {
-            if (statusCode === 200) {
-                _this.onEvent(new SynthesisEvents_1.SynthesisStartedEvent(_this.requestId, _this.privAuthFetchEventId));
-                _this.privBytesReceived = 0;
-                return;
-            }
-            else if (statusCode === 403) {
-                _this.onComplete();
-            }
-        };
-        this.onServiceResponseMessage = function (responseJson) {
-            var response = JSON.parse(responseJson);
-            _this.streamId = response.audio.streamId;
-        };
-        this.onServiceTurnEndResponse = function () {
-            _this.privInTurn = false;
-            _this.privTurnDeferral.resolve();
-            _this.onComplete();
-        };
-        this.onServiceTurnStartResponse = function () {
-            if (!!_this.privTurnDeferral && !!_this.privInTurn) {
-                // What? How are we starting a turn with another not done?
-                _this.privTurnDeferral.reject("Another turn started before current completed.");
-                // Avoid UnhandledPromiseRejection if privTurnDeferral is not being awaited
-                /* tslint:disable:no-empty */
-                _this.privTurnDeferral.promise.then().catch(function () { });
-            }
-            _this.privInTurn = true;
-            _this.privTurnDeferral = new Exports_1.Deferred();
-        };
-        this.dispose = function (error) {
-            if (!_this.privIsDisposed) {
-                // we should have completed by now. If we did not its an unknown error.
-                _this.privIsDisposed = true;
-            }
-        };
-        this.onEvent = function (event) {
-            Exports_1.Events.instance.onEvent(event);
-        };
-        this.onComplete = function () {
-            if (_this.privIsSynthesizing) {
-                _this.privIsSynthesizing = false;
-                _this.privIsSynthesisEnded = true;
-                _this.privAudioOutputStream.close();
-                _this.privInTurn = false;
-                if (_this.privTurnAudioDestination !== undefined) {
-                    _this.privTurnAudioDestination.close();
-                    _this.privTurnAudioDestination = undefined;
-                }
-            }
-        };
+        this.privSentenceOffset = 0;
+        this.privNextSearchSentenceIndex = 0;
         this.privRequestId = Exports_1.createNoDashGuid();
         this.privTurnDeferral = new Exports_1.Deferred();
         // We're not in a turn, so resolve.
@@ -28384,10 +28766,24 @@ var SynthesisTurn = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    Object.defineProperty(SynthesisTurn.prototype, "currentSentenceOffset", {
+        get: function () {
+            return this.privSentenceOffset;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Object.defineProperty(SynthesisTurn.prototype, "bytesReceived", {
         // The number of bytes received for current turn
         get: function () {
             return this.privBytesReceived;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(SynthesisTurn.prototype, "audioDuration", {
+        get: function () {
+            return this.privAudioDuration;
         },
         enumerable: false,
         configurable: true
@@ -28447,12 +28843,53 @@ var SynthesisTurn = /** @class */ (function () {
         this.privBytesReceived = 0;
         this.privTextOffset = 0;
         this.privNextSearchTextIndex = 0;
+        this.privSentenceOffset = 0;
+        this.privNextSearchSentenceIndex = 0;
         this.privPartialVisemeAnimation = "";
         if (audioDestination !== undefined) {
             this.privTurnAudioDestination = audioDestination;
             this.privTurnAudioDestination.format = this.privAudioOutputFormat;
         }
         this.onEvent(new SynthesisEvents_1.SynthesisTriggeredEvent(this.requestId, undefined, audioDestination === undefined ? undefined : audioDestination.id()));
+    };
+    SynthesisTurn.prototype.onPreConnectionStart = function (authFetchEventId) {
+        this.privAuthFetchEventId = authFetchEventId;
+        this.onEvent(new SynthesisEvents_1.ConnectingToSynthesisServiceEvent(this.privRequestId, this.privAuthFetchEventId));
+    };
+    SynthesisTurn.prototype.onAuthCompleted = function (isError) {
+        if (isError) {
+            this.onComplete();
+        }
+    };
+    SynthesisTurn.prototype.onConnectionEstablishCompleted = function (statusCode) {
+        if (statusCode === 200) {
+            this.onEvent(new SynthesisEvents_1.SynthesisStartedEvent(this.requestId, this.privAuthFetchEventId));
+            this.privBytesReceived = 0;
+            return;
+        }
+        else if (statusCode === 403) {
+            this.onComplete();
+        }
+    };
+    SynthesisTurn.prototype.onServiceResponseMessage = function (responseJson) {
+        var response = JSON.parse(responseJson);
+        this.streamId = response.audio.streamId;
+    };
+    SynthesisTurn.prototype.onServiceTurnEndResponse = function () {
+        this.privInTurn = false;
+        this.privTurnDeferral.resolve();
+        this.onComplete();
+    };
+    SynthesisTurn.prototype.onServiceTurnStartResponse = function () {
+        if (!!this.privTurnDeferral && !!this.privInTurn) {
+            // What? How are we starting a turn with another not done?
+            this.privTurnDeferral.reject("Another turn started before current completed.");
+            // Avoid UnhandledPromiseRejection if privTurnDeferral is not being awaited
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            this.privTurnDeferral.promise.then().catch(function () { });
+        }
+        this.privInTurn = true;
+        this.privTurnDeferral = new Exports_1.Deferred();
     };
     SynthesisTurn.prototype.onAudioChunkReceived = function (data) {
         if (this.isSynthesizing) {
@@ -28463,12 +28900,21 @@ var SynthesisTurn = /** @class */ (function () {
             }
         }
     };
-    SynthesisTurn.prototype.onWordBoundaryEvent = function (text) {
-        this.updateTextOffset(text);
+    SynthesisTurn.prototype.onTextBoundaryEvent = function (metadata) {
+        this.updateTextOffset(metadata.Data.text.Text, metadata.Type);
     };
     SynthesisTurn.prototype.onVisemeMetadataReceived = function (metadata) {
         if (metadata.Data.AnimationChunk !== undefined) {
             this.privPartialVisemeAnimation += metadata.Data.AnimationChunk;
+        }
+    };
+    SynthesisTurn.prototype.onSessionEnd = function (metadata) {
+        this.privAudioDuration = metadata.Data.Offset;
+    };
+    SynthesisTurn.prototype.dispose = function () {
+        if (!this.privIsDisposed) {
+            // we should have completed by now. If we did not its an unknown error.
+            this.privIsDisposed = true;
         }
     };
     SynthesisTurn.prototype.onStopSynthesizing = function () {
@@ -28483,16 +28929,50 @@ var SynthesisTurn = /** @class */ (function () {
         this.privPartialVisemeAnimation = "";
         return animation;
     };
-    SynthesisTurn.prototype.updateTextOffset = function (text) {
-        if (this.privTextOffset >= 0) {
+    SynthesisTurn.prototype.onEvent = function (event) {
+        Exports_1.Events.instance.onEvent(event);
+    };
+    /**
+     * Check if the text is an XML(SSML) tag
+     * @param text
+     * @private
+     */
+    SynthesisTurn.isXmlTag = function (text) {
+        return text.length >= 2 && text[0] === "<" && text[text.length - 1] === ">";
+    };
+    SynthesisTurn.prototype.updateTextOffset = function (text, type) {
+        if (type === SynthesisAudioMetadata_1.MetadataType.WordBoundary) {
             this.privTextOffset = this.privRawText.indexOf(text, this.privNextSearchTextIndex);
             if (this.privTextOffset >= 0) {
                 this.privNextSearchTextIndex = this.privTextOffset + text.length;
-            }
-            if (this.privIsSSML) {
-                if (this.privRawText.indexOf("<", this.privTextOffset + 1) > this.privRawText.indexOf(">", this.privTextOffset + 1)) {
-                    this.updateTextOffset(text);
+                if (this.privIsSSML) {
+                    if (this.withinXmlTag(this.privTextOffset) && !SynthesisTurn.isXmlTag(text)) {
+                        this.updateTextOffset(text, type);
+                    }
                 }
+            }
+        }
+        else {
+            this.privSentenceOffset = this.privRawText.indexOf(text, this.privNextSearchSentenceIndex);
+            if (this.privSentenceOffset >= 0) {
+                this.privNextSearchSentenceIndex = this.privSentenceOffset + text.length;
+                if (this.privIsSSML) {
+                    if (this.withinXmlTag(this.privSentenceOffset) && !SynthesisTurn.isXmlTag(text)) {
+                        this.updateTextOffset(text, type);
+                    }
+                }
+            }
+        }
+    };
+    SynthesisTurn.prototype.onComplete = function () {
+        if (this.privIsSynthesizing) {
+            this.privIsSynthesizing = false;
+            this.privIsSynthesisEnded = true;
+            this.privAudioOutputStream.close();
+            this.privInTurn = false;
+            if (this.privTurnAudioDestination !== undefined) {
+                this.privTurnAudioDestination.close();
+                this.privTurnAudioDestination = undefined;
             }
         }
     };
@@ -28520,6 +29000,14 @@ var SynthesisTurn = /** @class */ (function () {
             });
         });
     };
+    /**
+     * Check if current idx is in XML(SSML) tag
+     * @param idx
+     * @private
+     */
+    SynthesisTurn.prototype.withinXmlTag = function (idx) {
+        return this.privRawText.indexOf("<", idx + 1) > this.privRawText.indexOf(">", idx + 1);
+    };
     return SynthesisTurn;
 }());
 exports.SynthesisTurn = SynthesisTurn;
@@ -28527,7 +29015,7 @@ exports.SynthesisTurn = SynthesisTurn;
 
 
 /***/ }),
-/* 226 */
+/* 232 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -28572,10 +29060,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesisAdapterBase = void 0;
-var Exports_1 = __webpack_require__(4);
-var Exports_2 = __webpack_require__(61);
-var Exports_3 = __webpack_require__(53);
-var SpeechConnectionMessage_Internal_1 = __webpack_require__(173);
+var Exports_1 = __webpack_require__(6);
+var Exports_2 = __webpack_require__(64);
+var Exports_3 = __webpack_require__(56);
+var SpeechConnectionMessage_Internal_1 = __webpack_require__(179);
 var SynthesisAdapterBase = /** @class */ (function () {
     function SynthesisAdapterBase(authentication, connectionFactory, synthesizerConfig, speechSynthesizer, audioDestination) {
         var _this = this;
@@ -28583,21 +29071,9 @@ var SynthesisAdapterBase = /** @class */ (function () {
         this.receiveMessageOverride = undefined;
         this.connectImplOverride = undefined;
         this.configConnectionOverride = undefined;
-        this.sendSynthesisContext = function (connection) {
-            var synthesisContextJson = _this.synthesisContext.toJSON();
-            if (synthesisContextJson) {
-                return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "synthesis.context", _this.privSynthesisTurn.requestId, "application/json", synthesisContextJson));
-            }
-            return;
-        };
-        this.sendSpeechServiceConfig = function (connection, SpeechServiceConfigJson) {
-            if (SpeechServiceConfigJson) {
-                return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "speech.config", _this.privSynthesisTurn.requestId, "application/json", SpeechServiceConfigJson));
-            }
-        };
-        this.sendSsmlMessage = function (connection, ssml, requestId) {
-            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "ssml", requestId, "application/ssml+xml", ssml));
-        };
+        // A promise for a configured connection.
+        // Do not consume directly, call fetchConnection instead.
+        this.privConnectionConfigurationPromise = undefined;
         if (!authentication) {
             throw new Exports_1.ArgumentNullError("authentication");
         }
@@ -28656,8 +29132,12 @@ var SynthesisAdapterBase = /** @class */ (function () {
         configurable: true
     });
     Object.defineProperty(SynthesisAdapterBase.prototype, "activityTemplate", {
-        get: function () { return this.privActivityTemplate; },
-        set: function (messagePayload) { this.privActivityTemplate = messagePayload; },
+        get: function () {
+            return this.privActivityTemplate;
+        },
+        set: function (messagePayload) {
+            this.privActivityTemplate = messagePayload;
+        },
         enumerable: false,
         configurable: true
     });
@@ -28698,7 +29178,7 @@ var SynthesisAdapterBase = /** @class */ (function () {
                         if (this.privSessionAudioDestination !== undefined) {
                             this.privSessionAudioDestination.close();
                         }
-                        if (!this.privConnectionConfigurationPromise) return [3 /*break*/, 3];
+                        if (!(this.privConnectionConfigurationPromise !== undefined)) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.privConnectionConfigurationPromise];
                     case 1:
                         connection = _a.sent();
@@ -28741,7 +29221,7 @@ var SynthesisAdapterBase = /** @class */ (function () {
     };
     SynthesisAdapterBase.prototype.Speak = function (text, isSSML, requestId, successCallback, errorCallBack, audioDestination) {
         return __awaiter(this, void 0, void 0, function () {
-            var ssml, connection, synthesisStartEventArgs, messageRetrievalPromise, e_1;
+            var ssml, connection, synthesisStartEventArgs, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -28776,7 +29256,7 @@ var SynthesisAdapterBase = /** @class */ (function () {
                         if (!!this.privSpeechSynthesizer.synthesisStarted) {
                             this.privSpeechSynthesizer.synthesisStarted(this.privSpeechSynthesizer, synthesisStartEventArgs);
                         }
-                        messageRetrievalPromise = this.receiveMessage();
+                        void this.receiveMessage();
                         return [3 /*break*/, 7];
                     case 6:
                         e_1 = _a.sent();
@@ -28796,14 +29276,14 @@ var SynthesisAdapterBase = /** @class */ (function () {
             var cancelEvent = new Exports_2.SpeechSynthesisEventArgs(result);
             try {
                 this.privSpeechSynthesizer.SynthesisCanceled(this.privSpeechSynthesizer, cancelEvent);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_a) { }
         }
         if (!!this.privSuccessCallback) {
             try {
                 this.privSuccessCallback(result);
-                /* tslint:disable:no-empty */
+                /* eslint-disable no-empty */
             }
             catch (_b) { }
         }
@@ -28815,7 +29295,8 @@ var SynthesisAdapterBase = /** @class */ (function () {
             this.cancelSynthesis(this.privSynthesisTurn.requestId, cancellationReason, errorCode, error);
         }
     };
-    SynthesisAdapterBase.prototype.processTypeSpecificMessages = function (connectionMessage, successCallback, errorCallBack) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    SynthesisAdapterBase.prototype.processTypeSpecificMessages = function (connectionMessage) {
         return true;
     };
     SynthesisAdapterBase.prototype.receiveMessage = function () {
@@ -28847,7 +29328,6 @@ var SynthesisAdapterBase = /** @class */ (function () {
                                 return [2 /*return*/, this.receiveMessage()];
                             }
                         }
-                        this.privServiceHasSentMessage = true;
                         connectionMessage = SpeechConnectionMessage_Internal_1.SpeechConnectionMessage.fromConnectionMessage(message);
                         if (!(connectionMessage.requestId.toLowerCase() === this.privSynthesisTurn.requestId.toLowerCase())) return [3 /*break*/, 13];
                         _a = connectionMessage.path.toLowerCase();
@@ -28891,8 +29371,10 @@ var SynthesisAdapterBase = /** @class */ (function () {
                             metadata = metadataList_1[_i];
                             switch (metadata.Type) {
                                 case Exports_3.MetadataType.WordBoundary:
-                                    this.privSynthesisTurn.onWordBoundaryEvent(metadata.Data.text.Text);
-                                    wordBoundaryEventArgs = new Exports_2.SpeechSynthesisWordBoundaryEventArgs(metadata.Data.Offset, metadata.Data.text.Text, metadata.Data.text.Length, this.privSynthesisTurn.currentTextOffset);
+                                case Exports_3.MetadataType.SentenceBoundary:
+                                    this.privSynthesisTurn.onTextBoundaryEvent(metadata);
+                                    wordBoundaryEventArgs = new Exports_2.SpeechSynthesisWordBoundaryEventArgs(metadata.Data.Offset, metadata.Data.Duration, metadata.Data.text.Text, metadata.Data.text.Length, metadata.Type === Exports_3.MetadataType.WordBoundary
+                                        ? this.privSynthesisTurn.currentTextOffset : this.privSynthesisTurn.currentSentenceOffset, metadata.Data.text.BoundaryType);
                                     if (!!this.privSpeechSynthesizer.wordBoundary) {
                                         try {
                                             this.privSpeechSynthesizer.wordBoundary(this.privSpeechSynthesizer, wordBoundaryEventArgs);
@@ -28930,6 +29412,9 @@ var SynthesisAdapterBase = /** @class */ (function () {
                                         }
                                     }
                                     break;
+                                case Exports_3.MetadataType.SessionEnd:
+                                    this.privSynthesisTurn.onSessionEnd(metadata);
+                                    break;
                             }
                         }
                         return [3 /*break*/, 13];
@@ -28942,7 +29427,7 @@ var SynthesisAdapterBase = /** @class */ (function () {
                         return [4 /*yield*/, this.privSynthesisTurn.getAllReceivedAudioWithHeader()];
                     case 9:
                         audioBuffer = _b.sent();
-                        result = new Exports_2.SpeechSynthesisResult(this.privSynthesisTurn.requestId, Exports_2.ResultReason.SynthesizingAudioCompleted, audioBuffer);
+                        result = new Exports_2.SpeechSynthesisResult(this.privSynthesisTurn.requestId, Exports_2.ResultReason.SynthesizingAudioCompleted, audioBuffer, undefined, undefined, this.privSynthesisTurn.audioDuration);
                         if (!!this.privSuccessCallback) {
                             this.privSuccessCallback(result);
                         }
@@ -28981,37 +29466,41 @@ var SynthesisAdapterBase = /** @class */ (function () {
             });
         });
     };
+    SynthesisAdapterBase.prototype.sendSynthesisContext = function (connection) {
+        var synthesisContextJson = this.synthesisContext.toJSON();
+        if (synthesisContextJson) {
+            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "synthesis.context", this.privSynthesisTurn.requestId, "application/json", synthesisContextJson));
+        }
+        return;
+    };
     SynthesisAdapterBase.prototype.connectImpl = function (isUnAuthorized) {
         var _this = this;
         if (isUnAuthorized === void 0) { isUnAuthorized = false; }
-        if (this.privConnectionPromise) {
+        if (this.privConnectionPromise != null) {
             return this.privConnectionPromise.then(function (connection) {
                 if (connection.state() === Exports_1.ConnectionState.Disconnected) {
                     _this.privConnectionId = null;
                     _this.privConnectionPromise = null;
-                    _this.privServiceHasSentMessage = false;
                     return _this.connectImpl();
                 }
                 return _this.privConnectionPromise;
-            }, function (error) {
+            }, function () {
                 _this.privConnectionId = null;
                 _this.privConnectionPromise = null;
-                _this.privServiceHasSentMessage = false;
                 return _this.connectImpl();
             });
         }
         this.privAuthFetchEventId = Exports_1.createNoDashGuid();
         this.privConnectionId = Exports_1.createNoDashGuid();
-        this.privSynthesisTurn.onPreConnectionStart(this.privAuthFetchEventId, this.privConnectionId);
+        this.privSynthesisTurn.onPreConnectionStart(this.privAuthFetchEventId);
         var authPromise = isUnAuthorized ? this.privAuthentication.fetchOnExpiry(this.privAuthFetchEventId) : this.privAuthentication.fetch(this.privAuthFetchEventId);
         this.privConnectionPromise = authPromise.then(function (result) { return __awaiter(_this, void 0, void 0, function () {
             var connection, response;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.privSynthesisTurn.onAuthCompleted(false)];
-                    case 1:
-                        _a.sent();
+                    case 0:
+                        this.privSynthesisTurn.onAuthCompleted(false);
                         connection = this.privConnectionFactory.create(this.privSynthesizerConfig, result, this.privConnectionId);
                         // Attach to the underlying event. No need to hold onto the detach pointers as in the event the connection goes away,
                         // it'll stop sending events.
@@ -29019,36 +29508,39 @@ var SynthesisAdapterBase = /** @class */ (function () {
                             _this.connectionEvents.onEvent(event);
                         });
                         return [4 /*yield*/, connection.open()];
-                    case 2:
-                        response = _a.sent();
-                        if (!(response.statusCode === 200)) return [3 /*break*/, 4];
-                        return [4 /*yield*/, this.privSynthesisTurn.onConnectionEstablishCompleted(response.statusCode)];
-                    case 3:
-                        _a.sent();
-                        return [2 /*return*/, Promise.resolve(connection)];
-                    case 4:
-                        if (!(response.statusCode === 403 && !isUnAuthorized)) return [3 /*break*/, 5];
-                        return [2 /*return*/, this.connectImpl(true)];
-                    case 5: return [4 /*yield*/, this.privSynthesisTurn.onConnectionEstablishCompleted(response.statusCode, response.reason)];
-                    case 6:
-                        _a.sent();
-                        return [2 /*return*/, Promise.reject("Unable to contact server. StatusCode: " + response.statusCode + ", " + this.privSynthesizerConfig.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint) + " Reason: " + response.reason)];
-                }
-            });
-        }); }, function (error) { return __awaiter(_this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.privSynthesisTurn.onAuthCompleted(true, error)];
                     case 1:
-                        _a.sent();
-                        throw new Error(error);
+                        response = _a.sent();
+                        if (response.statusCode === 200) {
+                            this.privSynthesisTurn.onConnectionEstablishCompleted(response.statusCode);
+                            return [2 /*return*/, Promise.resolve(connection)];
+                        }
+                        else if (response.statusCode === 403 && !isUnAuthorized) {
+                            return [2 /*return*/, this.connectImpl(true)];
+                        }
+                        else {
+                            this.privSynthesisTurn.onConnectionEstablishCompleted(response.statusCode);
+                            return [2 /*return*/, Promise.reject("Unable to contact server. StatusCode: " + response.statusCode + ", " + this.privSynthesizerConfig.parameters.getProperty(Exports_2.PropertyId.SpeechServiceConnection_Endpoint) + " Reason: " + response.reason)];
+                        }
+                        return [2 /*return*/];
                 }
             });
-        }); });
+        }); }, function (error) {
+            _this.privSynthesisTurn.onAuthCompleted(true);
+            throw new Error(error);
+        });
         // Attach an empty handler to allow the promise to run in the background while
         // other startup events happen. It'll eventually be awaited on.
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         this.privConnectionPromise.catch(function () { });
         return this.privConnectionPromise;
+    };
+    SynthesisAdapterBase.prototype.sendSpeechServiceConfig = function (connection, SpeechServiceConfigJson) {
+        if (SpeechServiceConfigJson) {
+            return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "speech.config", this.privSynthesisTurn.requestId, "application/json", SpeechServiceConfigJson));
+        }
+    };
+    SynthesisAdapterBase.prototype.sendSsmlMessage = function (connection, ssml, requestId) {
+        return connection.send(new SpeechConnectionMessage_Internal_1.SpeechConnectionMessage(Exports_1.MessageType.Text, "ssml", requestId, "application/ssml+xml", ssml));
     };
     SynthesisAdapterBase.prototype.fetchConnection = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -29056,19 +29548,17 @@ var SynthesisAdapterBase = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (this.privConnectionConfigurationPromise) {
+                        if (this.privConnectionConfigurationPromise !== undefined) {
                             return [2 /*return*/, this.privConnectionConfigurationPromise.then(function (connection) {
                                     if (connection.state() === Exports_1.ConnectionState.Disconnected) {
                                         _this.privConnectionId = null;
-                                        _this.privConnectionConfigurationPromise = null;
-                                        _this.privServiceHasSentMessage = false;
+                                        _this.privConnectionConfigurationPromise = undefined;
                                         return _this.fetchConnection();
                                     }
                                     return _this.privConnectionConfigurationPromise;
-                                }, function (error) {
+                                }, function () {
                                     _this.privConnectionId = null;
-                                    _this.privConnectionConfigurationPromise = null;
-                                    _this.privServiceHasSentMessage = false;
+                                    _this.privConnectionConfigurationPromise = undefined;
                                     return _this.fetchConnection();
                                 })];
                         }
@@ -29107,7 +29597,7 @@ exports.SynthesisAdapterBase = SynthesisAdapterBase;
 
 
 /***/ }),
-/* 227 */
+/* 233 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29129,8 +29619,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesisStartedEvent = exports.ConnectingToSynthesisServiceEvent = exports.SynthesisTriggeredEvent = exports.SpeechSynthesisEvent = void 0;
-// tslint:disable:max-classes-per-file
-var Exports_1 = __webpack_require__(4);
+/* eslint-disable max-classes-per-file */
+var Exports_1 = __webpack_require__(6);
 var SpeechSynthesisEvent = /** @class */ (function (_super) {
     __extends(SpeechSynthesisEvent, _super);
     function SpeechSynthesisEvent(eventName, requestId, eventType) {
@@ -29212,7 +29702,7 @@ exports.SynthesisStartedEvent = SynthesisStartedEvent;
 
 
 /***/ }),
-/* 228 */
+/* 234 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29220,9 +29710,9 @@ exports.SynthesisStartedEvent = SynthesisStartedEvent;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesisRestAdapter = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
-var HeaderNames_1 = __webpack_require__(55);
+var Exports_2 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
+var HeaderNames_1 = __webpack_require__(58);
 /**
  * Implements methods for speaker recognition classes, sending requests to endpoint
  * and parsing response into expected format
@@ -29259,7 +29749,7 @@ exports.SynthesisRestAdapter = SynthesisRestAdapter;
 
 
 /***/ }),
-/* 229 */
+/* 235 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29268,7 +29758,7 @@ exports.SynthesisRestAdapter = SynthesisRestAdapter;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesizerConfig = exports.SynthesisServiceType = void 0;
-var Exports_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(56);
 var SynthesisServiceType;
 (function (SynthesisServiceType) {
     SynthesisServiceType[SynthesisServiceType["Standard"] = 0] = "Standard";
@@ -29311,7 +29801,7 @@ exports.SynthesizerConfig = SynthesizerConfig;
 
 
 /***/ }),
-/* 230 */
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29320,6 +29810,7 @@ exports.SynthesizerConfig = SynthesizerConfig;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SynthesisContext = void 0;
+var Exports_1 = __webpack_require__(64);
 /**
  * Represents the JSON used in the synthesis.context message sent to the speech service.
  * The dynamic grammar is always refreshed from the encapsulated dynamic grammar object.
@@ -29358,9 +29849,11 @@ var SynthesisContext = /** @class */ (function () {
             audio: {
                 metadataOptions: {
                     bookmarkEnabled: (!!this.privSpeechSynthesizer.bookmarkReached),
-                    sentenceBoundaryEnabled: false,
+                    punctuationBoundaryEnabled: this.privSpeechSynthesizer.properties.getProperty(Exports_1.PropertyId.SpeechServiceResponse_RequestPunctuationBoundary, (!!this.privSpeechSynthesizer.wordBoundary)),
+                    sentenceBoundaryEnabled: this.privSpeechSynthesizer.properties.getProperty(Exports_1.PropertyId.SpeechServiceResponse_RequestSentenceBoundary, false),
+                    sessionEndEnabled: true,
                     visemeEnabled: (!!this.privSpeechSynthesizer.visemeReceived),
-                    wordBoundaryEnabled: (!!this.privSpeechSynthesizer.wordBoundary),
+                    wordBoundaryEnabled: this.privSpeechSynthesizer.properties.getProperty(Exports_1.PropertyId.SpeechServiceResponse_RequestWordBoundary, (!!this.privSpeechSynthesizer.wordBoundary)),
                 },
                 outputFormat: this.privAudioOutputFormat.requestAudioFormatString,
             },
@@ -29376,7 +29869,7 @@ exports.SynthesisContext = SynthesisContext;
 
 
 /***/ }),
-/* 231 */
+/* 237 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29385,7 +29878,7 @@ exports.SynthesisContext = SynthesisContext;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeakerRecognitionConfig = void 0;
-var Exports_1 = __webpack_require__(53);
+var Exports_1 = __webpack_require__(56);
 var SpeakerRecognitionConfig = /** @class */ (function () {
     function SpeakerRecognitionConfig(context, parameters) {
         this.privContext = context ? context : new Exports_1.Context(null);
@@ -29412,7 +29905,7 @@ exports.SpeakerRecognitionConfig = SpeakerRecognitionConfig;
 
 
 /***/ }),
-/* 232 */
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29456,8 +29949,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SpeakerIdMessageAdapter = void 0;
 var Exports_1 = __webpack_require__(2);
-var Exports_2 = __webpack_require__(61);
-var ConnectionFactoryBase_1 = __webpack_require__(123);
+var Exports_2 = __webpack_require__(64);
+var ConnectionFactoryBase_1 = __webpack_require__(125);
 /**
  * Implements methods for speaker recognition classes, sending requests to endpoint
  * and parsing response into expected format
@@ -29487,7 +29980,7 @@ var SpeakerIdMessageAdapter = /** @class */ (function () {
      */
     SpeakerIdMessageAdapter.prototype.createProfile = function (profileType, lang) {
         var uri = this.getOperationUri(profileType);
-        return this.privRestAdapter.request(Exports_1.RestRequestType.Post, uri, this.getQueryParams(), { locale: lang });
+        return this.privRestAdapter.request(Exports_1.RestRequestType.Post, uri, this.getQueryParams({}), { locale: lang });
     };
     /**
      * Sends create enrollment request to endpoint.
@@ -29500,9 +29993,8 @@ var SpeakerIdMessageAdapter = /** @class */ (function () {
     SpeakerIdMessageAdapter.prototype.createEnrollment = function (profile, audioSource) {
         var _this = this;
         var uri = this.getOperationUri(profile.profileType) + "/" + profile.profileId + "/enrollments";
-        return audioSource.blob.then(function (result) {
-            return _this.privRestAdapter.request(Exports_1.RestRequestType.File, uri, _this.getQueryParams({ ignoreMinLength: "true" }), null, result);
-        });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        return audioSource.blob.then(function (result) { return _this.privRestAdapter.request(Exports_1.RestRequestType.File, uri, _this.getQueryParams({ ignoreMinLength: "true" }), null, result); });
     };
     /**
      * Sends verification request to endpoint.
@@ -29637,7 +30129,7 @@ exports.SpeakerIdMessageAdapter = SpeakerIdMessageAdapter;
 
 
 /***/ }),
-/* 233 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29682,86 +30174,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileAudioSource = void 0;
-var Exports_1 = __webpack_require__(53);
-var Exports_2 = __webpack_require__(4);
-var AudioStreamFormat_1 = __webpack_require__(72);
+var Exports_1 = __webpack_require__(56);
+var Exports_2 = __webpack_require__(6);
+var AudioStreamFormat_1 = __webpack_require__(74);
 var FileAudioSource = /** @class */ (function () {
     function FileAudioSource(file, filename, audioSourceId) {
-        var _this = this;
         this.privStreams = {};
         this.privHeaderEnd = 44;
-        this.turnOn = function () {
-            if (_this.privFilename.lastIndexOf(".wav") !== _this.privFilename.length - 4) {
-                var errorMsg = _this.privFilename + " is not supported. Only WAVE files are allowed at the moment.";
-                _this.onEvent(new Exports_2.AudioSourceErrorEvent(errorMsg, ""));
-                return Promise.reject(errorMsg);
-            }
-            _this.onEvent(new Exports_2.AudioSourceInitializingEvent(_this.privId)); // no stream id
-            _this.onEvent(new Exports_2.AudioSourceReadyEvent(_this.privId));
-            return;
-        };
-        this.id = function () {
-            return _this.privId;
-        };
-        this.attach = function (audioNodeId) { return __awaiter(_this, void 0, void 0, function () {
-            var stream;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.onEvent(new Exports_2.AudioStreamNodeAttachingEvent(this.privId, audioNodeId));
-                        return [4 /*yield*/, this.upload(audioNodeId)];
-                    case 1:
-                        stream = _a.sent();
-                        this.onEvent(new Exports_2.AudioStreamNodeAttachedEvent(this.privId, audioNodeId));
-                        return [2 /*return*/, Promise.resolve({
-                                detach: function () { return __awaiter(_this, void 0, void 0, function () {
-                                    return __generator(this, function (_a) {
-                                        switch (_a.label) {
-                                            case 0:
-                                                stream.readEnded();
-                                                delete this.privStreams[audioNodeId];
-                                                this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(this.privId, audioNodeId));
-                                                return [4 /*yield*/, this.turnOff()];
-                                            case 1:
-                                                _a.sent();
-                                                return [2 /*return*/];
-                                        }
-                                    });
-                                }); },
-                                id: function () {
-                                    return audioNodeId;
-                                },
-                                read: function () {
-                                    return stream.read();
-                                },
-                            })];
-                }
-            });
-        }); };
-        this.detach = function (audioNodeId) {
-            if (audioNodeId && _this.privStreams[audioNodeId]) {
-                _this.privStreams[audioNodeId].close();
-                delete _this.privStreams[audioNodeId];
-                _this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(_this.privId, audioNodeId));
-            }
-        };
-        this.turnOff = function () {
-            for (var streamId in _this.privStreams) {
-                if (streamId) {
-                    var stream = _this.privStreams[streamId];
-                    if (stream && !stream.isClosed) {
-                        stream.close();
-                    }
-                }
-            }
-            _this.onEvent(new Exports_2.AudioSourceOffEvent(_this.privId)); // no stream now
-            return Promise.resolve();
-        };
-        this.onEvent = function (event) {
-            _this.privEvents.onEvent(event);
-            Exports_2.Events.instance.onEvent(event);
-        };
         this.privId = audioSourceId ? audioSourceId : Exports_2.createNoDashGuid();
         this.privEvents = new Exports_2.EventSource();
         this.privSource = file;
@@ -29788,6 +30207,72 @@ var FileAudioSource = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    FileAudioSource.prototype.turnOn = function () {
+        if (this.privFilename.lastIndexOf(".wav") !== this.privFilename.length - 4) {
+            var errorMsg = this.privFilename + " is not supported. Only WAVE files are allowed at the moment.";
+            this.onEvent(new Exports_2.AudioSourceErrorEvent(errorMsg, ""));
+            return Promise.reject(errorMsg);
+        }
+        this.onEvent(new Exports_2.AudioSourceInitializingEvent(this.privId)); // no stream id
+        this.onEvent(new Exports_2.AudioSourceReadyEvent(this.privId));
+        return;
+    };
+    FileAudioSource.prototype.id = function () {
+        return this.privId;
+    };
+    FileAudioSource.prototype.attach = function (audioNodeId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var stream;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.onEvent(new Exports_2.AudioStreamNodeAttachingEvent(this.privId, audioNodeId));
+                        return [4 /*yield*/, this.upload(audioNodeId)];
+                    case 1:
+                        stream = _a.sent();
+                        this.onEvent(new Exports_2.AudioStreamNodeAttachedEvent(this.privId, audioNodeId));
+                        return [2 /*return*/, Promise.resolve({
+                                detach: function () { return __awaiter(_this, void 0, void 0, function () {
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                stream.readEnded();
+                                                delete this.privStreams[audioNodeId];
+                                                this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(this.privId, audioNodeId));
+                                                return [4 /*yield*/, this.turnOff()];
+                                            case 1:
+                                                _a.sent();
+                                                return [2 /*return*/];
+                                        }
+                                    });
+                                }); },
+                                id: function () { return audioNodeId; },
+                                read: function () { return stream.read(); },
+                            })];
+                }
+            });
+        });
+    };
+    FileAudioSource.prototype.detach = function (audioNodeId) {
+        if (audioNodeId && this.privStreams[audioNodeId]) {
+            this.privStreams[audioNodeId].close();
+            delete this.privStreams[audioNodeId];
+            this.onEvent(new Exports_2.AudioStreamNodeDetachedEvent(this.privId, audioNodeId));
+        }
+    };
+    FileAudioSource.prototype.turnOff = function () {
+        for (var streamId in this.privStreams) {
+            if (streamId) {
+                var stream = this.privStreams[streamId];
+                if (stream && !stream.isClosed) {
+                    stream.close();
+                }
+            }
+        }
+        this.onEvent(new Exports_2.AudioSourceOffEvent(this.privId)); // no stream now
+        return Promise.resolve();
+    };
     Object.defineProperty(FileAudioSource.prototype, "events", {
         get: function () {
             return this.privEvents;
@@ -29797,17 +30282,15 @@ var FileAudioSource = /** @class */ (function () {
     });
     Object.defineProperty(FileAudioSource.prototype, "deviceInfo", {
         get: function () {
-            return this.privAudioFormatPromise.then(function (result) {
-                return Promise.resolve({
-                    bitspersample: result.bitsPerSample,
-                    channelcount: result.channels,
-                    connectivity: Exports_1.connectivity.Unknown,
-                    manufacturer: "Speech SDK",
-                    model: "File",
-                    samplerate: result.samplesPerSec,
-                    type: Exports_1.type.File,
-                });
-            });
+            return this.privAudioFormatPromise.then(function (result) { return (Promise.resolve({
+                bitspersample: result.bitsPerSample,
+                channelcount: result.channels,
+                connectivity: Exports_1.connectivity.Unknown,
+                manufacturer: "Speech SDK",
+                model: "File",
+                samplerate: result.samplesPerSec,
+                type: Exports_1.type.File,
+            })); });
         },
         enumerable: false,
         configurable: true
@@ -29820,9 +30303,7 @@ var FileAudioSource = /** @class */ (function () {
         var headerResult = new Exports_2.Deferred();
         var processHeader = function (header) {
             var view = new DataView(header);
-            var getWord = function (index) {
-                return String.fromCharCode(view.getUint8(index), view.getUint8(index + 1), view.getUint8(index + 2), view.getUint8(index + 3));
-            };
+            var getWord = function (index) { return String.fromCharCode(view.getUint8(index), view.getUint8(index + 1), view.getUint8(index + 2), view.getUint8(index + 3)); };
             // RIFF 4 bytes.
             if ("RIFF" !== getWord(0)) {
                 headerResult.reject("Invalid WAV header in file, RIFF was not found");
@@ -29900,7 +30381,7 @@ var FileAudioSource = /** @class */ (function () {
                         };
                         if (typeof window !== "undefined" && typeof Blob !== "undefined" && chunk instanceof Blob) {
                             reader = new FileReader();
-                            reader.onerror = function (ev) { onerror(ev.toString()); };
+                            reader.onerror = function (ev) { return onerror(ev.toString()); };
                             reader.onload = function (event) {
                                 var fileBuffer = event.target.result;
                                 processFile_1(fileBuffer);
@@ -29921,6 +30402,10 @@ var FileAudioSource = /** @class */ (function () {
             });
         });
     };
+    FileAudioSource.prototype.onEvent = function (event) {
+        this.privEvents.onEvent(event);
+        Exports_2.Events.instance.onEvent(event);
+    };
     return FileAudioSource;
 }());
 exports.FileAudioSource = FileAudioSource;
@@ -29928,7 +30413,7 @@ exports.FileAudioSource = FileAudioSource;
 
 
 /***/ }),
-/* 234 */
+/* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -29937,39 +30422,69 @@ exports.FileAudioSource = FileAudioSource;
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PcmRecorder = void 0;
-var Exports_1 = __webpack_require__(4);
+var Exports_1 = __webpack_require__(6);
 var PcmRecorder = /** @class */ (function () {
     function PcmRecorder(stopInputOnRelease) {
+        this.privStopInputOnRelease = stopInputOnRelease;
+    }
+    PcmRecorder.prototype.record = function (context, mediaStream, outputStream) {
         var _this = this;
-        this.record = function (context, mediaStream, outputStream) {
-            var desiredSampleRate = 16000;
-            var waveStreamEncoder = new Exports_1.RiffPcmEncoder(context.sampleRate, desiredSampleRate);
-            var needHeader = true;
-            var micInput = context.createMediaStreamSource(mediaStream);
-            if (!_this.privSpeechProcessorScript) {
-                var workletScript = "class SP extends AudioWorkletProcessor {\n                constructor(options) {\n                  super(options);\n                }\n                process(inputs, outputs) {\n                  const input = inputs[0];\n                  const output = [];\n                  for (let channel = 0; channel < input.length; channel += 1) {\n                    output[channel] = input[channel];\n                  }\n                  this.port.postMessage(output[0]);\n                  return true;\n                }\n              }\n              registerProcessor('speech-processor', SP);"; // tslint:disable-line:max-line-length
-                var blob = new Blob([workletScript], { type: "application/javascript; charset=utf-8" });
-                _this.privSpeechProcessorScript = URL.createObjectURL(blob);
-            }
-            var attachScriptProcessor = function () {
-                var scriptNode = (function () {
-                    var bufferSize = 0;
-                    try {
-                        return context.createScriptProcessor(bufferSize, 1, 1);
+        var desiredSampleRate = 16000;
+        var waveStreamEncoder = new Exports_1.RiffPcmEncoder(context.sampleRate, desiredSampleRate);
+        var micInput = context.createMediaStreamSource(mediaStream);
+        if (!this.privSpeechProcessorScript) {
+            var workletScript = "class SP extends AudioWorkletProcessor {\n                constructor(options) {\n                  super(options);\n                }\n                process(inputs, outputs) {\n                  const input = inputs[0];\n                  const output = [];\n                  for (let channel = 0; channel < input.length; channel += 1) {\n                    output[channel] = input[channel];\n                  }\n                  this.port.postMessage(output[0]);\n                  return true;\n                }\n              }\n              registerProcessor('speech-processor', SP);";
+            var blob = new Blob([workletScript], { type: "application/javascript; charset=utf-8" });
+            this.privSpeechProcessorScript = URL.createObjectURL(blob);
+        }
+        var attachScriptProcessor = function () {
+            // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+            var scriptNode = (function () {
+                var bufferSize = 0;
+                try {
+                    return context.createScriptProcessor(bufferSize, 1, 1);
+                }
+                catch (error) {
+                    // Webkit (<= version 31) requires a valid bufferSize.
+                    bufferSize = 2048;
+                    var audioSampleRate = context.sampleRate;
+                    while (bufferSize < 16384 && audioSampleRate >= (2 * desiredSampleRate)) {
+                        bufferSize <<= 1;
+                        audioSampleRate >>= 1;
                     }
-                    catch (error) {
-                        // Webkit (<= version 31) requires a valid bufferSize.
-                        bufferSize = 2048;
-                        var audioSampleRate = context.sampleRate;
-                        while (bufferSize < 16384 && audioSampleRate >= (2 * desiredSampleRate)) {
-                            bufferSize <<= 1;
-                            audioSampleRate >>= 1;
-                        }
-                        return context.createScriptProcessor(bufferSize, 1, 1);
+                    return context.createScriptProcessor(bufferSize, 1, 1);
+                }
+            })();
+            scriptNode.onaudioprocess = function (event) {
+                var inputFrame = event.inputBuffer.getChannelData(0);
+                if (outputStream && !outputStream.isClosed) {
+                    var waveFrame = waveStreamEncoder.encode(inputFrame);
+                    if (!!waveFrame) {
+                        outputStream.writeStreamChunk({
+                            buffer: waveFrame,
+                            isEnd: false,
+                            timeReceived: Date.now(),
+                        });
                     }
-                })();
-                scriptNode.onaudioprocess = function (event) {
-                    var inputFrame = event.inputBuffer.getChannelData(0);
+                }
+            };
+            micInput.connect(scriptNode);
+            scriptNode.connect(context.destination);
+            _this.privMediaResources = {
+                scriptProcessorNode: scriptNode,
+                source: micInput,
+                stream: mediaStream,
+            };
+        };
+        // https://webaudio.github.io/web-audio-api/#audioworklet
+        // Using AudioWorklet to improve audio quality and avoid audio glitches due to blocking the UI thread
+        if (!!this.privSpeechProcessorScript && !!context.audioWorklet) {
+            context.audioWorklet
+                .addModule(this.privSpeechProcessorScript)
+                .then(function () {
+                var workletNode = new AudioWorkletNode(context, "speech-processor");
+                workletNode.port.onmessage = function (ev) {
+                    var inputFrame = ev.data;
                     if (outputStream && !outputStream.isClosed) {
                         var waveFrame = waveStreamEncoder.encode(inputFrame);
                         if (!!waveFrame) {
@@ -29978,77 +30493,45 @@ var PcmRecorder = /** @class */ (function () {
                                 isEnd: false,
                                 timeReceived: Date.now(),
                             });
-                            needHeader = false;
                         }
                     }
                 };
-                micInput.connect(scriptNode);
-                scriptNode.connect(context.destination);
+                micInput.connect(workletNode);
+                workletNode.connect(context.destination);
                 _this.privMediaResources = {
-                    scriptProcessorNode: scriptNode,
+                    scriptProcessorNode: workletNode,
                     source: micInput,
                     stream: mediaStream,
                 };
-            };
-            // https://webaudio.github.io/web-audio-api/#audioworklet
-            // Using AudioWorklet to improve audio quality and avoid audio glitches due to blocking the UI thread
-            if (!!_this.privSpeechProcessorScript && !!context.audioWorklet) {
-                context.audioWorklet
-                    .addModule(_this.privSpeechProcessorScript)
-                    .then(function () {
-                    var workletNode = new AudioWorkletNode(context, "speech-processor");
-                    workletNode.port.onmessage = function (ev) {
-                        var inputFrame = ev.data;
-                        if (outputStream && !outputStream.isClosed) {
-                            var waveFrame = waveStreamEncoder.encode(inputFrame);
-                            if (!!waveFrame) {
-                                outputStream.writeStreamChunk({
-                                    buffer: waveFrame,
-                                    isEnd: false,
-                                    timeReceived: Date.now(),
-                                });
-                                needHeader = false;
-                            }
-                        }
-                    };
-                    micInput.connect(workletNode);
-                    workletNode.connect(context.destination);
-                    _this.privMediaResources = {
-                        scriptProcessorNode: workletNode,
-                        source: micInput,
-                        stream: mediaStream,
-                    };
-                })
-                    .catch(function () {
-                    attachScriptProcessor();
-                });
+            })
+                .catch(function () {
+                attachScriptProcessor();
+            });
+        }
+        else {
+            try {
+                attachScriptProcessor();
             }
-            else {
-                try {
-                    attachScriptProcessor();
-                }
-                catch (err) {
-                    throw new Error("Unable to start audio worklet node for PCMRecorder: " + err);
-                }
+            catch (err) {
+                throw new Error("Unable to start audio worklet node for PCMRecorder: " + err);
             }
-        };
-        this.releaseMediaResources = function (context) {
-            if (_this.privMediaResources) {
-                if (_this.privMediaResources.scriptProcessorNode) {
-                    _this.privMediaResources.scriptProcessorNode.disconnect(context.destination);
-                    _this.privMediaResources.scriptProcessorNode = null;
-                }
-                if (_this.privMediaResources.source) {
-                    _this.privMediaResources.source.disconnect();
-                    if (_this.privStopInputOnRelease) {
-                        _this.privMediaResources.stream.getTracks().forEach(function (track) { return track.stop(); });
-                    }
-                    _this.privMediaResources.source = null;
-                }
+        }
+    };
+    PcmRecorder.prototype.releaseMediaResources = function (context) {
+        if (this.privMediaResources) {
+            if (this.privMediaResources.scriptProcessorNode) {
+                this.privMediaResources.scriptProcessorNode.disconnect(context.destination);
+                this.privMediaResources.scriptProcessorNode = null;
             }
-        };
-        this.privStopInputOnRelease = stopInputOnRelease;
-    }
+            if (this.privMediaResources.source) {
+                this.privMediaResources.source.disconnect();
+                if (this.privStopInputOnRelease) {
+                    this.privMediaResources.stream.getTracks().forEach(function (track) { return track.stop(); });
+                }
+                this.privMediaResources.source = null;
+            }
+        }
+    };
     PcmRecorder.prototype.setWorkletUrl = function (url) {
         this.privSpeechProcessorScript = url;
     };
@@ -30059,7 +30542,7 @@ exports.PcmRecorder = PcmRecorder;
 
 
 /***/ }),
-/* 235 */
+/* 241 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30104,28 +30587,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebsocketConnection = void 0;
-var Exports_1 = __webpack_require__(4);
-var WebsocketMessageAdapter_1 = __webpack_require__(236);
+var Exports_1 = __webpack_require__(6);
+var WebsocketMessageAdapter_1 = __webpack_require__(242);
 var WebsocketConnection = /** @class */ (function () {
     function WebsocketConnection(uri, queryParameters, headers, messageFormatter, proxyInfo, enableCompression, connectionId) {
-        var _this = this;
         if (enableCompression === void 0) { enableCompression = false; }
         this.privIsDisposed = false;
-        this.isDisposed = function () {
-            return _this.privIsDisposed;
-        };
-        this.state = function () {
-            return _this.privConnectionMessageAdapter.state;
-        };
-        this.open = function () {
-            return _this.privConnectionMessageAdapter.open();
-        };
-        this.send = function (message) {
-            return _this.privConnectionMessageAdapter.send(message);
-        };
-        this.read = function () {
-            return _this.privConnectionMessageAdapter.read();
-        };
         if (!uri) {
             throw new Exports_1.ArgumentNullError("uri");
         }
@@ -30175,6 +30642,9 @@ var WebsocketConnection = /** @class */ (function () {
             });
         });
     };
+    WebsocketConnection.prototype.isDisposed = function () {
+        return this.privIsDisposed;
+    };
     Object.defineProperty(WebsocketConnection.prototype, "id", {
         get: function () {
             return this.privId;
@@ -30182,6 +30652,18 @@ var WebsocketConnection = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    WebsocketConnection.prototype.state = function () {
+        return this.privConnectionMessageAdapter.state;
+    };
+    WebsocketConnection.prototype.open = function () {
+        return this.privConnectionMessageAdapter.open();
+    };
+    WebsocketConnection.prototype.send = function (message) {
+        return this.privConnectionMessageAdapter.send(message);
+    };
+    WebsocketConnection.prototype.read = function () {
+        return this.privConnectionMessageAdapter.read();
+    };
     Object.defineProperty(WebsocketConnection.prototype, "events", {
         get: function () {
             return this.privConnectionMessageAdapter.events;
@@ -30196,7 +30678,7 @@ exports.WebsocketConnection = WebsocketConnection;
 
 
 /***/ }),
-/* 236 */
+/* 242 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -30244,185 +30726,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebsocketMessageAdapter = void 0;
-var HeaderNames_1 = __webpack_require__(55);
-var Exports_1 = __webpack_require__(4);
 // Node.JS specific web socket / browser support.
-var ws_1 = __importDefault(__webpack_require__(237));
-var CertChecks_1 = __webpack_require__(238);
+var ws_1 = __importDefault(__webpack_require__(243));
+var HeaderNames_1 = __webpack_require__(58);
+var Exports_1 = __webpack_require__(6);
+var CertChecks_1 = __webpack_require__(244);
 var WebsocketMessageAdapter = /** @class */ (function () {
     function WebsocketMessageAdapter(uri, connectionId, messageFormatter, proxyInfo, headers, enableCompression) {
-        var _this = this;
-        this.open = function () {
-            if (_this.privConnectionState === Exports_1.ConnectionState.Disconnected) {
-                return Promise.reject("Cannot open a connection that is in " + _this.privConnectionState + " state");
-            }
-            if (_this.privConnectionEstablishDeferral) {
-                return _this.privConnectionEstablishDeferral.promise;
-            }
-            _this.privConnectionEstablishDeferral = new Exports_1.Deferred();
-            _this.privCertificateValidatedDeferral = new Exports_1.Deferred();
-            _this.privConnectionState = Exports_1.ConnectionState.Connecting;
-            try {
-                if (typeof WebSocket !== "undefined" && !WebsocketMessageAdapter.forceNpmWebSocket) {
-                    // Browser handles cert checks.
-                    _this.privCertificateValidatedDeferral.resolve();
-                    _this.privWebsocketClient = new WebSocket(_this.privUri);
-                }
-                else {
-                    var options = { headers: _this.privHeaders, perMessageDeflate: _this.privEnableCompression };
-                    // The ocsp library will handle validation for us and fail the connection if needed.
-                    _this.privCertificateValidatedDeferral.resolve();
-                    var checkAgent = new CertChecks_1.CertCheckAgent(_this.proxyInfo);
-                    options.agent = checkAgent.GetAgent();
-                    // Workaround for https://github.com/microsoft/cognitive-services-speech-sdk-js/issues/465
-                    // Which is root caused by https://github.com/TooTallNate/node-agent-base/issues/61
-                    var uri = new URL(_this.privUri);
-                    var protocol = uri.protocol;
-                    if ((protocol === null || protocol === void 0 ? void 0 : protocol.toLocaleLowerCase()) === "wss:") {
-                        protocol = "https:";
-                    }
-                    else if ((protocol === null || protocol === void 0 ? void 0 : protocol.toLocaleLowerCase()) === "ws:") {
-                        protocol = "http:";
-                    }
-                    options.agent.protocol = protocol;
-                    _this.privWebsocketClient = new ws_1.default(_this.privUri, options);
-                }
-                _this.privWebsocketClient.binaryType = "arraybuffer";
-                _this.privReceivingMessageQueue = new Exports_1.Queue();
-                _this.privDisconnectDeferral = new Exports_1.Deferred();
-                _this.privSendMessageQueue = new Exports_1.Queue();
-                _this.processSendQueue().catch(function (reason) {
-                    Exports_1.Events.instance.onEvent(new Exports_1.BackgroundEvent(reason));
-                });
-            }
-            catch (error) {
-                _this.privConnectionEstablishDeferral.resolve(new Exports_1.ConnectionOpenResponse(500, error));
-                return _this.privConnectionEstablishDeferral.promise;
-            }
-            _this.onEvent(new Exports_1.ConnectionStartEvent(_this.privConnectionId, _this.privUri));
-            _this.privWebsocketClient.onopen = function (e) {
-                _this.privCertificateValidatedDeferral.promise.then(function () {
-                    _this.privConnectionState = Exports_1.ConnectionState.Connected;
-                    _this.onEvent(new Exports_1.ConnectionEstablishedEvent(_this.privConnectionId));
-                    _this.privConnectionEstablishDeferral.resolve(new Exports_1.ConnectionOpenResponse(200, ""));
-                }, function (error) {
-                    _this.privConnectionEstablishDeferral.reject(error);
-                });
-            };
-            _this.privWebsocketClient.onerror = function (e) {
-                _this.onEvent(new Exports_1.ConnectionErrorEvent(_this.privConnectionId, e.message, e.type));
-                _this.privLastErrorReceived = e.message;
-            };
-            _this.privWebsocketClient.onclose = function (e) {
-                if (_this.privConnectionState === Exports_1.ConnectionState.Connecting) {
-                    _this.privConnectionState = Exports_1.ConnectionState.Disconnected;
-                    // this.onEvent(new ConnectionEstablishErrorEvent(this.connectionId, e.code, e.reason));
-                    _this.privConnectionEstablishDeferral.resolve(new Exports_1.ConnectionOpenResponse(e.code, e.reason + " " + _this.privLastErrorReceived));
-                }
-                else {
-                    _this.privConnectionState = Exports_1.ConnectionState.Disconnected;
-                    _this.privWebsocketClient = null;
-                    _this.onEvent(new Exports_1.ConnectionClosedEvent(_this.privConnectionId, e.code, e.reason));
-                }
-                _this.onClose(e.code, e.reason).catch(function (reason) {
-                    Exports_1.Events.instance.onEvent(new Exports_1.BackgroundEvent(reason));
-                });
-            };
-            _this.privWebsocketClient.onmessage = function (e) {
-                var networkReceivedTime = new Date().toISOString();
-                if (_this.privConnectionState === Exports_1.ConnectionState.Connected) {
-                    var deferred_1 = new Exports_1.Deferred();
-                    // let id = ++this.idCounter;
-                    _this.privReceivingMessageQueue.enqueueFromPromise(deferred_1.promise);
-                    if (e.data instanceof ArrayBuffer) {
-                        var rawMessage = new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Binary, e.data);
-                        _this.privMessageFormatter
-                            .toConnectionMessage(rawMessage)
-                            .then(function (connectionMessage) {
-                            _this.onEvent(new Exports_1.ConnectionMessageReceivedEvent(_this.privConnectionId, networkReceivedTime, connectionMessage));
-                            deferred_1.resolve(connectionMessage);
-                        }, function (error) {
-                            // TODO: Events for these ?
-                            deferred_1.reject("Invalid binary message format. Error: " + error);
-                        });
-                    }
-                    else {
-                        var rawMessage = new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Text, e.data);
-                        _this.privMessageFormatter
-                            .toConnectionMessage(rawMessage)
-                            .then(function (connectionMessage) {
-                            _this.onEvent(new Exports_1.ConnectionMessageReceivedEvent(_this.privConnectionId, networkReceivedTime, connectionMessage));
-                            deferred_1.resolve(connectionMessage);
-                        }, function (error) {
-                            // TODO: Events for these ?
-                            deferred_1.reject("Invalid text message format. Error: " + error);
-                        });
-                    }
-                }
-            };
-            return _this.privConnectionEstablishDeferral.promise;
-        };
-        this.send = function (message) {
-            if (_this.privConnectionState !== Exports_1.ConnectionState.Connected) {
-                return Promise.reject("Cannot send on connection that is in " + Exports_1.ConnectionState[_this.privConnectionState] + " state");
-            }
-            var messageSendStatusDeferral = new Exports_1.Deferred();
-            var messageSendDeferral = new Exports_1.Deferred();
-            _this.privSendMessageQueue.enqueueFromPromise(messageSendDeferral.promise);
-            _this.privMessageFormatter
-                .fromConnectionMessage(message)
-                .then(function (rawMessage) {
-                messageSendDeferral.resolve({
-                    Message: message,
-                    RawWebsocketMessage: rawMessage,
-                    sendStatusDeferral: messageSendStatusDeferral,
-                });
-            }, function (error) {
-                messageSendDeferral.reject("Error formatting the message. " + error);
-            });
-            return messageSendStatusDeferral.promise;
-        };
-        this.read = function () {
-            if (_this.privConnectionState !== Exports_1.ConnectionState.Connected) {
-                return Promise.reject("Cannot read on connection that is in " + _this.privConnectionState + " state");
-            }
-            return _this.privReceivingMessageQueue.dequeue();
-        };
-        this.close = function (reason) {
-            if (_this.privWebsocketClient) {
-                if (_this.privConnectionState !== Exports_1.ConnectionState.Disconnected) {
-                    _this.privWebsocketClient.close(1000, reason ? reason : "Normal closure by client");
-                }
-            }
-            else {
-                return Promise.resolve();
-            }
-            return _this.privDisconnectDeferral.promise;
-        };
-        this.sendRawMessage = function (sendItem) {
-            try {
-                // indicates we are draining the queue and it came with no message;
-                if (!sendItem) {
-                    return Promise.resolve();
-                }
-                _this.onEvent(new Exports_1.ConnectionMessageSentEvent(_this.privConnectionId, new Date().toISOString(), sendItem.Message));
-                // add a check for the ws readystate in order to stop the red console error 'WebSocket is already in CLOSING or CLOSED state' appearing
-                if (_this.isWebsocketOpen) {
-                    _this.privWebsocketClient.send(sendItem.RawWebsocketMessage.payload);
-                }
-                else {
-                    return Promise.reject("websocket send error: Websocket not ready " + _this.privConnectionId + " " + sendItem.Message.id + " " + new Error().stack);
-                }
-                return Promise.resolve();
-            }
-            catch (e) {
-                return Promise.reject("websocket send error: " + e);
-            }
-        };
-        this.onEvent = function (event) {
-            _this.privConnectionEvents.onEvent(event);
-            Exports_1.Events.instance.onEvent(event);
-        };
         if (!uri) {
             throw new Exports_1.ArgumentNullError("uri");
         }
@@ -30448,6 +30758,155 @@ var WebsocketMessageAdapter = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    WebsocketMessageAdapter.prototype.open = function () {
+        var _this = this;
+        if (this.privConnectionState === Exports_1.ConnectionState.Disconnected) {
+            return Promise.reject("Cannot open a connection that is in " + this.privConnectionState + " state");
+        }
+        if (this.privConnectionEstablishDeferral) {
+            return this.privConnectionEstablishDeferral.promise;
+        }
+        this.privConnectionEstablishDeferral = new Exports_1.Deferred();
+        this.privCertificateValidatedDeferral = new Exports_1.Deferred();
+        this.privConnectionState = Exports_1.ConnectionState.Connecting;
+        try {
+            if (typeof WebSocket !== "undefined" && !WebsocketMessageAdapter.forceNpmWebSocket) {
+                // Browser handles cert checks.
+                this.privCertificateValidatedDeferral.resolve();
+                this.privWebsocketClient = new WebSocket(this.privUri);
+            }
+            else {
+                var options = { headers: this.privHeaders, perMessageDeflate: this.privEnableCompression };
+                // The ocsp library will handle validation for us and fail the connection if needed.
+                this.privCertificateValidatedDeferral.resolve();
+                var checkAgent = new CertChecks_1.CertCheckAgent(this.proxyInfo);
+                options.agent = checkAgent.GetAgent();
+                // Workaround for https://github.com/microsoft/cognitive-services-speech-sdk-js/issues/465
+                // Which is root caused by https://github.com/TooTallNate/node-agent-base/issues/61
+                var uri = new URL(this.privUri);
+                var protocol = uri.protocol;
+                if ((protocol === null || protocol === void 0 ? void 0 : protocol.toLocaleLowerCase()) === "wss:") {
+                    protocol = "https:";
+                }
+                else if ((protocol === null || protocol === void 0 ? void 0 : protocol.toLocaleLowerCase()) === "ws:") {
+                    protocol = "http:";
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                options.agent.protocol = protocol;
+                this.privWebsocketClient = new ws_1.default(this.privUri, options);
+            }
+            this.privWebsocketClient.binaryType = "arraybuffer";
+            this.privReceivingMessageQueue = new Exports_1.Queue();
+            this.privDisconnectDeferral = new Exports_1.Deferred();
+            this.privSendMessageQueue = new Exports_1.Queue();
+            this.processSendQueue().catch(function (reason) {
+                Exports_1.Events.instance.onEvent(new Exports_1.BackgroundEvent(reason));
+            });
+        }
+        catch (error) {
+            this.privConnectionEstablishDeferral.resolve(new Exports_1.ConnectionOpenResponse(500, error));
+            return this.privConnectionEstablishDeferral.promise;
+        }
+        this.onEvent(new Exports_1.ConnectionStartEvent(this.privConnectionId, this.privUri));
+        this.privWebsocketClient.onopen = function () {
+            _this.privCertificateValidatedDeferral.promise.then(function () {
+                _this.privConnectionState = Exports_1.ConnectionState.Connected;
+                _this.onEvent(new Exports_1.ConnectionEstablishedEvent(_this.privConnectionId));
+                _this.privConnectionEstablishDeferral.resolve(new Exports_1.ConnectionOpenResponse(200, ""));
+            }, function (error) {
+                _this.privConnectionEstablishDeferral.reject(error);
+            });
+        };
+        this.privWebsocketClient.onerror = function (e) {
+            _this.onEvent(new Exports_1.ConnectionErrorEvent(_this.privConnectionId, e.message, e.type));
+            _this.privLastErrorReceived = e.message;
+        };
+        this.privWebsocketClient.onclose = function (e) {
+            if (_this.privConnectionState === Exports_1.ConnectionState.Connecting) {
+                _this.privConnectionState = Exports_1.ConnectionState.Disconnected;
+                // this.onEvent(new ConnectionEstablishErrorEvent(this.connectionId, e.code, e.reason));
+                _this.privConnectionEstablishDeferral.resolve(new Exports_1.ConnectionOpenResponse(e.code, e.reason + " " + _this.privLastErrorReceived));
+            }
+            else {
+                _this.privConnectionState = Exports_1.ConnectionState.Disconnected;
+                _this.privWebsocketClient = null;
+                _this.onEvent(new Exports_1.ConnectionClosedEvent(_this.privConnectionId, e.code, e.reason));
+            }
+            _this.onClose(e.code, e.reason).catch(function (reason) {
+                Exports_1.Events.instance.onEvent(new Exports_1.BackgroundEvent(reason));
+            });
+        };
+        this.privWebsocketClient.onmessage = function (e) {
+            var networkReceivedTime = new Date().toISOString();
+            if (_this.privConnectionState === Exports_1.ConnectionState.Connected) {
+                var deferred_1 = new Exports_1.Deferred();
+                // let id = ++this.idCounter;
+                _this.privReceivingMessageQueue.enqueueFromPromise(deferred_1.promise);
+                if (e.data instanceof ArrayBuffer) {
+                    var rawMessage = new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Binary, e.data);
+                    _this.privMessageFormatter
+                        .toConnectionMessage(rawMessage)
+                        .then(function (connectionMessage) {
+                        _this.onEvent(new Exports_1.ConnectionMessageReceivedEvent(_this.privConnectionId, networkReceivedTime, connectionMessage));
+                        deferred_1.resolve(connectionMessage);
+                    }, function (error) {
+                        // TODO: Events for these ?
+                        deferred_1.reject("Invalid binary message format. Error: " + error);
+                    });
+                }
+                else {
+                    var rawMessage = new Exports_1.RawWebsocketMessage(Exports_1.MessageType.Text, e.data);
+                    _this.privMessageFormatter
+                        .toConnectionMessage(rawMessage)
+                        .then(function (connectionMessage) {
+                        _this.onEvent(new Exports_1.ConnectionMessageReceivedEvent(_this.privConnectionId, networkReceivedTime, connectionMessage));
+                        deferred_1.resolve(connectionMessage);
+                    }, function (error) {
+                        // TODO: Events for these ?
+                        deferred_1.reject("Invalid text message format. Error: " + error);
+                    });
+                }
+            }
+        };
+        return this.privConnectionEstablishDeferral.promise;
+    };
+    WebsocketMessageAdapter.prototype.send = function (message) {
+        if (this.privConnectionState !== Exports_1.ConnectionState.Connected) {
+            return Promise.reject("Cannot send on connection that is in " + Exports_1.ConnectionState[this.privConnectionState] + " state");
+        }
+        var messageSendStatusDeferral = new Exports_1.Deferred();
+        var messageSendDeferral = new Exports_1.Deferred();
+        this.privSendMessageQueue.enqueueFromPromise(messageSendDeferral.promise);
+        this.privMessageFormatter
+            .fromConnectionMessage(message)
+            .then(function (rawMessage) {
+            messageSendDeferral.resolve({
+                Message: message,
+                RawWebsocketMessage: rawMessage,
+                sendStatusDeferral: messageSendStatusDeferral,
+            });
+        }, function (error) {
+            messageSendDeferral.reject("Error formatting the message. " + error);
+        });
+        return messageSendStatusDeferral.promise;
+    };
+    WebsocketMessageAdapter.prototype.read = function () {
+        if (this.privConnectionState !== Exports_1.ConnectionState.Connected) {
+            return Promise.reject("Cannot read on connection that is in " + this.privConnectionState + " state");
+        }
+        return this.privReceivingMessageQueue.dequeue();
+    };
+    WebsocketMessageAdapter.prototype.close = function (reason) {
+        if (this.privWebsocketClient) {
+            if (this.privConnectionState !== Exports_1.ConnectionState.Disconnected) {
+                this.privWebsocketClient.close(1000, reason ? reason : "Normal closure by client");
+            }
+        }
+        else {
+            return Promise.resolve();
+        }
+        return this.privDisconnectDeferral.promise;
+    };
     Object.defineProperty(WebsocketMessageAdapter.prototype, "events", {
         get: function () {
             return this.privConnectionEvents;
@@ -30455,6 +30914,27 @@ var WebsocketMessageAdapter = /** @class */ (function () {
         enumerable: false,
         configurable: true
     });
+    WebsocketMessageAdapter.prototype.sendRawMessage = function (sendItem) {
+        try {
+            // indicates we are draining the queue and it came with no message;
+            if (!sendItem) {
+                return Promise.resolve();
+            }
+            this.onEvent(new Exports_1.ConnectionMessageSentEvent(this.privConnectionId, new Date().toISOString(), sendItem.Message));
+            // add a check for the ws readystate in order to stop the red console error 'WebSocket is already in CLOSING or CLOSED state' appearing
+            if (this.isWebsocketOpen) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+                this.privWebsocketClient.send(sendItem.RawWebsocketMessage.payload);
+            }
+            else {
+                return Promise.reject("websocket send error: Websocket not ready " + this.privConnectionId + " " + sendItem.Message.id + " " + new Error().stack);
+            }
+            return Promise.resolve();
+        }
+        catch (e) {
+            return Promise.reject("websocket send error: " + e);
+        }
+    };
     WebsocketMessageAdapter.prototype.onClose = function (code, reason) {
         return __awaiter(this, void 0, void 0, function () {
             var closeReason;
@@ -30464,7 +30944,7 @@ var WebsocketMessageAdapter = /** @class */ (function () {
                         closeReason = "Connection closed. " + code + ": " + reason;
                         this.privConnectionState = Exports_1.ConnectionState.Disconnected;
                         this.privDisconnectDeferral.resolve();
-                        return [4 /*yield*/, this.privReceivingMessageQueue.drainAndDispose(function (pendingReceiveItem) {
+                        return [4 /*yield*/, this.privReceivingMessageQueue.drainAndDispose(function () {
                                 // TODO: Events for these ?
                                 // Logger.instance.onEvent(new LoggingEvent(LogType.Warning, null, `Failed to process received message. Reason: ${closeReason}, Message: ${JSON.stringify(pendingReceiveItem)}`));
                             }, closeReason)];
@@ -30513,6 +30993,10 @@ var WebsocketMessageAdapter = /** @class */ (function () {
             });
         });
     };
+    WebsocketMessageAdapter.prototype.onEvent = function (event) {
+        this.privConnectionEvents.onEvent(event);
+        Exports_1.Events.instance.onEvent(event);
+    };
     Object.defineProperty(WebsocketMessageAdapter.prototype, "isWebsocketOpen", {
         get: function () {
             return this.privWebsocketClient && this.privWebsocketClient.readyState === this.privWebsocketClient.OPEN;
@@ -30528,17 +31012,18 @@ exports.WebsocketMessageAdapter = WebsocketMessageAdapter;
 
 
 /***/ }),
-/* 237 */
+/* 243 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 238 */
+/* 244 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process, Buffer) {
+/* eslint-disable import/order */
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 var __assign = (this && this.__assign) || function () {
@@ -30612,16 +31097,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CertCheckAgent = void 0;
-var tls = __importStar(__webpack_require__(240));
-var parse = __importStar(__webpack_require__(241));
-var ocsp = __importStar(__webpack_require__(244));
-var Exports_1 = __webpack_require__(4);
-var agent_base_1 = __importDefault(__webpack_require__(245));
+var tls = __importStar(__webpack_require__(246));
+var ocsp = __importStar(__webpack_require__(247));
+var Exports_1 = __webpack_require__(6);
+var agent_base_1 = __importDefault(__webpack_require__(248));
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-var async_disk_cache_1 = __importDefault(__webpack_require__(246));
-var https_proxy_agent_1 = __importDefault(__webpack_require__(247));
-var net = __importStar(__webpack_require__(248));
-var OCSPEvents_1 = __webpack_require__(49);
+var async_disk_cache_1 = __importDefault(__webpack_require__(249));
+var https_proxy_agent_1 = __importDefault(__webpack_require__(250));
+var net = __importStar(__webpack_require__(251));
+var OCSPEvents_1 = __webpack_require__(51);
 var CertCheckAgent = /** @class */ (function () {
     function CertCheckAgent(proxyInfo) {
         if (!!proxyInfo) {
@@ -30629,6 +31114,7 @@ var CertCheckAgent = /** @class */ (function () {
         }
         // Initialize this here to allow tests to set the env variable before the cache is constructed.
         if (!CertCheckAgent.privDiskCache) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
             CertCheckAgent.privDiskCache = new async_disk_cache_1.default("microsoft-cognitiveservices-speech-sdk-cache", { supportBuffer: true, location: (typeof process !== "undefined" && !!process.env.SPEECH_OCSP_CACHE_ROOT) ? process.env.SPEECH_OCSP_CACHE_ROOT : undefined });
         }
     }
@@ -30637,12 +31123,15 @@ var CertCheckAgent = /** @class */ (function () {
         CertCheckAgent.privDiskCache = undefined;
         CertCheckAgent.privMemCache = {};
     };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     CertCheckAgent.prototype.GetAgent = function (disableStapling) {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         var agent = new agent_base_1.default.Agent(this.CreateConnection);
         if (this.privProxyInfo !== undefined &&
             this.privProxyInfo.HostName !== undefined &&
             this.privProxyInfo.Port > 0) {
             var proxyName = "privProxyInfo";
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             agent[proxyName] = this.privProxyInfo;
         }
         return agent;
@@ -30654,7 +31143,7 @@ var CertCheckAgent = /** @class */ (function () {
         };
         if (!!proxyInfo.UserName) {
             httpProxyOptions.headers = {
-                "Proxy-Authentication": "Basic " + new Buffer(proxyInfo.UserName + ":" + (proxyInfo.Password === undefined) ? "" : proxyInfo.Password).toString("base64"),
+                "Proxy-Authentication": "Basic " + new Buffer(proxyInfo.UserName + ":" + ((proxyInfo.Password === undefined) ? "" : proxyInfo.Password)).toString("base64"),
             };
         }
         else {
@@ -30691,6 +31180,7 @@ var CertCheckAgent = /** @class */ (function () {
                                         reject(error);
                                     }
                                 });
+                                // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/explicit-function-return-type
                                 tlsSocket.on("secure", function () { return __awaiter(_this, void 0, void 0, function () {
                                     var peer, issuer, sig, cacheEntry, e_1;
                                     return __generator(this, function (_a) {
@@ -30751,7 +31241,7 @@ var CertCheckAgent = /** @class */ (function () {
     };
     CertCheckAgent.GetResponseFromCache = function (signature, ocspRequest, proxyInfo) {
         return __awaiter(this, void 0, void 0, function () {
-            var cachedResponse, diskCacheResponse, error_1, cachedOcspResponse, tbsData, cachedStartTime, cachedNextTime, minUpdate;
+            var cachedResponse, diskCacheResponse, error_1, cachedOcspResponse, responseValue, tbsData, cachedStartTime, cachedNextTime, minUpdate;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -30783,7 +31273,8 @@ var CertCheckAgent = /** @class */ (function () {
                         }
                         try {
                             cachedOcspResponse = ocsp.utils.parseResponse(cachedResponse);
-                            tbsData = cachedOcspResponse.value.tbsResponseData;
+                            responseValue = cachedOcspResponse.value;
+                            tbsData = responseValue.tbsResponseData;
                             if (tbsData.responses.length < 1) {
                                 this.onEvent(new Exports_1.OCSPCacheFetchErrorEvent(signature, "Not enough data in cached response"));
                                 return [2 /*return*/];
@@ -30823,20 +31314,19 @@ var CertCheckAgent = /** @class */ (function () {
     };
     CertCheckAgent.VerifyOCSPResponse = function (cacheValue, ocspRequest, proxyInfo) {
         return __awaiter(this, void 0, void 0, function () {
-            var ocspResponse, sig;
+            var ocspResponse;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         ocspResponse = cacheValue;
-                        sig = ocspRequest.certID.toString("hex");
                         if (!!ocspResponse) return [3 /*break*/, 2];
                         return [4 /*yield*/, CertCheckAgent.GetOCSPResponse(ocspRequest, proxyInfo)];
                     case 1:
                         ocspResponse = _a.sent();
                         _a.label = 2;
                     case 2: return [2 /*return*/, new Promise(function (resolve, reject) {
-                            ocsp.verify({ request: ocspRequest, response: ocspResponse }, function (error, result) {
+                            ocsp.verify({ request: ocspRequest, response: ocspResponse }, function (error) {
                                 if (!!error) {
                                     CertCheckAgent.onEvent(new Exports_1.OCSPVerificationFailedEvent(ocspRequest.id.toString("hex"), error));
                                     // Bad Cached Value? One more try without the cache.
@@ -30891,6 +31381,7 @@ var CertCheckAgent = /** @class */ (function () {
     };
     CertCheckAgent.StoreDiskCacheEntry = function (sig, rawResponse) {
         var _this = this;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         this.privDiskCache.set(sig, rawResponse).then(function () {
             _this.onEvent(new Exports_1.OCSPDiskCacheStoreEvent(sig));
         });
@@ -30909,19 +31400,22 @@ var CertCheckAgent = /** @class */ (function () {
                     reject(error);
                     return;
                 }
-                var parsedUri = parse.default(uri);
-                parsedUri.path = parsedUri.pathname;
-                options = __assign(__assign({}, options), parsedUri);
+                var url = new URL(uri);
+                options = __assign(__assign({}, options), { host: url.host, protocol: url.protocol, port: url.port, path: url.pathname, hostname: url.host });
                 ocsp.utils.getResponse(options, req.data, function (error, raw) {
                     if (error) {
                         reject(error);
                         return;
                     }
-                    _this.onEvent(new Exports_1.OCSPResponseRetrievedEvent(req.certID.toString("hex")));
+                    var certID = req.certID;
+                    _this.onEvent(new Exports_1.OCSPResponseRetrievedEvent(certID.toString("hex")));
                     resolve(raw);
                 });
             });
         });
+    };
+    CertCheckAgent.onEvent = function (event) {
+        Exports_1.Events.instance.onEvent(event);
     };
     CertCheckAgent.prototype.CreateConnection = function (request, options) {
         var enableOCSP = (typeof process !== "undefined" && process.env.NODE_TLS_REJECT_UNAUTHORIZED !== "0" && process.env.SPEECH_CONDUCT_OCSP_CHECK !== "0") && options.secureEndpoint;
@@ -30965,18 +31459,15 @@ var CertCheckAgent = /** @class */ (function () {
     CertCheckAgent.forceDisableOCSPStapling = false;
     // An in memory cache for recived responses.
     CertCheckAgent.privMemCache = {};
-    CertCheckAgent.onEvent = function (event) {
-        Exports_1.Events.instance.onEvent(event);
-    };
     return CertCheckAgent;
 }());
 exports.CertCheckAgent = CertCheckAgent;
 
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(239), __webpack_require__(67).Buffer))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(245), __webpack_require__(69).Buffer))
 
 /***/ }),
-/* 239 */
+/* 245 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -31166,728 +31657,6 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 240 */
-/***/ (function(module, exports) {
-
-/* (ignored) */
-
-/***/ }),
-/* 241 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-var required = __webpack_require__(242)
-  , qs = __webpack_require__(243)
-  , slashes = /^[A-Za-z][A-Za-z0-9+-.]*:\/\//
-  , protocolre = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\\/]+)?([\S\s]*)/i
-  , windowsDriveLetter = /^[a-zA-Z]:/
-  , whitespace = '[\\x09\\x0A\\x0B\\x0C\\x0D\\x20\\xA0\\u1680\\u180E\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200A\\u202F\\u205F\\u3000\\u2028\\u2029\\uFEFF]'
-  , left = new RegExp('^'+ whitespace +'+');
-
-/**
- * Trim a given string.
- *
- * @param {String} str String to trim.
- * @public
- */
-function trimLeft(str) {
-  return (str ? str : '').toString().replace(left, '');
-}
-
-/**
- * These are the parse rules for the URL parser, it informs the parser
- * about:
- *
- * 0. The char it Needs to parse, if it's a string it should be done using
- *    indexOf, RegExp using exec and NaN means set as current value.
- * 1. The property we should set when parsing this value.
- * 2. Indication if it's backwards or forward parsing, when set as number it's
- *    the value of extra chars that should be split off.
- * 3. Inherit from location if non existing in the parser.
- * 4. `toLowerCase` the resulting value.
- */
-var rules = [
-  ['#', 'hash'],                        // Extract from the back.
-  ['?', 'query'],                       // Extract from the back.
-  function sanitize(address, url) {     // Sanitize what is left of the address
-    return isSpecial(url.protocol) ? address.replace(/\\/g, '/') : address;
-  },
-  ['/', 'pathname'],                    // Extract from the back.
-  ['@', 'auth', 1],                     // Extract from the front.
-  [NaN, 'host', undefined, 1, 1],       // Set left over value.
-  [/:(\d+)$/, 'port', undefined, 1],    // RegExp the back.
-  [NaN, 'hostname', undefined, 1, 1]    // Set left over.
-];
-
-/**
- * These properties should not be copied or inherited from. This is only needed
- * for all non blob URL's as a blob URL does not include a hash, only the
- * origin.
- *
- * @type {Object}
- * @private
- */
-var ignore = { hash: 1, query: 1 };
-
-/**
- * The location object differs when your code is loaded through a normal page,
- * Worker or through a worker using a blob. And with the blobble begins the
- * trouble as the location object will contain the URL of the blob, not the
- * location of the page where our code is loaded in. The actual origin is
- * encoded in the `pathname` so we can thankfully generate a good "default"
- * location from it so we can generate proper relative URL's again.
- *
- * @param {Object|String} loc Optional default location object.
- * @returns {Object} lolcation object.
- * @public
- */
-function lolcation(loc) {
-  var globalVar;
-
-  if (typeof window !== 'undefined') globalVar = window;
-  else if (typeof global !== 'undefined') globalVar = global;
-  else if (typeof self !== 'undefined') globalVar = self;
-  else globalVar = {};
-
-  var location = globalVar.location || {};
-  loc = loc || location;
-
-  var finaldestination = {}
-    , type = typeof loc
-    , key;
-
-  if ('blob:' === loc.protocol) {
-    finaldestination = new Url(unescape(loc.pathname), {});
-  } else if ('string' === type) {
-    finaldestination = new Url(loc, {});
-    for (key in ignore) delete finaldestination[key];
-  } else if ('object' === type) {
-    for (key in loc) {
-      if (key in ignore) continue;
-      finaldestination[key] = loc[key];
-    }
-
-    if (finaldestination.slashes === undefined) {
-      finaldestination.slashes = slashes.test(loc.href);
-    }
-  }
-
-  return finaldestination;
-}
-
-/**
- * Check whether a protocol scheme is special.
- *
- * @param {String} The protocol scheme of the URL
- * @return {Boolean} `true` if the protocol scheme is special, else `false`
- * @private
- */
-function isSpecial(scheme) {
-  return (
-    scheme === 'file:' ||
-    scheme === 'ftp:' ||
-    scheme === 'http:' ||
-    scheme === 'https:' ||
-    scheme === 'ws:' ||
-    scheme === 'wss:'
-  );
-}
-
-/**
- * @typedef ProtocolExtract
- * @type Object
- * @property {String} protocol Protocol matched in the URL, in lowercase.
- * @property {Boolean} slashes `true` if protocol is followed by "//", else `false`.
- * @property {String} rest Rest of the URL that is not part of the protocol.
- */
-
-/**
- * Extract protocol information from a URL with/without double slash ("//").
- *
- * @param {String} address URL we want to extract from.
- * @param {Object} location
- * @return {ProtocolExtract} Extracted information.
- * @private
- */
-function extractProtocol(address, location) {
-  address = trimLeft(address);
-  location = location || {};
-
-  var match = protocolre.exec(address);
-  var protocol = match[1] ? match[1].toLowerCase() : '';
-  var forwardSlashes = !!match[2];
-  var otherSlashes = !!match[3];
-  var slashesCount = 0;
-  var rest;
-
-  if (forwardSlashes) {
-    if (otherSlashes) {
-      rest = match[2] + match[3] + match[4];
-      slashesCount = match[2].length + match[3].length;
-    } else {
-      rest = match[2] + match[4];
-      slashesCount = match[2].length;
-    }
-  } else {
-    if (otherSlashes) {
-      rest = match[3] + match[4];
-      slashesCount = match[3].length;
-    } else {
-      rest = match[4]
-    }
-  }
-
-  if (protocol === 'file:') {
-    if (slashesCount >= 2) {
-      rest = rest.slice(2);
-    }
-  } else if (isSpecial(protocol)) {
-    rest = match[4];
-  } else if (protocol) {
-    if (forwardSlashes) {
-      rest = rest.slice(2);
-    }
-  } else if (slashesCount >= 2 && isSpecial(location.protocol)) {
-    rest = match[4];
-  }
-
-  return {
-    protocol: protocol,
-    slashes: forwardSlashes || isSpecial(protocol),
-    slashesCount: slashesCount,
-    rest: rest
-  };
-}
-
-/**
- * Resolve a relative URL pathname against a base URL pathname.
- *
- * @param {String} relative Pathname of the relative URL.
- * @param {String} base Pathname of the base URL.
- * @return {String} Resolved pathname.
- * @private
- */
-function resolve(relative, base) {
-  if (relative === '') return base;
-
-  var path = (base || '/').split('/').slice(0, -1).concat(relative.split('/'))
-    , i = path.length
-    , last = path[i - 1]
-    , unshift = false
-    , up = 0;
-
-  while (i--) {
-    if (path[i] === '.') {
-      path.splice(i, 1);
-    } else if (path[i] === '..') {
-      path.splice(i, 1);
-      up++;
-    } else if (up) {
-      if (i === 0) unshift = true;
-      path.splice(i, 1);
-      up--;
-    }
-  }
-
-  if (unshift) path.unshift('');
-  if (last === '.' || last === '..') path.push('');
-
-  return path.join('/');
-}
-
-/**
- * The actual URL instance. Instead of returning an object we've opted-in to
- * create an actual constructor as it's much more memory efficient and
- * faster and it pleases my OCD.
- *
- * It is worth noting that we should not use `URL` as class name to prevent
- * clashes with the global URL instance that got introduced in browsers.
- *
- * @constructor
- * @param {String} address URL we want to parse.
- * @param {Object|String} [location] Location defaults for relative paths.
- * @param {Boolean|Function} [parser] Parser for the query string.
- * @private
- */
-function Url(address, location, parser) {
-  address = trimLeft(address);
-
-  if (!(this instanceof Url)) {
-    return new Url(address, location, parser);
-  }
-
-  var relative, extracted, parse, instruction, index, key
-    , instructions = rules.slice()
-    , type = typeof location
-    , url = this
-    , i = 0;
-
-  //
-  // The following if statements allows this module two have compatibility with
-  // 2 different API:
-  //
-  // 1. Node.js's `url.parse` api which accepts a URL, boolean as arguments
-  //    where the boolean indicates that the query string should also be parsed.
-  //
-  // 2. The `URL` interface of the browser which accepts a URL, object as
-  //    arguments. The supplied object will be used as default values / fall-back
-  //    for relative paths.
-  //
-  if ('object' !== type && 'string' !== type) {
-    parser = location;
-    location = null;
-  }
-
-  if (parser && 'function' !== typeof parser) parser = qs.parse;
-
-  location = lolcation(location);
-
-  //
-  // Extract protocol information before running the instructions.
-  //
-  extracted = extractProtocol(address || '', location);
-  relative = !extracted.protocol && !extracted.slashes;
-  url.slashes = extracted.slashes || relative && location.slashes;
-  url.protocol = extracted.protocol || location.protocol || '';
-  address = extracted.rest;
-
-  //
-  // When the authority component is absent the URL starts with a path
-  // component.
-  //
-  if (
-    extracted.protocol === 'file:' && (
-      extracted.slashesCount !== 2 || windowsDriveLetter.test(address)) ||
-    (!extracted.slashes &&
-      (extracted.protocol ||
-        extracted.slashesCount < 2 ||
-        !isSpecial(url.protocol)))
-  ) {
-    instructions[3] = [/(.*)/, 'pathname'];
-  }
-
-  for (; i < instructions.length; i++) {
-    instruction = instructions[i];
-
-    if (typeof instruction === 'function') {
-      address = instruction(address, url);
-      continue;
-    }
-
-    parse = instruction[0];
-    key = instruction[1];
-
-    if (parse !== parse) {
-      url[key] = address;
-    } else if ('string' === typeof parse) {
-      if (~(index = address.indexOf(parse))) {
-        if ('number' === typeof instruction[2]) {
-          url[key] = address.slice(0, index);
-          address = address.slice(index + instruction[2]);
-        } else {
-          url[key] = address.slice(index);
-          address = address.slice(0, index);
-        }
-      }
-    } else if ((index = parse.exec(address))) {
-      url[key] = index[1];
-      address = address.slice(0, index.index);
-    }
-
-    url[key] = url[key] || (
-      relative && instruction[3] ? location[key] || '' : ''
-    );
-
-    //
-    // Hostname, host and protocol should be lowercased so they can be used to
-    // create a proper `origin`.
-    //
-    if (instruction[4]) url[key] = url[key].toLowerCase();
-  }
-
-  //
-  // Also parse the supplied query string in to an object. If we're supplied
-  // with a custom parser as function use that instead of the default build-in
-  // parser.
-  //
-  if (parser) url.query = parser(url.query);
-
-  //
-  // If the URL is relative, resolve the pathname against the base URL.
-  //
-  if (
-      relative
-    && location.slashes
-    && url.pathname.charAt(0) !== '/'
-    && (url.pathname !== '' || location.pathname !== '')
-  ) {
-    url.pathname = resolve(url.pathname, location.pathname);
-  }
-
-  //
-  // Default to a / for pathname if none exists. This normalizes the URL
-  // to always have a /
-  //
-  if (url.pathname.charAt(0) !== '/' && isSpecial(url.protocol)) {
-    url.pathname = '/' + url.pathname;
-  }
-
-  //
-  // We should not add port numbers if they are already the default port number
-  // for a given protocol. As the host also contains the port number we're going
-  // override it with the hostname which contains no port number.
-  //
-  if (!required(url.port, url.protocol)) {
-    url.host = url.hostname;
-    url.port = '';
-  }
-
-  //
-  // Parse down the `auth` for the username and password.
-  //
-  url.username = url.password = '';
-  if (url.auth) {
-    instruction = url.auth.split(':');
-    url.username = instruction[0] || '';
-    url.password = instruction[1] || '';
-  }
-
-  url.origin = url.protocol !== 'file:' && isSpecial(url.protocol) && url.host
-    ? url.protocol +'//'+ url.host
-    : 'null';
-
-  //
-  // The href is just the compiled result.
-  //
-  url.href = url.toString();
-}
-
-/**
- * This is convenience method for changing properties in the URL instance to
- * insure that they all propagate correctly.
- *
- * @param {String} part          Property we need to adjust.
- * @param {Mixed} value          The newly assigned value.
- * @param {Boolean|Function} fn  When setting the query, it will be the function
- *                               used to parse the query.
- *                               When setting the protocol, double slash will be
- *                               removed from the final url if it is true.
- * @returns {URL} URL instance for chaining.
- * @public
- */
-function set(part, value, fn) {
-  var url = this;
-
-  switch (part) {
-    case 'query':
-      if ('string' === typeof value && value.length) {
-        value = (fn || qs.parse)(value);
-      }
-
-      url[part] = value;
-      break;
-
-    case 'port':
-      url[part] = value;
-
-      if (!required(value, url.protocol)) {
-        url.host = url.hostname;
-        url[part] = '';
-      } else if (value) {
-        url.host = url.hostname +':'+ value;
-      }
-
-      break;
-
-    case 'hostname':
-      url[part] = value;
-
-      if (url.port) value += ':'+ url.port;
-      url.host = value;
-      break;
-
-    case 'host':
-      url[part] = value;
-
-      if (/:\d+$/.test(value)) {
-        value = value.split(':');
-        url.port = value.pop();
-        url.hostname = value.join(':');
-      } else {
-        url.hostname = value;
-        url.port = '';
-      }
-
-      break;
-
-    case 'protocol':
-      url.protocol = value.toLowerCase();
-      url.slashes = !fn;
-      break;
-
-    case 'pathname':
-    case 'hash':
-      if (value) {
-        var char = part === 'pathname' ? '/' : '#';
-        url[part] = value.charAt(0) !== char ? char + value : value;
-      } else {
-        url[part] = value;
-      }
-      break;
-
-    default:
-      url[part] = value;
-  }
-
-  for (var i = 0; i < rules.length; i++) {
-    var ins = rules[i];
-
-    if (ins[4]) url[ins[1]] = url[ins[1]].toLowerCase();
-  }
-
-  url.origin = url.protocol !== 'file:' && isSpecial(url.protocol) && url.host
-    ? url.protocol +'//'+ url.host
-    : 'null';
-
-  url.href = url.toString();
-
-  return url;
-}
-
-/**
- * Transform the properties back in to a valid and full URL string.
- *
- * @param {Function} stringify Optional query stringify function.
- * @returns {String} Compiled version of the URL.
- * @public
- */
-function toString(stringify) {
-  if (!stringify || 'function' !== typeof stringify) stringify = qs.stringify;
-
-  var query
-    , url = this
-    , protocol = url.protocol;
-
-  if (protocol && protocol.charAt(protocol.length - 1) !== ':') protocol += ':';
-
-  var result = protocol + (url.slashes || isSpecial(url.protocol) ? '//' : '');
-
-  if (url.username) {
-    result += url.username;
-    if (url.password) result += ':'+ url.password;
-    result += '@';
-  }
-
-  result += url.host + url.pathname;
-
-  query = 'object' === typeof url.query ? stringify(url.query) : url.query;
-  if (query) result += '?' !== query.charAt(0) ? '?'+ query : query;
-
-  if (url.hash) result += url.hash;
-
-  return result;
-}
-
-Url.prototype = { set: set, toString: toString };
-
-//
-// Expose the URL parser and some additional properties that might be useful for
-// others or testing.
-//
-Url.extractProtocol = extractProtocol;
-Url.location = lolcation;
-Url.trimLeft = trimLeft;
-Url.qs = qs;
-
-module.exports = Url;
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(68)))
-
-/***/ }),
-/* 242 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/**
- * Check if we're required to add a port number.
- *
- * @see https://url.spec.whatwg.org/#default-port
- * @param {Number|String} port Port number we need to check
- * @param {String} protocol Protocol we need to check against.
- * @returns {Boolean} Is it a default port for the given protocol
- * @api private
- */
-module.exports = function required(port, protocol) {
-  protocol = protocol.split(':')[0];
-  port = +port;
-
-  if (!port) return false;
-
-  switch (protocol) {
-    case 'http':
-    case 'ws':
-    return port !== 80;
-
-    case 'https':
-    case 'wss':
-    return port !== 443;
-
-    case 'ftp':
-    return port !== 21;
-
-    case 'gopher':
-    return port !== 70;
-
-    case 'file':
-    return false;
-  }
-
-  return port !== 0;
-};
-
-
-/***/ }),
-/* 243 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var has = Object.prototype.hasOwnProperty
-  , undef;
-
-/**
- * Decode a URI encoded string.
- *
- * @param {String} input The URI encoded string.
- * @returns {String|Null} The decoded string.
- * @api private
- */
-function decode(input) {
-  try {
-    return decodeURIComponent(input.replace(/\+/g, ' '));
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Attempts to encode a given input.
- *
- * @param {String} input The string that needs to be encoded.
- * @returns {String|Null} The encoded string.
- * @api private
- */
-function encode(input) {
-  try {
-    return encodeURIComponent(input);
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Simple query string parser.
- *
- * @param {String} query The query string that needs to be parsed.
- * @returns {Object}
- * @api public
- */
-function querystring(query) {
-  var parser = /([^=?#&]+)=?([^&]*)/g
-    , result = {}
-    , part;
-
-  while (part = parser.exec(query)) {
-    var key = decode(part[1])
-      , value = decode(part[2]);
-
-    //
-    // Prevent overriding of existing properties. This ensures that build-in
-    // methods like `toString` or __proto__ are not overriden by malicious
-    // querystrings.
-    //
-    // In the case if failed decoding, we want to omit the key/value pairs
-    // from the result.
-    //
-    if (key === null || value === null || key in result) continue;
-    result[key] = value;
-  }
-
-  return result;
-}
-
-/**
- * Transform a query string to an object.
- *
- * @param {Object} obj Object that should be transformed.
- * @param {String} prefix Optional prefix.
- * @returns {String}
- * @api public
- */
-function querystringify(obj, prefix) {
-  prefix = prefix || '';
-
-  var pairs = []
-    , value
-    , key;
-
-  //
-  // Optionally prefix with a '?' if needed
-  //
-  if ('string' !== typeof prefix) prefix = '?';
-
-  for (key in obj) {
-    if (has.call(obj, key)) {
-      value = obj[key];
-
-      //
-      // Edge cases where we actually want to encode the value to an empty
-      // string instead of the stringified value.
-      //
-      if (!value && (value === null || value === undef || isNaN(value))) {
-        value = '';
-      }
-
-      key = encode(key);
-      value = encode(value);
-
-      //
-      // If we failed to encode the strings, we should bail out as we don't
-      // want to add invalid strings to the query.
-      //
-      if (key === null || value === null) continue;
-      pairs.push(key +'='+ value);
-    }
-  }
-
-  return pairs.length ? prefix + pairs.join('&') : '';
-}
-
-//
-// Expose the module.
-//
-exports.stringify = querystringify;
-exports.parse = querystring;
-
-
-/***/ }),
-/* 244 */
-/***/ (function(module, exports) {
-
-/* (ignored) */
-
-/***/ }),
-/* 245 */
-/***/ (function(module, exports) {
-
-/* (ignored) */
-
-/***/ }),
 /* 246 */
 /***/ (function(module, exports) {
 
@@ -31907,6 +31676,24 @@ exports.parse = querystring;
 
 /***/ }),
 /* 249 */
+/***/ (function(module, exports) {
+
+/* (ignored) */
+
+/***/ }),
+/* 250 */
+/***/ (function(module, exports) {
+
+/* (ignored) */
+
+/***/ }),
+/* 251 */
+/***/ (function(module, exports) {
+
+/* (ignored) */
+
+/***/ }),
+/* 252 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -31917,7 +31704,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReplayableAudioNode = void 0;
 var ReplayableAudioNode = /** @class */ (function () {
     function ReplayableAudioNode(audioSource, bytesPerSecond) {
-        var _this = this;
         this.privBuffers = [];
         this.privReplayOffset = 0;
         this.privLastShrinkOffset = 0;
@@ -31926,12 +31712,12 @@ var ReplayableAudioNode = /** @class */ (function () {
         this.privBufferedBytes = 0;
         this.privReplay = false;
         this.privLastChunkAcquiredTime = 0;
-        this.id = function () {
-            return _this.privAudioNode.id();
-        };
         this.privAudioNode = audioSource;
         this.privBytesPerSecond = bytesPerSecond;
     }
+    ReplayableAudioNode.prototype.id = function () {
+        return this.privAudioNode.id();
+    };
     // Reads and returns the next chunk of audio buffer.
     // If replay of existing buffers are needed, read() will first seek and replay
     // existing content, and upoin completion it will read new content from the underlying
@@ -32026,7 +31812,6 @@ exports.ReplayableAudioNode = ReplayableAudioNode;
 // Primary use of this class is to help debugging problems with the replay
 // code. If the memory cost of alloc / dealloc gets too much, drop it and just use
 // the ArrayBuffer directly.
-// tslint:disable-next-line:max-classes-per-file
 var BufferEntry = /** @class */ (function () {
     function BufferEntry(chunk, serial, byteOffset) {
         this.chunk = chunk;
@@ -32039,7 +31824,7 @@ var BufferEntry = /** @class */ (function () {
 
 
 /***/ }),
-/* 250 */
+/* 253 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32048,7 +31833,7 @@ var BufferEntry = /** @class */ (function () {
 // Licensed under the MIT license.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProxyInfo = void 0;
-var Exports_1 = __webpack_require__(61);
+var Exports_1 = __webpack_require__(64);
 var ProxyInfo = /** @class */ (function () {
     function ProxyInfo(proxyHostName, proxyPort, proxyUserName, proxyPassword) {
         this.privProxyHostName = proxyHostName;
@@ -32097,7 +31882,7 @@ exports.ProxyInfo = ProxyInfo;
 
 
 /***/ }),
-/* 251 */
+/* 254 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -32145,8 +31930,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RestMessageAdapter = exports.RestRequestType = void 0;
-var Exports_1 = __webpack_require__(4);
-var bent_1 = __importDefault(__webpack_require__(252));
+var bent_1 = __importDefault(__webpack_require__(255));
+var Exports_1 = __webpack_require__(6);
 var RestRequestType;
 (function (RestRequestType) {
     RestRequestType["Get"] = "GET";
@@ -32295,13 +32080,13 @@ exports.RestMessageAdapter = RestMessageAdapter;
 
 
 /***/ }),
-/* 252 */
+/* 255 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 /* global fetch, btoa, Headers */
-const core = __webpack_require__(253)
+const core = __webpack_require__(256)
 
 class StatusError extends Error {
   constructor (res, ...params) {
@@ -32378,7 +32163,7 @@ module.exports = core(mkrequest)
 
 
 /***/ }),
-/* 253 */
+/* 256 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
