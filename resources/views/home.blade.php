@@ -47,7 +47,7 @@
 	</section>
 
 	<section>
-		<div class="inner">
+		<div class="inner t_c">
 			<img src="{{ asset('img/fujita_logo.png') }}" class="logo_fujita" alt="FUJITA">
 		</div>
 	</section>
