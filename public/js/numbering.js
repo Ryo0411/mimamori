@@ -12,8 +12,8 @@ if (voiceprint_flg.value != "0") {
 };
 
 // AzureSpeech APIキー
-var subscriptionKey = "b3b1966bbaf6480cb49c0e296b6f74f6";
-var serviceRegion = "westus";
+var subscriptionKey = "b5f85c4e633a4b2489425abf8c6db446";
+var serviceRegion = "japaneast";
 // HTMLのprofile_idを取得
 var value_profile_id = document.getElementById("profile_id");
 
@@ -23,7 +23,8 @@ if (value_profile_id.value == 0) {
     var speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);
     speechConfig.setProperty(SpeechSDK.PropertyId.SpeechServiceConnection_TranslationVoice, "ja-JP");
     client = new SpeechSDK.VoiceProfileClient(speechConfig);
-    console.log(client);
+    // console.log(JSON.stringify(speechConfig) + "aaaaaaaaaa");
+    // console.log(JSON.stringify(client) + "aaaaaaaaaa");
 
     // 参考
     // profile = client.createProfileAsync(SpeechSDK.VoiceProfileType.TextIndependentIdentification, "ja-JP");

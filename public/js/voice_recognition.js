@@ -2,8 +2,8 @@ var pulldown = document.getElementById('pulldown');
 rec_img = document.getElementById("rec_img");
 
 // AzureSpeech APIキー
-var subscriptionKey = "b3b1966bbaf6480cb49c0e296b6f74f6";
-var serviceRegion = "westus";
+var subscriptionKey = "b5f85c4e633a4b2489425abf8c6db446";
+var serviceRegion = "japaneast";
 
 profile_id = document.querySelectorAll(".profile_id");
 profile_count = profile_id.length;
