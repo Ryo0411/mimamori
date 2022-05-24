@@ -286,12 +286,10 @@ ul li {
 }
 
 .logo_fujita {
-  position: absolute;
-  /*←絶対位置*/
-  bottom: 80px;
-  width: 90%;
-  max-width: 390px;
-  margin: 0 auto;
+  /*position: absolute;
+  ←絶対位置*/
+  width: 70%;
+  margin: 1rem 0 0 0;
 }
 
 .input {
@@ -499,7 +497,10 @@ ul li {
 .mr1 {
   margin-right: 1rem
 }
-
+/*text align*/
+.t_c {
+	text-align: center;
+}
 /*table*/
 table {
   margin: 0 0 2rem 0;

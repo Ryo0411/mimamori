@@ -33,10 +33,11 @@
 
 	<section>
 		<div class="inner">
+			<div class="block_70vh">
 			<x-alert type="success" :session="session('exe_msg')" />
 			<form method="POST" action="{{ route('voiceupdate') }}">
 				@csrf
-				<div class="block_txt">
+				<div class="block_txt mb2">
 					<p>マッチング精度向上のため声紋を登録します。</p>
 				</div>
 
@@ -72,6 +73,7 @@
 				</div>
 			</div>
 		</div>
+	</div>
 	</section>
 
 
