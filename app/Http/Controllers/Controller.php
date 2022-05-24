@@ -48,7 +48,10 @@ class Controller extends BaseController
         $wanderer_list = DB::table('wanderers')
             ->where('user_id', $user_id)
             ->first();
-        // dd([$wanderer_list]);
+        if ($wanderer_list == null) {
+            $wanderer_list["profile_id"] = "";
+            $wanderer_list["wanderer_name"] = "";
+        }
 
         return view('voice_discover', ['wanderer_list' => $wanderer_list]);
     }

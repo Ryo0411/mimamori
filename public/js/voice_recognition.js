@@ -8,7 +8,7 @@ var serviceRegion = "westus";
 profile_id = document.querySelectorAll(".profile_id");
 profile_count = profile_id.length;
 // 音声認識をかける件数
-console.log(profile_id.length);
+console.log("検索対象" + (profile_id.length + 1) + "人");
 var SpeechSDK;
 var speechConfig;
 var ansrate = 0;
