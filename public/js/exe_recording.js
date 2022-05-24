@@ -7,8 +7,8 @@ button = document.getElementById("button");
 
 
 // AzureSpeech APIキー
-var subscriptionKey = "b3b1966bbaf6480cb49c0e296b6f74f6";
-var serviceRegion = "westus";
+var subscriptionKey = "b5f85c4e633a4b2489425abf8c6db446";
+var serviceRegion = "japaneast";
 
 // AzureSpeech APIに接続
 speechConfig = SpeechSDK.SpeechConfig.fromSubscription(subscriptionKey, serviceRegion);

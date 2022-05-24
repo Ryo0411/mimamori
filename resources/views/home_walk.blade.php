@@ -43,7 +43,7 @@
 					<button id="button" class="btn-walk" onclick="location.href='/voice_walk'">声だけ登録</button>
 				</div>
 				<div class="btn" {{$status}}>
-					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">徘徊！</button>
+					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">捜索アラート</button>
 				</div>
 				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ $exe }}"></input>
 			</div>
