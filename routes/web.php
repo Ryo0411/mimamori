@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\AppController;
+use App\Http\Controllers\SRSController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,9 +50,9 @@ Route::group(['middleware' => ['auth']], function () {
     // Route::get('/home_walk', function() {
     //     return view('home_walk');
     // })->name('home_walk');
-    Route::get('/home_walk', [Controller::class, 'homeWalk'])->name('home_walk');
+    Route::get('/home_walk', [AppController::class, 'homeWalk'])->name('home_walk');
 
-    Route::get('/home_walk/wanderer', [Controller::class, 'wandererFlg'])->name('wandererflg');
+    Route::get('/home_walk/wanderer', [AppController::class, 'wandererFlg'])->name('wandererflg');
 
     //発見者ボタン選択時の画面遷移
     Route::get('/home_discover', function () {
@@ -59,10 +60,10 @@ Route::group(['middleware' => ['auth']], function () {
     })->name('home_discover');
 
     //徘徊者ホーム、情報登録ボタン選択時の画面遷移
-    Route::get('/register_walk', [Controller::class, 'showWanderer'])->name('register_walk');
+    Route::get('/register_walk', [AppController::class, 'showWanderer'])->name('register_walk');
 
     //徘徊者ホーム、声登録ボタン選択時の画面遷移
-    Route::get('/voice_walk', [Controller::class, 'voiceWalk'])->name('voice_walk');
+    Route::get('/voice_walk', [AppController::class, 'voiceWalk'])->name('voice_walk');
 
     //発見者ホーム、情報登録ボタン選択時の画面遷移
     Route::get('/register_discover', function () {
@@ -70,14 +71,17 @@ Route::group(['middleware' => ['auth']], function () {
     })->name('register_discover');
 
     //発見者ホーム、徘徊者声掛けボタン選択時の画面遷移(ログインの有無に関係なく遷移可能)
-    Route::get('/voice_discover', [Controller::class, 'voiceDiscover'])->name('voice_discover');
-    Route::get('/voice_discover/select/{sex}', [Controller::class, 'voiceSelect'])->name('voice_select');
+    Route::get('/voice_discover', [AppController::class, 'voiceDiscover'])->name('voice_discover');
+    Route::get('/voice_discover/select/{sex}', [AppController::class, 'voiceSelect'])->name('voice_select');
 
     //ユーザの登録情報更新
-    Route::post('/register_discover/update', [Controller::class, 'userUpdate'])->name('userupdate');
+    Route::post('/register_discover/update', [AppController::class, 'userUpdate'])->name('userupdate');
 
     //徘徊者の登録情報更新＆登録
-    Route::post('/register_walk/update', [Controller::class, 'registerUpdate'])->name('registerupdate');
+    Route::post('/register_walk/update', [AppController::class, 'registerUpdate'])->name('registerupdate');
 
-    Route::post('/voice_walk/update', [Controller::class, 'voiceUpdate'])->name('voiceupdate');
+    Route::post('/voice_walk/update', [AppController::class, 'voiceUpdate'])->name('voiceupdate');
+
+    //
+    Route::post('/speaker_rcognition', [SRSController::class, 'speakerRcognition'])->name('speaker_rcognition');
 });

@@ -12,7 +12,8 @@ class AuthController extends Controller
     /**
      * @return View
      */
-    public function showLogin() {
+    public function showLogin()
+    {
         return view('login.login_form');
     }
 
@@ -20,13 +21,13 @@ class AuthController extends Controller
      * ユーザーをアプリケーションにログインさせる
      * @param App\Http\Requests\LoginFormRequest
      */
-    public function login(LoginFormRequest $request) {
+    public function login(LoginFormRequest $request)
+    {
 
         $credentials = $request->only('name', 'password');
 
         //ログイン承認
         if (Auth::attempt($credentials)) {
-
             $request->session()->regenerate();
 
             //ログイン成功時画面遷移

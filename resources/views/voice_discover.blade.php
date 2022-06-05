@@ -30,6 +30,7 @@
 	</header>
 
 	<section>
+        <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
 		<div class="inner">
 			<div class="block_70vh">
 				<div class="block_rec" id="voiceprint_flg">
@@ -48,11 +49,6 @@
 						<option id="sex_wom" value=2>女性</option>
 					</select>
 				</div>
-
-				@foreach ($wanderer_list as $article)
-				<input class="profile_id" type="hidden" id="profile_id" value="{{ @$article->profile_id }}"></input>
-				<input type="hidden" id="{{ @$article->profile_id }}" value="{{ @$article->wanderer_name }}"></input>
-				@endforeach
 
 				<div class="block_txt mt2" id="exe_result">
 					<p>貴方の声を認識し、<br>どなたか特定します。</p>
@@ -88,41 +84,31 @@
 	</footer>
 
 	<!-- Speech SDK reference sdk. -->
-	<script src="{{ asset('js/SpeechSDK/microsoft.cognitiveservices.speech.sdk.bundle.js') }}"></script>
+	<!-- <script src="{{ asset('js/SpeechSDK/microsoft.cognitiveservices.speech.sdk.bundle.js') }}"></script> -->
 	<!-- 音声データ学習用 -->
-	<script src="{{ asset('js/voice_recognition.js') }}"></script>
+	<script src="{{ asset('js/recorder.js') }}"></script>
+	<script src="{{ asset('js/recognition.js') }}"></script>
 	<script>
-		// URLリンクによって表示させる画像の変更
-		var url_link = location.href.slice(-1);
-		if (url_link == 1 || url_link == 2) {
-			rec_img.src = "../../img/rec_on.png";
-		} else {
-			rec_img.src = "./img/rec_off.png";
-		}
+        let rec_img_elm = document.getElementById("rec_img");
+		let pulldown_elm = document.getElementById('pulldown');
+		pulldown_elm.selectedIndex = 0;
 
-		if (url_link == "#") {
-			rec_img.src = "../../img/rec_off.png";
-		}
-		// URLリンクによってプルダウンの初期値変更
-		var pulldown = document.getElementById('pulldown');
-		pulldown.selectedIndex = url_link;
-
-		if (pulldown.value == 0) {
+		if (pulldown_elm.value == 0) {
 			document.getElementById('result').innerHTML = "<p>性別を選択してください。</p>";
 			document.getElementById('exe_result').innerHTML = "<p>性別を選択して、<br>音声認識を始めてください。</p>";
+			rec_img_elm.src = "./img/rec_off.png";
 		}
-
-		window.addEventListener('load', function() {
-			// プルダウン変更時に遷移
-			// <select id="pulldown1">
-			var pulldown = document.getElementById('pulldown');
-			pulldown.addEventListener('change', function() {
-				if (pulldown.selectedIndex != 0) {
-					console.log();
-					top.location.href = "/voice_discover/select/" + pulldown.options[pulldown.selectedIndex].value;
-				}
-			});
-		});
+        pulldown_elm.addEventListener('change', function() {
+            if (pulldown_elm.selectedIndex != 0) {
+                document.getElementById('result').innerHTML = "録音ボタンをタップして、<br>本日の日付を答えてください。";
+                document.getElementById('exe_result').innerHTML = "<p>貴方の声を認識し、<br>どなたか特定します。</p>";
+                rec_img_elm.src = "../../img/rec_on.png";
+            } else {
+                document.getElementById('result').innerHTML = "<p>性別を選択してください。</p>";
+                document.getElementById('exe_result').innerHTML = "<p>性別を選択して、<br>音声認識を始めてください。</p>";
+                rec_img_elm.src = "./img/rec_off.png";
+            }
+        });
 	</script>
 </body>
 
