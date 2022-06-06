@@ -135,6 +135,7 @@
             if (voiceprint_flg.value != "0") {
                 document.querySelector('.block_rec').style.display = 'none';
                 result.style.display = 'none';
+                document.getElementById("audio_file").value = 'audio.raw';
             };
 
             // 性別プルダウン初期値
