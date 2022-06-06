@@ -39,16 +39,18 @@ class SRSController extends Controller
                     ->where('profile_id', $speakerId)
                     ->where('wandering_flg', '!=', 0)
                     ->first();
-                if ($data->sex == $sex) {
-                    $json = [
-                        'status' => 0,
-                        'wanderer_name' => $data->wanderer_name,
-                        'sex' => $data->sex,
-                        'age' => $data->age,
-                        'emergency_tel' => $data->emergency_tel,
-                        'confidence' => $speaker['confidence'],
-                    ];
-                    break;
+                if ($data) {
+                    if ($data->sex == $sex) {
+                        $json = [
+                            'status' => 0,
+                            'wanderer_name' => $data->wanderer_name,
+                            'sex' => $data->sex,
+                            'age' => $data->age,
+                            'emergency_tel' => $data->emergency_tel,
+                            'confidence' => $speaker['confidence'],
+                        ];
+                        break;
+                    }
                 }
             }
         }

@@ -172,7 +172,7 @@ class MiniSRSApi
         ]);
     }
 
-    public function speakerRcognition(string $groupId, string $rawfile): array
+    public function speakerRcognition(string $groupId, string $rawfile)
     {
         $endPoint = 'https://service.mimi.fd.ai';
         $headers = [
