@@ -92,7 +92,7 @@
 				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
                 @if ($errors->has('audio_file'))
                 <div class="alert alert-danger">
-                    {{ $errors->first('audio_file') }}</li>
+                    {{ 音声を録音してください。 }}</li>
                 </div>
                 @endif
 
