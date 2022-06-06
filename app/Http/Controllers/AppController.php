@@ -14,6 +14,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\VoiceUpdate;
 use App\Libs\MiniSRSApi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AppController extends Controller
 {
@@ -131,6 +132,7 @@ class AppController extends Controller
                     DB::commit();
                 } catch (\Throwable $e) {
                     DB::rollback();
+                    Log::info($e->getMessage());
                     abort(500);
                 };
                 // 徘徊フラグが立っている場合、徘徊フラグを下げる
@@ -146,8 +148,9 @@ class AppController extends Controller
                     $userupdate->save();
                     DB::commit();
                 } catch (\Throwable $e) {
-                    dd($e);
+                    // dd($e);
                     DB::rollback();
+                    Log::info($e->getMessage());
                     abort(500);
                 };
             }
@@ -180,6 +183,7 @@ class AppController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollback();
+            Log::info($e->getMessage());
             abort(500);
         };
         // dd([$status]);
@@ -239,6 +243,7 @@ class AppController extends Controller
             }
         } catch (\Throwable $e) {
             DB::rollback();
+            Log::info($e->getMessage());
             abort(500);
         };
         return redirect()->route('register_walk')->with('exe_msg', '登録情報を更新しました！');
@@ -319,6 +324,7 @@ class AppController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollback();
+            Log::info($e->getMessage());
             abort(500);
         };
         return redirect()->route('voice_walk')->with('exe_msg', $status);
