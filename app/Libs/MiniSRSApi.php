@@ -2,6 +2,8 @@
 
 namespace App\Libs;
 
+use Illuminate\Support\Facades\Log;
+
 class MiniSRSApi
 {
     private $client;
@@ -181,12 +183,14 @@ class MiniSRSApi
             'x-mimi-process' => 'srs',
             'Authorization' => 'Bearer ' . $this->token
         ];
+        Log::info($headers);
         $base64data = explode("base64,", $rawfile)[1];
         $data = base64_decode($base64data);
         $response = $this->client->request('POST', $endPoint, [
             'headers' => $headers,
             'body' => $data,
         ]);
+        Log::info($response);
         $list = [];
         if ($response->getStatusCode() === 200) {
             $list = json_decode($response->getBody()->getContents(), true);
