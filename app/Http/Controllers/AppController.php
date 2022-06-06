@@ -34,7 +34,7 @@ class AppController extends Controller
             ->first();
         // dd([$wanderer_list]);
 
-        return view('register_walk', ['wanderer_list' => $wanderer_list], ['audio_file' => 'audio.raw']);
+        return view('register_walk', ['wanderer_list' => $wanderer_list]);
     }
 
     public function voiceWalk()

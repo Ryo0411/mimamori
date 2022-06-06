@@ -78,7 +78,7 @@
 
 				<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
 				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
-				<input name="audio_file" type="hidden" id="audio_file" value="{{ $audio_file }}"></input>
+				<input name="audio_file" type="hidden" id="audio_file" value=""></input>
 
 				<div class="block_rec" id="voiceprint_btn">
 					<a id="exe_recording" class="btn_rec">
