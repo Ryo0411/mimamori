@@ -190,15 +190,11 @@ class MiniSRSApi
             'headers' => $headers,
             'body' => $data,
         ]);
-        Log::info($response->getBody()->getContents());
         $list = [];
         if ($response->getStatusCode() === 200) {
-            $str = $response->getBody()->getContents();
-            $s_pos = strpos($str, '[');
-            $s_len = strpos($str, ']') - $s_pos + 1;
-            $newstr = substr($str, $s_pos, $s_len);
-            Log::info($newstr);
-            $list = json_decode($newstr, true);
+            $str = $response->getBody();
+            Log::info($str);
+            $list = json_decode($str, true);
         }
         return $list;
     }

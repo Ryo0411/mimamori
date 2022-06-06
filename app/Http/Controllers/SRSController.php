@@ -31,8 +31,7 @@ class SRSController extends Controller
                 $json = [
                     'status' => 1
                 ];
-                // $speakers = $result['response']['speaker'];
-                $speakers = $result;
+                $speakers = $result['response']['speaker'];
                 foreach ($speakers as $speaker) {
                     $speakerId = $speaker['speaker_id'];
                     if (empty($speakerId)) {
