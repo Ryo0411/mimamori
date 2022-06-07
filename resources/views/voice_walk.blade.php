@@ -54,16 +54,17 @@
 					<a id="enrollmentDownload" class="soundsample"></a>
 				</div>
 
-				<div class="btn mt2">
-					<button type="submit" id="btn_regist" class="btn-red">登録</button>
-				</div>
-
 				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
                 @if ($errors->has('audio_file'))
                 <div class="alert alert-danger">
                     {{ "音声を録音してください。" }}</li>
                 </div>
                 @endif
+
+				<div class="btn mt2">
+					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
+				</div>
+
 			</form>
 		</div>
 	</div>

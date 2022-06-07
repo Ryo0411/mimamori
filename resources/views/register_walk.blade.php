@@ -97,7 +97,7 @@
                 @endif
 
 				<div class="btn mt2">
-					<button type="submit" id="btn_regist" class="btn-red">登録</button>
+					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
 				</div>
 			</form>
 		</div>
@@ -136,6 +136,7 @@
                 document.querySelector('.block_rec').style.display = 'none';
                 result.style.display = 'none';
                 document.getElementById("audio_file").value = 'audio.raw';
+                document.getElementById("btn_regist").style.display = '';
             };
 
             // 性別プルダウン初期値

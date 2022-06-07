@@ -7,7 +7,7 @@ let isRecording = false;
 document.getElementById("exe_recording").onclick = function () {
     if (!isRecording) {
         console.log("音声サンプル録音中...");
-        btn_regist.disabled = true;
+        btn_regist.style.display = 'none';
         isRecording = true;
         startRecording(
             function () {
@@ -15,7 +15,7 @@ document.getElementById("exe_recording").onclick = function () {
             },
             function (error) {
                 rec_img.src = "./img/rec_on.png";
-                btn_regist.disabled = false;
+                btn_regist.style.display = '';
                 isRecording = false;
             }
         );
@@ -35,7 +35,7 @@ document.getElementById("exe_recording").onclick = function () {
 
                     let base64data = reader.result;
                     audio_file.value = base64data;
-                    btn_regist.disabled = false;
+                    btn_regist.style.display = '';
                     isRecording = false;
 
                     /* raw ファイルダウンロード
@@ -48,7 +48,7 @@ document.getElementById("exe_recording").onclick = function () {
             },
             function (error) {
                 rec_img.src = "./img/rec_on.png";
-                btn_regist.disabled = false;
+                btn_regist.style.display = '';
                 isRecording = false;
             }
         );
