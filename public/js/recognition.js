@@ -24,7 +24,7 @@ const speakerRecognation = function(base64data, sex) {
                 const score = response['confidence'];
                 const rrate = Math.floor(score * 100);
                 let recog = "高確率";
-                if (recog < 30) {
+                if (rrate < 30) {
                     recog = "低確率";
                 } else if (rrate < 60) {
                     recog = "中確率";
