@@ -59,7 +59,7 @@ class MiniSRSApi
     {
         $endPoint = $this->baseUrl . 'speakers';
         $params = [
-            'lang' => 'ja_JP',
+            'lang' => '0',    // 0:ja_JP
             'name' => $name,
             'sex' => $sex,
             'age' => $age
@@ -186,13 +186,32 @@ class MiniSRSApi
         Log::info($headers);
         $base64data = explode("base64,", $rawfile)[1];
         $data = base64_decode($base64data);
-        $response = $this->client->request('POST', $endPoint, [
-            'headers' => $headers,
-            'body' => $data,
-        ]);
+
+        // 話者認識APIは同時利用でエラーになる可能性があるためリトライ（0.2秒 Sleep）
+        $retryCnt = 3;
+        $err = null;
+        $response = null;
+        for ($count = 1; $count <= $retryCnt; $count++) {
+            try {
+                $response = $this->client->request('POST', $endPoint, [
+                    'headers' => $headers,
+                    'body' => $data,
+                ]);
+                if ($response->getStatusCode() === 200) {
+                    break;
+                }
+            } catch (\Throwable $e) {
+                Log::info($e->getMessage());
+                $err = $e;
+            };
+            usleep(200000);
+        }
         $list = [];
+        if ($err) {
+            throw $err;
+        }
         if ($response->getStatusCode() === 200) {
-            $str = $response->getBody();
+            $str = $response->getBody()->getContents();
             Log::info($str);
             $list = json_decode($str, true);
         }
