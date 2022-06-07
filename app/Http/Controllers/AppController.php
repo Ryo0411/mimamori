@@ -301,12 +301,6 @@ class AppController extends Controller
         $id = Auth::user()->id;
         $user_id = Wanderers::whereUser_id($id)->first();
         DB::beginTransaction();
-        // 音声登録をしてカウントが上がった時のみ更新したと表示させる。
-        if ($user_id['voiceprint_flg'] == intval($inputs['voiceprint_flg'])) {
-            $status = "";
-        } else {
-            $status = "登録情報を更新しました！";
-        }
         try {
             $rawfile = $inputs['audio_file'];
             $vflg = intval($inputs['voiceprint_flg']);
@@ -327,6 +321,6 @@ class AppController extends Controller
             Log::info($e->getMessage());
             abort(500);
         };
-        return redirect()->route('voice_walk')->with('exe_msg', $status);
+        return redirect()->route('voice_walk')->with('exe_msg', '音声の追加学習を行いました！');
     }
 }
