@@ -92,7 +92,7 @@ document.getElementById("stop-recording").onclick = function () {
                 reader.readAsDataURL(rawfile);
                 reader.onloadend = function() {
                     let base64data = reader.result;
-                    // speakerRecognation(base64data, pulldown.value);
+                    speakerRecognation(base64data, pulldown.value);
                     rec_img.src = "../../img/rec_on.png";
                     isRecording = false;
                 }
