@@ -174,6 +174,25 @@ class MiniSRSApi
         ]);
     }
 
+    public function trainerStatus(string $speakerId): string
+    {
+        $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/trainer';
+        $headers = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->token
+        ];
+        $response = $this->client->request('GET', $endPoint, [
+            'headers' => $headers,
+        ]);
+        $status = '';
+        if ($response->getStatusCode() === 200) {
+            $str = $response->getBody()->getContents();
+            $list = json_decode($str, true);
+            $status = $list[0]['status'];
+        }
+        return $status;
+    }
+
     public function speakerRcognition(string $groupId, string $rawfile)
     {
         $endPoint = 'https://service.mimi.fd.ai';
