@@ -56,7 +56,7 @@ rec_img.addEventListener("click", function () {
     if (pulldown.value != "0") {
         // 音声の録音開始。
         if (!isRecording) {
-            location.href = '#modal_d';
+            location.href = '#modal_r';
             console.log("認識用音声録音中...");
 
             isRecording = true;
@@ -68,7 +68,7 @@ rec_img.addEventListener("click", function () {
                     rec_img.src = "../../img/rec_on.png";
                     isRecording = false;
                     if ($.remodal) {
-                        const modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
+                        const modal = $.remodal.lookup[$('[data-remodal-id=modal_r]').data('remodal')];
                         modal.close();
                     }
                 }
