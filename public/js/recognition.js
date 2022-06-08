@@ -49,15 +49,14 @@ const speakerRecognation = function(base64data, sex) {
         });
 }
 
-
 let isRecording = false;
 // 録音ボタンをタップした際の処理。
 rec_img.addEventListener("click", function () {
-
     // プルダウンの性別が選択しているか確認。
     if (pulldown.value != "0") {
         // 音声の録音開始。
         if (!isRecording) {
+            location.href = '#modal_d';
             console.log("認識用音声録音中...");
 
             isRecording = true;
@@ -68,27 +67,10 @@ rec_img.addEventListener("click", function () {
                 function (error) {
                     rec_img.src = "../../img/rec_on.png";
                     isRecording = false;
-                }
-            );
-        } else {
-            // 音声認識開始
-            stopRecording(
-                function (wavfile, rawfile) {
-                    console.log("認識用音声録音完了");
-                    console.log("音声認識中...");
-
-                    let reader = new FileReader();
-                    reader.readAsDataURL(rawfile);
-                    reader.onloadend = function() {
-                        let base64data = reader.result;
-                        speakerRecognation(base64data, pulldown.value);
-                        rec_img.src = "../../img/rec_on.png";
-                        isRecording = false;
+                    if ($.remodal) {
+                        const modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
+                        modal.close();
                     }
-                },
-                function (error) {
-                    rec_img.src = "../../img/rec_on.png";
-                    isRecording = false;
                 }
             );
         }
@@ -97,3 +79,28 @@ rec_img.addEventListener("click", function () {
         console.log("性別を選択してください。");
     }
 });
+
+document.getElementById("stop-recording").onclick = function () {
+    if (isRecording) {
+        // 音声認識開始
+        stopRecording(
+            function (wavfile, rawfile) {
+                console.log("認識用音声録音完了");
+                console.log("音声認識中...");
+
+                let reader = new FileReader();
+                reader.readAsDataURL(rawfile);
+                reader.onloadend = function() {
+                    let base64data = reader.result;
+                    // speakerRecognation(base64data, pulldown.value);
+                    rec_img.src = "../../img/rec_on.png";
+                    isRecording = false;
+                }
+            },
+            function (error) {
+                rec_img.src = "../../img/rec_on.png";
+                isRecording = false;
+            }
+        );
+    }
+};

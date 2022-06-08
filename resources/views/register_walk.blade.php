@@ -89,7 +89,7 @@
 					<a id="enrollmentDownload" class="soundsample"></a>
 				</div>
 
-				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
+				<div class="announce" id="result">録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</div>
                 @if ($errors->has('audio_file'))
                 <div class="alert alert-danger">
                     {{ "音声を録音してください。" }}</li>
@@ -102,6 +102,16 @@
 			</form>
 		</div>
 	</section>
+
+	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_d" data-remodal-options="closeOnOutsideClick: false">
+		<h3>読み上げる文書</h3>
+		<div class="popup_inner">
+			<p id="text_pop" style="font-size: 18px;"></p>
+			<div class="btn_popup" style="margin-top: 10px">
+				<button id="stop-recording" data-remodal-action="close" class="remodal-confirm">録音終了</button>
+			</div>
+		</div>
+	</div>
 
 	<footer class="footer">
 		<div class="footer_ver">Ver. 1.0</div>
