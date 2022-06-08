@@ -44,8 +44,21 @@ class AppController extends Controller
             ->where('user_id', $user_id)
             ->first();
         // dd([$wanderer_list]);
+        $speakerId = $wanderer_list->profile_id;
+        $voiceLength = $this->getVoiceLength($speakerId);
 
-        return view('voice_walk', ['wanderer_list' => $wanderer_list]);
+        return view('voice_walk', ['wanderer_list' => $wanderer_list], ['voice_length' => $voiceLength]);
+    }
+
+    protected function getVoiceLength(string $speakerId)
+    {
+        $miniSRSApi = $this->getMiniSRSApi();
+        $speeches = $miniSRSApi->getSpeeches($speakerId);
+        $length = 0;
+        foreach ($speeches as $speech) {
+            $length += $speech['length'];
+        }
+        return $length;
     }
 
     // 音声認識をするページへ遷移

@@ -162,6 +162,24 @@ class MiniSRSApi
         return $list;
     }
 
+    public function getSpeeches(string $speakerId): array
+    {
+        $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/speeches';
+        $headers = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->token
+        ];
+        $response = $this->client->request('GET', $endPoint, [
+            'headers' => $headers,
+        ]);
+        $list = [];
+        if ($response->getStatusCode() === 200) {
+            $str = $response->getBody()->getContents();
+            $list = json_decode($str, true);
+        }
+        return $list;
+    }
+
     private function trainer(string $speakerId)
     {
         $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/trainer/commit';
