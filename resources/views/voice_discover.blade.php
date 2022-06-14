@@ -30,7 +30,7 @@
 	</header>
 
 	<section>
-        <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
+		<input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
 		<div class="inner">
 			<div class="block_70vh">
 				<div class="block_rec" id="voiceprint_flg">
@@ -61,7 +61,7 @@
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
 		<h4>本日の日付を答えてください</h4>
 		<div class="popup_inner">
-			<p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br/>タップしてください。</p>
+			<p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br />タップしてください。</p>
 			<div class="btn_popup" style="margin-top: 10px">
 				<button id="stop-recording" data-remodal-action="close" class="remodal-confirm">録音終了</button>
 			</div>
@@ -99,7 +99,7 @@
 	<script src="{{ asset('js/recorder.js') }}"></script>
 	<script src="{{ asset('js/recognition.js') }}"></script>
 	<script>
-        let rec_img_elm = document.getElementById("rec_img");
+		let rec_img_elm = document.getElementById("rec_img");
 		let pulldown_elm = document.getElementById('pulldown');
 		pulldown_elm.selectedIndex = 0;
 
@@ -108,17 +108,17 @@
 			document.getElementById('exe_result').innerHTML = "<p>性別を選択して、<br>音声認識を始めてください。</p>";
 			rec_img_elm.src = "./img/rec_off.png";
 		}
-        pulldown_elm.addEventListener('change', function() {
-            if (pulldown_elm.selectedIndex != 0) {
-                document.getElementById('result').innerHTML = "録音ボタンをタップして、<br>本日の日付を答えてください。";
-                document.getElementById('exe_result').innerHTML = "<p>貴方の声を認識し、<br>どなたか特定します。</p>";
-                rec_img_elm.src = "../../img/rec_on.png";
-            } else {
-                document.getElementById('result').innerHTML = "<p>性別を選択してください。</p>";
-                document.getElementById('exe_result').innerHTML = "<p>性別を選択して、<br>音声認識を始めてください。</p>";
-                rec_img_elm.src = "./img/rec_off.png";
-            }
-        });
+		pulldown_elm.addEventListener('change', function() {
+			if (pulldown_elm.selectedIndex != 0) {
+				document.getElementById('result').innerHTML = "録音ボタンをタップして、<br>本日の日付を答えてください。";
+				document.getElementById('exe_result').innerHTML = "<p>貴方の声を認識し、<br>どなたか特定します。</p>";
+				rec_img_elm.src = "../../img/rec_on.png";
+			} else {
+				document.getElementById('result').innerHTML = "<p>性別を選択してください。</p>";
+				document.getElementById('exe_result').innerHTML = "<p>性別を選択して、<br>音声認識を始めてください。</p>";
+				rec_img_elm.src = "./img/rec_off.png";
+			}
+		});
 	</script>
 </body>
 

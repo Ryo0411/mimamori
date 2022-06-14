@@ -100,6 +100,7 @@ class AppController extends Controller
         if (empty($wanderer_list)) {
             $status = "hidden";
             $exe = "";
+            $discoverflg = 0;
             // dd("ssss");
         } else {
             $status = "";
@@ -107,21 +108,27 @@ class AppController extends Controller
             $wanderer_list = Wanderers::whereUser_id($user_id)->first();
             // 音声登録があるかを判定。ない場合はそのままreturn
             if ($wanderer_list['voiceprint_flg'] >= 0) {
+                //ユーザ情報更新処理
+                $userupdate = Wanderers::find($wanderer_list['id']);
                 // 徘徊フラグが立っていない場合、徘徊フラグを立てる
                 if ($wanderer_list['wandering_flg'] == 0) {
                     $exe = "捜索対象外です。";
+                    $discoverflg = $userupdate["discover_flg"];
                 } elseif ($wanderer_list['wandering_flg'] == 1) {
                     $exe = "捜索対象に選択中です。";
+                    $discoverflg = $userupdate["discover_flg"];
                 } else {
                     $exe = "発見されました！";
+                    $discoverflg = $userupdate["discover_flg"];
                 }
             } else {
                 $exe = "";
+                $discoverflg = 0;
             }
         }
 
         // dd([$status]);
-        return view('home_walk')->with(['status' => $status, 'exe' => $exe]);
+        return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
     }
     //徘徊者ホーム、情報未登録の場合ボタン非表示
     public function wandererFlg()
@@ -141,6 +148,7 @@ class AppController extends Controller
                     ]);
                     $status = "";
                     $exe = "捜索対象に選択中です。";
+                    $discoverflg = $userupdate["discover_flg"];
                     $userupdate->save();
                     DB::commit();
                 } catch (\Throwable $e) {
@@ -155,9 +163,11 @@ class AppController extends Controller
                     $userupdate = Wanderers::find($wanderer_list['id']);
                     $userupdate->fill([
                         'wandering_flg' => 0,
+                        'discover_flg' => 0,
                     ]);
                     $status = "";
                     $exe = "捜索対象外です。";
+                    $discoverflg = $userupdate["discover_flg"];
                     $userupdate->save();
                     DB::commit();
                 } catch (\Throwable $e) {
@@ -170,11 +180,12 @@ class AppController extends Controller
         } else {
             $status = "";
             $exe = "";
-            return view('home_walk')->with(['status' => $status, 'exe' => $exe]);
+            $discoverflg = 0;
+            return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
         }
 
         // dd([$status]);
-        return view('home_walk')->with(['status' => $status, 'exe' => $exe]);
+        return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
     }
 
     //ユーザ情報更新処理
@@ -240,8 +251,10 @@ class AppController extends Controller
                 DB::commit();
             } else {
                 $userupdate = Wanderers::find($user_id['id']);
-                if ($userupdate['wanderer_name'] != $wname
-                    || $userupdate['sex'] != $sex || $userupdate['age'] != $age) {
+                if (
+                    $userupdate['wanderer_name'] != $wname
+                    || $userupdate['sex'] != $sex || $userupdate['age'] != $age
+                ) {
                     $this->editSpeaker($userupdate['profile_id'], $wname, $mini_sex, $age);
                 }
                 $userupdate->fill([
@@ -335,5 +348,37 @@ class AppController extends Controller
             abort(500);
         };
         return redirect()->route('voice_walk')->with('exe_msg', '音声の追加学習を行いました！');
+    }
+
+    // 発見フラグの更新
+    public function discoverflg()
+    {
+        $user_id = Auth::user()->id;
+        $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+
+        // 発見フラグが立っている場合下げる
+        if ($wanderer_list['discover_flg'] == 1) {
+            //ユーザ情報更新処理
+            $userupdate = Wanderers::find($wanderer_list['id']);
+            $userupdate->fill([
+                'wandering_flg' => 0,
+                'discover_flg' => 0,
+            ]);
+            // dd([$userupdate]);
+            $userupdate->save();
+            DB::commit();
+            // それ以外の場合は発見フラグを立てたままにする
+        } else {
+            //ユーザ情報更新処理
+            $userupdate = Wanderers::find($wanderer_list['id']);
+            $userupdate->fill([
+                'wandering_flg' => 0,
+                'discover_flg' => 0,
+            ]);
+            $userupdate->save();
+            DB::commit();
+        }
+        // dd([$wanderer_list]);
+        return redirect('/home_walk');
     }
 }

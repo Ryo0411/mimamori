@@ -54,6 +54,8 @@ Route::group(['middleware' => ['auth']], function () {
 
     Route::get('/home_walk/wanderer', [AppController::class, 'wandererFlg'])->name('wandererflg');
 
+    Route::post('/home_walk/discover', [AppController::class, 'discoverflg'])->name('discoverflg');
+
     //発見者ボタン選択時の画面遷移
     Route::get('/home_discover', function () {
         return view('/host/home_discover');

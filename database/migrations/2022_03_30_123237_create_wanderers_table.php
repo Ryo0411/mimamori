@@ -25,6 +25,8 @@ return new class extends Migration
                 $table->string('emergency_tel')->nullable();
                 //徘徊者フラグ
                 $table->tinyInteger('wandering_flg')->default(0);
+                //発見フラグ
+                $table->tinyInteger('discover_flg')->default(0);
                 //声紋登録フラグ
                 $table->integer('voiceprint_flg')->default(0);
                 $table->timestamps();

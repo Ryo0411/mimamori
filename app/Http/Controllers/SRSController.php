@@ -7,6 +7,9 @@ use App\Libs\MiniSRSApi;
 use App\Models\Wanderers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+
 
 class SRSController extends Controller
 {
@@ -57,6 +60,17 @@ class SRSController extends Controller
                     }
                 }
             }
+            $wanderer_list = Wanderers::whereProfile_id($speakerId)->first();
+
+            //ユーザ情報更新処理
+            $userupdate = Wanderers::find($wanderer_list['id']);
+            $userupdate->fill([
+                'wandering_flg' => 2,
+                'discover_flg' => 1,
+            ]);
+            // dd([$userupdate]);
+            $userupdate->save();
+            DB::commit();
         } catch (\Throwable $e) {
             Log::info($e->getMessage());
             $json = [

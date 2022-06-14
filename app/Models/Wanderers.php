@@ -22,6 +22,7 @@ class Wanderers extends Model
         'profile_id',
         'emergency_tel',
         'wandering_flg',
+        'discover_flg',
         'voiceprint_flg',
     ];
 }

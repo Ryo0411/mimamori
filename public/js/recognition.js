@@ -2,17 +2,17 @@ const pulldown = document.getElementById('pulldown');
 const rec_img = document.getElementById("rec_img");
 const _token = document.getElementById("token");
 
-const speakerRecognation = function(base64data, sex) {
+const speakerRecognation = function (base64data, sex) {
     const options = {
         method: 'POST',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: new URLSearchParams({
-          'audio_file': base64data,
-          'sex': sex,
-          '_token': _token.value
+            'audio_file': base64data,
+            'sex': sex,
+            '_token': _token.value
         })
     };
     fetch('/speaker_rcognition', options)
@@ -90,7 +90,7 @@ document.getElementById("stop-recording").onclick = function () {
 
                 let reader = new FileReader();
                 reader.readAsDataURL(rawfile);
-                reader.onloadend = function() {
+                reader.onloadend = function () {
                     let base64data = reader.result;
                     speakerRecognation(base64data, pulldown.value);
                     rec_img.src = "../../img/rec_on.png";
