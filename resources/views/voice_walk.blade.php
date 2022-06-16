@@ -34,47 +34,47 @@
 	<section>
 		<div class="inner">
 			<div class="block_70vh">
-			<x-alert type="success" :session="session('exe_msg')" />
-			<form method="POST" action="{{ route('voiceupdate') }}">
-				@csrf
-				<div class="block_txt mb2">
-					<p>マッチング精度向上のため声紋を登録します。</p>
-				</div>
+				<x-alert type="success" :session="session('exe_msg')" />
+				<form method="POST" action="{{ route('voiceupdate') }}">
+					@csrf
+					<div class="block_txt mb2">
+						<p>マッチング精度向上のため声紋を登録します。</p>
+					</div>
 
-				<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
-				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
-				<input name="audio_file" type="hidden" id="audio_file" value=""></input>
-				<input name="voice_length" type="hidden" id="voice_length" value="{{ $voice_length }}"></input>
+					<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
+					<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
+					<input name="audio_file" type="hidden" id="audio_file" value=""></input>
+					<input name="voice_length" type="hidden" id="voice_length" value="{{ $voice_length }}"></input>
 
-				<div class="block_rec" id="voiceprint_btn">
-					<a id="exe_recording" class="btn_rec">
-						<img id="rec_img" src="{{ asset('img/rec_on.png') }}" class="img_rec" alt="録音">
-					</a>
-				</div>
-				<div class="btn_dl">
-					<a id="enrollmentDownload" class="soundsample"></a>
-				</div>
+					<div class="block_rec" id="voiceprint_btn">
+						<a id="exe_recording" class="btn_rec">
+							<img id="rec_img" src="{{ asset('img/rec_on.png') }}" class="img_rec" alt="録音">
+						</a>
+					</div>
+					<div class="btn_dl">
+						<a id="enrollmentDownload" class="soundsample"></a>
+					</div>
 
-				<div class="announce" id="result">録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</div>
-                @if ($errors->has('audio_file'))
-                <div class="alert alert-danger">
-                    {{ "音声を録音してください。" }}</li>
-                </div>
-                @endif
+					<div class="announce" id="result">録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</div>
+					@if ($errors->has('audio_file'))
+					<div class="alert alert-danger">
+						{{ "音声を録音してください。" }}</li>
+					</div>
+					@endif
 
-                <div>
-                    <div style="margin-top: 20px"><label for="file" style="width: 100%; font-size: 16px">推奨学習</label></div>
-                    <progress id="file" max="120000" value="{{ $voice_length }}" style="width: 100%; height: 30px"> 0% </progress>
-                </div>
+					<div>
+						<div style="margin-top: 20px"><label for="file" style="width: 100%; font-size: 16px">推奨学習</label></div>
+						<progress id="file" max="120000" value="{{ $voice_length }}" style="width: 100%; height: 30px"> 0% </progress>
+					</div>
 
 
-				<div class="btn mt2">
-					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
-				</div>
+					<div class="btn mt2">
+						<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
+					</div>
 
-			</form>
+				</form>
+			</div>
 		</div>
-	</div>
 	</section>
 
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_d" data-remodal-options="closeOnOutsideClick: false">
@@ -98,6 +98,14 @@
 	<!-- 音声データ学習用 -->
 	<script src="{{ asset('js/recorder.js') }}"></script>
 	<script src="{{ asset('js/recording.js') }}"></script>
+	<script>
+		/* bootstrap alertをx秒後に消す */
+		$(document).ready(function() {
+			$(window).load(function() {
+				window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+			});
+		});
+	</script>
 
 </body>
 

@@ -33,7 +33,7 @@
 				@csrf
 				<div class="input">
 					<h2 class="h2_input">&#9632;性別</h2>
-					<select id="pulldown" name="sex" value="{{ Auth::user()->sex }}">
+					<select id="pulldown" name="sex" value="{{ old('sex',Auth::user()->sex) }}">
 						<option value=0>-</option>
 						<option value=1>男性</option>
 						<option value=2>女性</option>
@@ -46,7 +46,7 @@
 				</div>
 				<div class="input">
 					<h2 class="h2_input">&#9632;年齢</h2>
-					<input name="age" type="text" class="age" value="{{ Auth::user()->age }}"><span class="txt_input">歳</span>
+					<input name="age" type="text" class="age" value="{{ old('age',Auth::user()->age) }}"><span class="txt_input">歳</span>
 					@if ($errors->has('age'))
 					<div class="alert alert-danger">
 						{{ $errors->first('age') }}</li>
@@ -55,7 +55,7 @@
 				</div>
 				<div class="input">
 					<h2 class="h2_input">&#9632;名前</h2>
-					<input name="name" type="text" value="{{ Auth::user()->name }}">
+					<input name="name" type="text" value="{{ old('name',Auth::user()->name) }}">
 					@if ($errors->has('name'))
 					<div class="alert alert-danger">
 						{{ $errors->first('name') }}</li>
@@ -79,6 +79,14 @@
 		var select = document.getElementById("pulldown");
 		var sexnum = select.getAttribute('value');
 		select.options[sexnum].selected = true;
+	</script>
+	<script>
+		/* bootstrap alertをx秒後に消す */
+		$(document).ready(function() {
+			$(window).load(function() {
+				window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+			});
+		});
 	</script>
 
 </body>
