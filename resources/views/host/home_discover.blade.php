@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
 		<meta name=”description” content=”発見者ホーム/あんしん見守り”/>
     	<title>発見者ホーム/あんしん見守り</title>
 		<!-- script -->
@@ -17,6 +17,7 @@
 	<header>
 		<a href="/home" class="arrow_s_b"></a>
 		<h1>発見者ホーム</h1>
+		
 	</header>
 	
 	<section>

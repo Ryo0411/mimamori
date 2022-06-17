@@ -6,7 +6,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
 		<meta name=”description” content=”徘徊者声掛け/あんしん見守り” />
 		<!-- ポップアップ用UI -->
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.css">
@@ -27,6 +27,7 @@
 	<header>
 		<a href="/home_discover" class="arrow_s_b"></a>
 		<h1>徘徊者声掛け</h1>
+		<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 	</header>
 
 	<section>

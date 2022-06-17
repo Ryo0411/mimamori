@@ -141,17 +141,14 @@ class MiniSRSApi
     public function addSpeech(string $speakerId, string $rawfile): array
     {
         $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/speeches';
-        $params = [
-            'file' => $rawfile,
-        ];
         $headers = [
             'Accept' => 'application/json',
-            'Content-Type' => 'application/x-www-form-urlencoded',
             'Authorization' => 'Bearer ' . $this->token
         ];
+        $data = $this->rawBase64Decode($rawfile);
         $response = $this->client->request('POST', $endPoint, [
             'headers' => $headers,
-            'form_params' => $params,
+            'body' => $data,
         ]);
 
         $list = [];
@@ -160,6 +157,13 @@ class MiniSRSApi
             $this->trainer($speakerId);
         }
         return $list;
+    }
+
+    protected function rawBase64Decode(string $rawfile): string|false
+    {
+        $base64data = explode("base64,", $rawfile)[1];
+        $data = base64_decode($base64data);
+        return $data;
     }
 
     public function getSpeeches(string $speakerId): array
@@ -221,8 +225,7 @@ class MiniSRSApi
             'Authorization' => 'Bearer ' . $this->token
         ];
         Log::info($headers);
-        $base64data = explode("base64,", $rawfile)[1];
-        $data = base64_decode($base64data);
+        $data = $this->rawBase64Decode($rawfile);
 
         // 話者認識APIは同時利用でエラーになる可能性があるためリトライ（0.2秒 Sleep）
         $retryCnt = 3;

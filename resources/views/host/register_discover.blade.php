@@ -6,7 +6,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit=cover'>
 		<meta name=”description” content=”情報登録/あんしん見守り/ホーム” />
 		<title>情報登録/あんしん見守り</title>
 		<!-- script -->
@@ -23,6 +23,7 @@
 		<section>
 			<a href="/home_discover" class="arrow_s_b"></a>
 			<h1>情報登録</h1>
+			<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 		</section>
 	</header>
 

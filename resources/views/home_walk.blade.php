@@ -6,7 +6,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
 		<meta name=”description” content=”徘徊者ホーム/あんしん見守り” />
 		<!-- ポップアップ用UI -->
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.css">
@@ -40,7 +40,8 @@
 
 	<section>
 		<div class="inner">
-			<div class="block_50vh">
+			<div>
+			<!--<div class="block_50vh">-->
 				<div class="btn">
 					<button id="button" class="btn-walk" onclick="location.href='/register_walk'">情報登録</button>
 				</div>
@@ -50,11 +51,13 @@
 				<div class="btn" {{$status}}>
 					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">捜索アラート</button>
 				</div>
-				<form method="post" action="/home_walk/discover">
-					@csrf
-					<input id="discover_button" class="btn-red" type="submit" value="発見">
-				</form>
-				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ $exe }}"></input>
+				<div class="btn" {{$status}}>
+					<form method="post" action="/home_walk/discover">
+						@csrf
+						<input id="discover_button" class="btn-red" type="submit" value="発見">
+					</form>
+					<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ $exe }}"></input>
+				</div>
 				<!-- 発見ポップアップ -->
 				<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_d">
 					<h4>発見されました！</h4>

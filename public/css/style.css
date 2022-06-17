@@ -6,22 +6,23 @@
   box-sizing: border-box
 }
 
-*,
 body,
 html {
-  margin: 0;
-  padding: 0;
 
-}
-
-body,
-html {
   max-width: 414px;
   width: 100%;
   height: 100%;
   margin: 0 auto;
+  padding: 0;
+	
 }
-
+wrapper {
+	display: flex;
+  flex-direction: column;
+	min-height: 100vh; /* カスタムプロパティ未対応ブラウザ用のフォールバック */
+  min-height: calc(var(--vh, 1vh) * 100);
+	
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -33,7 +34,7 @@ html {
 body {
   display: flex;
   flex-flow: column;
-  min-height: 100vh;
+  /*min-height: 100vh;*/
   font-family: YuGothic, "游ゴシック体", "Yu Gothic", "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
   background: repeating-linear-gradient(135deg, rgba(243, 243, 243, 1), rgba(243, 243, 243, 1) 5px, rgba(255, 255, 255, 1) 0, rgba(255, 255, 255, 1) 11px);
 }
@@ -116,9 +117,15 @@ h3 {
   padding: 0 0 .5rem 0;
   margin: 0 auto .5rem;
   border-bottom: 2px solid #00205b;
-  font-size: 1rem;
+  font-size: 1.2rem;
 }
-
+h4 {
+  color: #00205b;
+  padding: 0 0 .5rem 0;
+  margin: 0 auto .5rem;
+  border-bottom: 2px solid #00205b;
+  font-size: 1.2rem;
+}
 input[type=text] {
   width: 100%;
   padding: .5rem;
@@ -150,7 +157,7 @@ select {
 
 header {
   position: relative;
-  margin: 0 0 2rem 0;
+  margin: 0 0 1rem 0;
   width: 100%;
   /*position: absolute;
     top: 0;*/
@@ -160,14 +167,13 @@ header {
 }
 
 .footer {
-  /*position: absolute;
-    bottom: 0;*/
+
   width: 100%;
   max-width: 414px;
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  margin: 1rem 0 0 0;
+  margin: auto 0 0 0;
   padding: 1rem;
   font-size: .88rem;
   line-height: 11px;
@@ -188,7 +194,7 @@ header {
 section {
   flex: 1;
   width: 100%;
-  margin: 0 auto 2rem;
+  /*margin: 0 auto 2rem;*/
 }
 
 .inner {
@@ -271,6 +277,7 @@ ul li {
   box-shadow: 0 10px 10px 0 rgb(0 0 0 / 15%);
 }*/
 .block_txt {
+  margin: 0 0 1rem 0;
   padding: 1rem;
   text-align: center;
   background-color: #fff;
@@ -288,10 +295,14 @@ ul li {
 .logo_fujita {
   /*position: absolute;
   ←絶対位置*/
-  width: 70%;
-  margin: 1rem 0 0 0;
+  width: 60%;
+  margin: 0 0 1rem 0;
 }
-
+/*@media screen and (min-width:375px) and ( max-width:415px) {
+	.logo_fujita {
+		margin: 5rem 0 0 0;
+	}
+}*/
 .input {
   margin: 0 0 1rem 0;
 }
@@ -333,7 +344,7 @@ ul li {
 
 .btn-discover {
   width: 90%;
-  padding: 1.5rem 0.8rem;
+  padding:1rem 0.8rem;
   border-radius: 40px;
   color: #fff;
   font-size: 1.3rem;
@@ -353,7 +364,7 @@ ul li {
 
 .btn-walk {
   width: 90%;
-  padding: 1.5rem 0.8rem;
+  padding: 1rem 0.8rem;
   border-radius: 40px;
   color: #fff;
   font-size: 1.3rem;
@@ -373,7 +384,7 @@ ul li {
 
 .btn-red {
   width: 90%;
-  padding: 1.5rem 0.8rem;
+  padding: 1rem 0.8rem;
   border-radius: 40px;
   color: #fff;
   font-size: 1.3rem;
@@ -426,6 +437,16 @@ ul li {
   top: 20%;
   left: 20%;
 }
+.btn_home {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  top: 28%;
+  right: 4%;
+  display: inline-block;
+  color: #fff;
+  text-decoration: none;
+}
 
 .btn_rec {
   display: flex;
@@ -439,11 +460,11 @@ ul li {
 @media screen and (min-width:768px) {
   section {
     max-width: 1280px;
-    margin: 0 auto 2rem;
+    /*margin: 0 auto 2rem;*/
   }
 
   h2 {
-    margin: 0 auto 3rem;
+    /*margin: 0 auto 3rem;*/
   }
 
   .btn-common {
@@ -546,4 +567,9 @@ table tr:nth-child(odd) {
     display: block;
     font-size: .88rem;
   }
+}
+/*メニュー*/
+.menu {
+    height:100vh;
+    height: -webkit-fill-available;
 }
