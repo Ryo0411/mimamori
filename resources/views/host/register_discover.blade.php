@@ -8,6 +8,11 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit=cover'>
 		<meta name=”description” content=”情報登録/あんしん見守り/ホーム” />
+		<!-- ポップアップ用UI -->
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.css">
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal-default-theme.min.css">
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.js"></script>
 		<title>情報登録/あんしん見守り</title>
 		<!-- script -->
 		<script src="{{ asset('js/app.js') }}" defer></script>
@@ -75,12 +80,6 @@
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 
-	<!-- 性別プルダウン初期値 -->
-	<script>
-		var select = document.getElementById("pulldown");
-		var sexnum = select.getAttribute('value');
-		select.options[sexnum].selected = true;
-	</script>
 	<script>
 		/* bootstrap alertをx秒後に消す */
 		$(document).ready(function() {
@@ -89,7 +88,12 @@
 			});
 		});
 	</script>
-
+	<!-- 性別プルダウン初期値 -->
+	<script>
+		var select = document.getElementById("pulldown");
+		var sexnum = select.getAttribute('value');
+		select.options[sexnum].selected = true;
+	</script>
 </body>
 
 </html>

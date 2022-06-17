@@ -38,7 +38,7 @@
 				@csrf
 				<div class="input">
 					<h2 class="h2_input">&#9632;性別</h2>
-					<select id="pulldown" name="sex" value="{{ @$wanderer_list->sex }}">
+					<select id="pulldown" name="sex" value="{{ old('sex',@$wanderer_list->sex) }}">
 						<option value=0>-</option>
 						<option value=1>男性</option>
 						<option value=2>女性</option>
@@ -51,7 +51,7 @@
 				</div>
 				<div class="input">
 					<h2 class="h2_input">&#9632;年齢</h2>
-					<input name="age" type="text" class="age" value="{{ @$wanderer_list->age }}"><span class="txt_input">歳</span>
+					<input name="age" type="text" class="age" value="{{ old('age',@$wanderer_list->age) }}"><span class="txt_input">歳</span>
 					@if ($errors->has('age'))
 					<div class="alert alert-danger">
 						{{ $errors->first('age') }}</li>
@@ -60,7 +60,7 @@
 				</div>
 				<div class="input">
 					<h2 class="h2_input">&#9632;名前</h2>
-					<input name="wanderer_name" type="text" value="{{ @$wanderer_list->wanderer_name }}">
+					<input name="wanderer_name" type="text" value="{{ old('wanderer_name',@$wanderer_list->wanderer_name) }}">
 					@if ($errors->has('wanderer_name'))
 					<div class="alert alert-danger">
 						{{ $errors->first('wanderer_name') }}</li>
@@ -69,7 +69,7 @@
 				</div>
 				<div class="input">
 					<h2 class="h2_input">&#9632;緊急連絡先</h2>
-					<input name="emergency_tel" type="text" value="{{ @$wanderer_list->emergency_tel }}">
+					<input name="emergency_tel" type="text" value="{{ old('emergency_tel',@$wanderer_list->emergency_tel) }}">
 					@if ($errors->has('emergency_tel'))
 					<div class="alert alert-danger">
 						{{ $errors->first('emergency_tel') }}</li>
@@ -77,8 +77,8 @@
 					@endif
 				</div>
 
-				<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
-				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
+				<input name="profile_id" type="hidden" id="profile_id" value="{{ old('profile_id',@$wanderer_list->profile_id) }}"></input>
+				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ old('voiceprint_flg',@$wanderer_list->voiceprint_flg) }}"></input>
 				<input name="audio_file" type="hidden" id="audio_file" value=""></input>
 
 				<div class="block_rec" id="voiceprint_btn">
@@ -91,11 +91,11 @@
 				</div>
 
 				<div class="announce" id="result">録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</div>
-                @if ($errors->has('audio_file'))
-                <div class="alert alert-danger">
-                    {{ "音声を録音してください。" }}</li>
-                </div>
-                @endif
+				@if ($errors->has('audio_file'))
+				<div class="alert alert-danger">
+					{{ "音声を録音してください。" }}</li>
+				</div>
+				@endif
 
 				<div class="btn mt2">
 					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
@@ -134,32 +134,40 @@
 
 
 	<script>
-        function initialize() {
-            // 音声登録をしていない時のみ音声登録ボタンの表示。
-            let voiceprint_flg = document.getElementById("voiceprint_flg");
-            let result = document.getElementById("result");
+		function initialize() {
+			// 音声登録をしていない時のみ音声登録ボタンの表示。
+			let voiceprint_flg = document.getElementById("voiceprint_flg");
+			let result = document.getElementById("result");
 
-            // 初回表示のみ空なので０を代入。
-            if (voiceprint_flg.value == "") {
-                voiceprint_flg.value = "0";
-            };
-            if (voiceprint_flg.value != "0") {
-                document.querySelector('.block_rec').style.display = 'none';
-                result.style.display = 'none';
-                document.getElementById("audio_file").value = 'audio.raw';
-                document.getElementById("btn_regist").style.display = '';
-            };
+			// 初回表示のみ空なので０を代入。
+			if (voiceprint_flg.value == "") {
+				voiceprint_flg.value = "0";
+			};
+			if (voiceprint_flg.value != "0") {
+				document.querySelector('.block_rec').style.display = 'none';
+				result.style.display = 'none';
+				document.getElementById("audio_file").value = 'audio.raw';
+				document.getElementById("btn_regist").style.display = '';
+			};
 
-            // 性別プルダウン初期値
-            let select = document.getElementById("pulldown");
-            let sexnum = select.getAttribute('value');
-            if (!sexnum) {
-                sexnum = 0;
-            }
-            select.options[sexnum].selected = true;
+			// 性別プルダウン初期値
+			let select = document.getElementById("pulldown");
+			let sexnum = select.getAttribute('value');
+			if (!sexnum) {
+				sexnum = 0;
+			}
+			select.options[sexnum].selected = true;
 
-        }
-        initialize();
+		}
+		initialize();
+	</script>
+	<script>
+		/* bootstrap alertをx秒後に消す */
+		$(document).ready(function() {
+			$(window).load(function() {
+				window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+			});
+		});
 	</script>
 
 </body>
