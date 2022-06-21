@@ -52,7 +52,7 @@
 				</div>
 				<div class="input">
 					<h2 class="h2_input">&#9632;年齢</h2>
-					<input name="age" type="text" class="age" value="{{ old('age',Auth::user()->age) }}"><span class="txt_input">歳</span>
+					<input name="age" type="text" class="age" id="age" value="{{ old('age',Auth::user()->age) }}"><span class="txt_input">歳</span>
 					@if ($errors->has('age'))
 					<div class="alert alert-danger">
 						{{ $errors->first('age') }}</li>
@@ -72,21 +72,41 @@
 					<button type="submit" id="button" class="btn-red">更新</button>
 				</div>
 			</form>
+			<!-- 登録ポップアップ -->
+			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_d">
+				<h4>完了！</h4>
+				<div class="popup_inner">
+					<p id="result_pop">登録情報を更新しました。</p>
+					<div class="btn_popup">
+						<button data-remodal-action="close" class="remodal-confirm" id="okbtn">OK</button>
+						<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/home'">TOPへ</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	</section>
 
-	<footer class="footer">
+	<footer class=" footer">
 		<div class="footer_ver">Ver. 1.0</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 
 	<script>
 		/* bootstrap alertをx秒後に消す */
-		$(document).ready(function() {
-			$(window).load(function() {
-				window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
-			});
-		});
+		if (document.getElementById("alertfadeout") != null) {
+			location.href = '#modal_d';
+		}
+
+		document.getElementById("okbtn").onclick = function() {
+			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+		};
+
+		// 更新ボタンの文字変更
+		var age = document.getElementById("age");
+		var button = document.getElementById("button");
+		if (age.value == "") {
+			button.innerText = "登録";
+		};
 	</script>
 	<!-- 性別プルダウン初期値 -->
 	<script>

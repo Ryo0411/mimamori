@@ -23,13 +23,16 @@ const speakerRecognation = function (base64data, sex) {
                 const name = response['wanderer_name'];
                 const score = response['confidence'];
                 const rrate = Math.floor(score * 100);
-                let recog = "高確率";
+                // let recog = "高確率";
+                let recog = "";
                 if (rrate < 30) {
-                    recog = "低確率";
+                    // recog = "低確率";
+                    recog = "";
                 } else if (rrate < 60) {
-                    recog = "中確率";
+                    // recog = "中確率";
+                    recog = "";
                 }
-                document.getElementById("exe_result").innerHTML = "<p>認識結果、" + recog + "で<br>「" + name + "」さん<br>である可能性があります。";
+                document.getElementById("exe_result").innerHTML = "<p>認識結果、「" + name + "」さん<br>である可能性があります。";
                 document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                 // document.getElementById("probability").innerText = "認識率：" + (Math.floor(score * 100)) + "%";
                 location.href = '#modal_d';

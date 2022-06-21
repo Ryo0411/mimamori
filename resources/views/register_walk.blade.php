@@ -98,7 +98,7 @@
 				@endif
 
 				<div class="btn mt2">
-					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
+					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">更新</button>
 				</div>
 			</form>
 		</div>
@@ -110,6 +110,18 @@
 			<p id="text_pop" style="font-size: 18px;"></p>
 			<div class="btn_popup" style="margin-top: 10px">
 				<button id="stop-recording" data-remodal-action="close" class="remodal-confirm">録音終了</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- 登録ポップアップ -->
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e">
+		<h4>完了！</h4>
+		<div class="popup_inner">
+			<p id="result_pop">登録情報を更新しました。</p>
+			<div class="btn_popup">
+				<button data-remodal-action="close" class="remodal-confirm" id="okbtn">OK</button>
+				<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/home'">TOPへ</button>
 			</div>
 		</div>
 	</div>
@@ -134,14 +146,25 @@
 
 
 	<script>
+		if (document.getElementById("alertfadeout") != null) {
+			location.href = '#modal_e';
+		}
+
+		/* bootstrap alertをx秒後に消す */
+		document.getElementById("okbtn").onclick = function() {
+			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+		};
+
 		function initialize() {
 			// 音声登録をしていない時のみ音声登録ボタンの表示。
 			let voiceprint_flg = document.getElementById("voiceprint_flg");
 			let result = document.getElementById("result");
+			let btn_regist = document.getElementById("btn_regist");
 
 			// 初回表示のみ空なので０を代入。
 			if (voiceprint_flg.value == "") {
 				voiceprint_flg.value = "0";
+				btn_regist.innerText = "登録";
 			};
 			if (voiceprint_flg.value != "0") {
 				document.querySelector('.block_rec').style.display = 'none';
@@ -161,15 +184,6 @@
 		}
 		initialize();
 	</script>
-	<script>
-		/* bootstrap alertをx秒後に消す */
-		$(document).ready(function() {
-			$(window).load(function() {
-				window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
-			});
-		});
-	</script>
-
 </body>
 
 </html>
