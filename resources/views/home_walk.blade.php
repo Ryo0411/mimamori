@@ -35,11 +35,7 @@
 			<div class="block_txt">
 				<p>{{ $exe }}</p>
 			</div>
-		</div>
-	</section>
-
-	<section>
-		<div class="inner">
+		
 			<div>
 			<!--<div class="block_50vh">-->
 				<div class="btn">
