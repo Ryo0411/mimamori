@@ -55,22 +55,24 @@ class SRSController extends Controller
                                 'emergency_tel' => $data->emergency_tel,
                                 'confidence' => $speaker['confidence'],
                             ];
+
+                            $wanderer_list = Wanderers::whereProfile_id($speakerId)->first();
+                            if ($wanderer_list) {
+                                //ユーザ情報更新処理
+                                $userupdate = Wanderers::find($wanderer_list['id']);
+                                $userupdate->fill([
+                                    'wandering_flg' => 2,
+                                    'discover_flg' => 1,
+                                ]);
+                                // dd([$userupdate]);
+                                $userupdate->save();
+                                DB::commit();
+                            }
                             break;
                         }
                     }
                 }
             }
-            $wanderer_list = Wanderers::whereProfile_id($speakerId)->first();
-
-            //ユーザ情報更新処理
-            $userupdate = Wanderers::find($wanderer_list['id']);
-            $userupdate->fill([
-                'wandering_flg' => 2,
-                'discover_flg' => 1,
-            ]);
-            // dd([$userupdate]);
-            $userupdate->save();
-            DB::commit();
         } catch (\Throwable $e) {
             Log::info($e->getMessage());
             $json = [
