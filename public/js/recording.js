@@ -13,24 +13,30 @@ const fixed_text = [
 
 document.getElementById("exe_recording").onclick = function () {
     if (!isRecording) {
-        const index = Math.floor(Math.random() * fixed_text.length);
-        document.getElementById("text_pop").innerHTML = fixed_text[index];
-        location.href = '#modal_d';
-        console.log("音声サンプル録音中...");
-        btn_regist.style.display = 'none';
-        isRecording = true;
+        // const index = Math.floor(Math.random() * fixed_text.length);
+        // document.getElementById("text_pop").innerHTML = fixed_text[index];
+        // location.href = '#modal_d';
+        // console.log("音声サンプル録音中...");
+        // btn_regist.style.display = 'none';
+        // isRecording = true;
         startRecording(
             function () {
+                const index = Math.floor(Math.random() * fixed_text.length);
+                document.getElementById("text_pop").innerHTML = fixed_text[index];
+                location.href = '#modal_d';
+                console.log("音声サンプル録音中...");
+                btn_regist.style.display = 'none';
+                isRecording = true;
                 rec_img.src = "./img/rec.gif";
             },
             function (error) {
                 rec_img.src = "./img/rec_on.png";
                 btn_regist.style.display = '';
                 isRecording = false;
-                if ($.remodal) {
-                    var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
-                    modal.close();
-                }
+                // if ($.remodal) {
+                //     var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
+                //     modal.close();
+                // }
                 document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
                 location.href = '#modal_me';
             }
