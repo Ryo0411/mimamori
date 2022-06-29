@@ -122,6 +122,7 @@ rec_img.addEventListener("click", function () {
                                         document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                                         document.getElementById("probability").innerText = "認識率：" + (Math.floor(high_score * 100)) + "%";
                                     } else {
+                                        document.getElementById('exe_result').innerHTML = "<p>音声認識に失敗しました。</p>";
                                         userscore = "スコアなし";
                                         location.href = '#modal_d';
                                         document.getElementById("result_pop").innerText = "認識結果 : " + "失敗";;

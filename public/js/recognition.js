@@ -32,15 +32,17 @@ const speakerRecognation = function (base64data, sex) {
                     // recog = "中確率";
                     recog = "";
                 }
-                document.getElementById("exe_result").innerHTML = "<p>認識結果、「" + name + "」さん<br>である可能性があります。";
+                document.getElementById("exe_result").innerHTML = "<p>認識結果、「" + name + "」さん<br>である可能性があります。</p>";
                 document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                 // document.getElementById("probability").innerText = "認識率：" + (Math.floor(score * 100)) + "%";
                 location.href = '#modal_d';
             } else if (response['status'] === 1) {
+                document.getElementById("exe_result").innerHTML = "<p>認識結果、該当者なし</p>";
                 document.getElementById("result_pop").innerText = "認識結果 : " + "該当者なし";
                 document.getElementById("probability").innerText = "";
                 location.href = '#modal_d';
             } else {
+                document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました</p>";
                 document.getElementById("errorresult").innerHTML = "データ取得に失敗しました";
                 location.href = '#modal_e';
             }
