@@ -90,7 +90,7 @@
 					<a id="enrollmentDownload" class="soundsample"></a>
 				</div>
 
-				<div class="announce" id="result">録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</div>
+				<div class="announce" id="exe_result">録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</div>
 				@if ($errors->has('audio_file'))
 				<div class="alert alert-danger">
 					{{ "音声を録音してください。" }}</li>
@@ -125,6 +125,14 @@
 			</div>
 		</div>
 	</div>
+	<!-- マイクERROR -->
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
+		<h4>ERROR</h4>
+		<div class="popup_inner">
+			<p style="font-size: 16px;">マイクの使用が拒否されました。</p>
+			<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
+		</div>
+	</div>
 
 	<footer class="footer">
 		<div class="footer_ver">Ver. 1.0</div>
@@ -153,6 +161,10 @@
 		/* bootstrap alertをx秒後に消す */
 		document.getElementById("okbtn").onclick = function() {
 			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+		};
+
+		document.getElementById("micerr").onclick = function() {
+			document.getElementById("btn_regist").style.display = 'none';
 		};
 
 		function initialize() {

@@ -38,7 +38,7 @@
 				<x-alert type="success" :session="session('exe_msg')" />
 				<form method="POST" action="{{ route('voiceupdate') }}">
 					@csrf
-					<div class="block_txt mb2">
+					<div class="block_txt mb2" id="exe_result">
 						<p>マッチング精度向上のため声紋を登録します。</p>
 					</div>
 
@@ -86,6 +86,14 @@
 					</div>
 				</div>
 			</div>
+			<!-- マイクERROR -->
+			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
+				<h4>ERROR</h4>
+				<div class="popup_inner">
+					<p style="font-size: 16px;">マイクの使用が拒否されました。</p>
+					<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
+				</div>
+			</div>
 		</div>
 	</section>
 
@@ -113,6 +121,10 @@
 
 		document.getElementById("okbtn").onclick = function() {
 			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+		};
+
+		document.getElementById("micerr").onclick = function() {
+			document.getElementById("btn_regist").style.display = 'none';
 		};
 	</script>
 

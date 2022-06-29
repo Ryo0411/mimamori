@@ -31,18 +31,18 @@ const startRecording = function (success, failure) {
                 success();
             }
         },
-        function (error) {
-            window.console.log(error);
-            if (typeof failure === "function") {
-                failure(error);
-            }
-            // if ($.remodal) {
-            //     var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
-            //     modal.close();
-            // }
-            // document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
-            // location.href = '#modal_me';
-        }
+        // function (error) {
+        //     window.console.log(error);
+        //     if (typeof failure === "function") {
+        //         failure(error);
+        //     }
+        //     // if ($.remodal) {
+        //     //     var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
+        //     //     modal.close();
+        //     // }
+        //     // document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
+        //     // location.href = '#modal_me';
+        // }
     ).catch(function (error) {
         window.console.log(error);
         if (typeof failure === "function") {
