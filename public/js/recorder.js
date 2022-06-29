@@ -12,7 +12,7 @@ const startRecording = function (success, failure) {
     audioData = [];
     navigator.mediaDevices.getUserMedia(constraints).then(
         function (stream) {
-            audioContext = new AudioContext({sampleRate: audioSampleRate});
+            audioContext = new AudioContext({ sampleRate: audioSampleRate });
             scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
             mediastreamsource = audioContext.createMediaStreamSource(stream);
             mediastreamsource.connect(scriptProcessor);
@@ -36,6 +36,12 @@ const startRecording = function (success, failure) {
             if (typeof failure === "function") {
                 failure(error);
             }
+            if ($.remodal) {
+                var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
+                modal.close();
+            }
+            document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
+            location.href = '#modal_me';
         }
     );
 };

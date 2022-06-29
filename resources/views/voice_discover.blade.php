@@ -88,6 +88,14 @@
 			<button data-remodal-action="close" class="remodal-confirm">OK</button>
 		</div>
 	</div>
+	<!-- マイクERROR -->
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
+		<h4>ERROR</h4>
+		<div class="popup_inner">
+			<p style="font-size: 16px;">マイクの使用が拒否されました。</p>
+			<button data-remodal-action="close" class="remodal-confirm">OK</button>
+		</div>
+	</div>
 
 	<footer class="footer">
 		<div class="footer_ver">Ver. 1.0</div>

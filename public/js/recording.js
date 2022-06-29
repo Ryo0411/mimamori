@@ -13,7 +13,7 @@ const fixed_text = [
 
 document.getElementById("exe_recording").onclick = function () {
     if (!isRecording) {
-        const index = Math.floor(Math.random() * fixed_text.length) ;
+        const index = Math.floor(Math.random() * fixed_text.length);
         document.getElementById("text_pop").innerHTML = fixed_text[index];
         location.href = '#modal_d';
         console.log("音声サンプル録音中...");
@@ -28,9 +28,11 @@ document.getElementById("exe_recording").onclick = function () {
                 btn_regist.style.display = '';
                 isRecording = false;
                 if ($.remodal) {
-                    const modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
+                    var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
                     modal.close();
                 }
+                document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
+                location.href = '#modal_me';
             }
         );
     }
@@ -46,7 +48,7 @@ document.getElementById("stop-recording").onclick = function () {
 
                 let reader = new FileReader();
                 reader.readAsDataURL(rawfile);
-                reader.onloadend = function() {
+                reader.onloadend = function () {
                     // 録音した音声データの再生ボタン
                     let myURL = window.URL || window.webkitURL;
                     enrollmentDownload.innerHTML = "<a href='" + myURL.createObjectURL(wavfile) + "' target='_blank'>再生</a>";
