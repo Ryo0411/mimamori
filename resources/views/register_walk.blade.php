@@ -163,10 +163,6 @@
 			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
 		};
 
-		document.getElementById("micerr").onclick = function() {
-			document.getElementById("btn_regist").style.display = 'none';
-		};
-
 		function initialize() {
 			// 音声登録をしていない時のみ音声登録ボタンの表示。
 			let voiceprint_flg = document.getElementById("voiceprint_flg");

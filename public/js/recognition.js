@@ -67,15 +67,15 @@ rec_img.addEventListener("click", function () {
             isRecording = true;
             startRecording(
                 function () {
+                    console.log("音声サンプル録音中...");
+                    isRecording = true;
                     rec_img.src = "../../img/rec.gif";
                 },
                 function (error) {
                     rec_img.src = "../../img/rec_on.png";
                     isRecording = false;
-                    if ($.remodal) {
-                        const modal = $.remodal.lookup[$('[data-remodal-id=modal_r]').data('remodal')];
-                        modal.close();
-                    }
+                    document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
+                    location.href = '#modal_me';
                 }
             );
         }

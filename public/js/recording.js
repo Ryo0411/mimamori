@@ -31,7 +31,7 @@ document.getElementById("exe_recording").onclick = function () {
             },
             function (error) {
                 rec_img.src = "./img/rec_on.png";
-                btn_regist.style.display = '';
+                btn_regist.style.display = 'none';
                 isRecording = false;
                 // if ($.remodal) {
                 //     var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];

@@ -122,10 +122,6 @@
 		document.getElementById("okbtn").onclick = function() {
 			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
 		};
-
-		document.getElementById("micerr").onclick = function() {
-			document.getElementById("btn_regist").style.display = 'none';
-		};
 	</script>
 
 	<!-- Speech SDK reference sdk. -->
