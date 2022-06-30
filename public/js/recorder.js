@@ -137,10 +137,20 @@ const stopRecording = function (success, failure) {
     scriptProcessor.disconnect(audioContext.destination)
     audioContext.close().then(function () {
         window.console.log('Recording End');
-
-        if (typeof success === "function") {
-            success(exportWav(audioData), exportRaw(audioData));
+        console.log("audioDataサイズ = " + audioData.length)
+        // ここで audioData のサイズを確認（配列がゼロ）
+        if (audioData.length === 0) {
+            if (typeof failure === "function") {
+                // failure で callback させる
+                let error = "音声データがありませんでした。";
+                failure(error);
+            }
+        } else {
+            if (typeof success === "function") {
+                success(exportWav(audioData), exportRaw(audioData));
+            }
         }
+
     }).catch(function (error) {
         window.console.log(error);
         if (typeof failure === "function") {

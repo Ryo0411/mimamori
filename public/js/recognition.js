@@ -102,7 +102,9 @@ document.getElementById("stop-recording").onclick = function () {
                 }
             },
             function (error) {
+                document.getElementById("exe_result").innerHTML = "<p>" + error + "</p>";
                 rec_img.src = "../../img/rec_on.png";
+                btn_regist.style.display = 'none';
                 isRecording = false;
             }
         );

@@ -11,30 +11,7 @@ const fixed_text = [
     '今日の夕飯はカレーです。<br/>私の家では隠し味にチョコレートを入れます。<br/>甘さとコクが増しとても美味しいです。',
 ];
 
-// document.getElementById("exe_recording").onclick = function () {
-//     if (!isRecording) {
-//         const index = Math.floor(Math.random() * fixed_text.length);
-//         document.getElementById("text_pop").innerHTML = fixed_text[index];
-//         location.href = '#modal_d';
-//         console.log("音声サンプル録音中...");
-//         btn_regist.style.display = 'none';
-//         isRecording = true;
-//         startRecording(
-//             function () {
-//                 rec_img.src = "./img/rec.gif";
-//             },
-//             function (error) {
-//                 rec_img.src = "./img/rec_on.png";
-//                 btn_regist.style.display = '';
-//                 isRecording = false;
-//                 if ($.remodal) {
-//                     const modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
-//                     modal.close();
-//                 }
-//             }
-//         );
-//     }
-// };
+
 document.getElementById("exe_recording").onclick = function () {
     if (!isRecording) {
         // const index = Math.floor(Math.random() * fixed_text.length);
@@ -82,7 +59,7 @@ document.getElementById("stop-recording").onclick = function () {
                 reader.onloadend = function () {
                     // 録音した音声データの再生ボタン
                     let myURL = window.URL || window.webkitURL;
-                    enrollmentDownload.innerHTML = "<a href='" + myURL.createObjectURL(wavfile) + "' target='_blank'>再生</a>";
+                    enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls></audio>";
 
                     let base64data = reader.result;
                     audio_file.value = base64data;
@@ -99,8 +76,9 @@ document.getElementById("stop-recording").onclick = function () {
                 document.getElementById("exe_result").innerHTML = "<p>録音した音声を登録するには、<br>登録ボタンをタップしてください。</p>";
             },
             function (error) {
+                document.getElementById("exe_result").innerHTML = "<p>" + error + "</p>";
                 rec_img.src = "./img/rec_on.png";
-                btn_regist.style.display = '';
+                btn_regist.style.display = 'none';
                 isRecording = false;
             }
         );

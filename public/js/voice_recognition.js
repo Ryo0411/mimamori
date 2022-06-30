@@ -14,16 +14,6 @@ var speechConfig;
 var ansrate = 0;
 var profile = new Array(profile_count);
 
-// exe_recording = document.getElementById("exe_recording");
-// profile_id = document.getElementById("profile_id");
-// enrollmentDownload = document.getElementById("enrollmentDownload");
-// voiceprint_flg = document.getElementById("voiceprint_flg");
-// rec_img = document.getElementById("rec_img");
-// button = document.getElementById("button");
-// // APIに投げて処理するときにJSON形式の為、privProfileTypeは２で固定。
-// profile_information = { "privId": profile_id.value, "privProfileType": 2, "profileId": profile_id.value }
-
-
 verificationVoiceRecordButton = document.getElementById("verificationVoiceRecordButton");
 verificationDownload = document.getElementById("verificationDownload");
 
