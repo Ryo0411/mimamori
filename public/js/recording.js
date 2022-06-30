@@ -11,6 +11,30 @@ const fixed_text = [
     '今日の夕飯はカレーです。<br/>私の家では隠し味にチョコレートを入れます。<br/>甘さとコクが増しとても美味しいです。',
 ];
 
+// document.getElementById("exe_recording").onclick = function () {
+//     if (!isRecording) {
+//         const index = Math.floor(Math.random() * fixed_text.length);
+//         document.getElementById("text_pop").innerHTML = fixed_text[index];
+//         location.href = '#modal_d';
+//         console.log("音声サンプル録音中...");
+//         btn_regist.style.display = 'none';
+//         isRecording = true;
+//         startRecording(
+//             function () {
+//                 rec_img.src = "./img/rec.gif";
+//             },
+//             function (error) {
+//                 rec_img.src = "./img/rec_on.png";
+//                 btn_regist.style.display = '';
+//                 isRecording = false;
+//                 if ($.remodal) {
+//                     const modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
+//                     modal.close();
+//                 }
+//             }
+//         );
+//     }
+// };
 document.getElementById("exe_recording").onclick = function () {
     if (!isRecording) {
         // const index = Math.floor(Math.random() * fixed_text.length);
@@ -27,18 +51,18 @@ document.getElementById("exe_recording").onclick = function () {
                 console.log("音声サンプル録音中...");
                 btn_regist.style.display = 'none';
                 isRecording = true;
-                // document.getElementById("exe_result").innerHTML = "<p>録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</p>";
+                document.getElementById("exe_result").innerHTML = "<p>録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</p>";
                 rec_img.src = "./img/rec.gif";
             },
             function (error) {
                 rec_img.src = "./img/rec_on.png";
                 btn_regist.style.display = 'none';
                 isRecording = false;
+                document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
                 // if ($.remodal) {
                 //     var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
                 //     modal.close();
                 // }
-                document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
                 location.href = '#modal_me';
             }
         );
@@ -72,7 +96,7 @@ document.getElementById("stop-recording").onclick = function () {
                     link.click();
                     */
                 }
-                document.getElementById("result").innerHTML = "録音した音声を登録するには、<br>登録ボタンをタップしてください。";
+                document.getElementById("exe_result").innerHTML = "録音した音声を登録するには、<br>登録ボタンをタップしてください。";
             },
             function (error) {
                 rec_img.src = "./img/rec_on.png";

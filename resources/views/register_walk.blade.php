@@ -166,7 +166,7 @@
 		function initialize() {
 			// 音声登録をしていない時のみ音声登録ボタンの表示。
 			let voiceprint_flg = document.getElementById("voiceprint_flg");
-			let result = document.getElementById("result");
+			let result = document.getElementById("exe_result");
 			let btn_regist = document.getElementById("btn_regist");
 
 			// 初回表示のみ空なので０を代入。
