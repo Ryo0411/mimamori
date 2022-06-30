@@ -96,7 +96,7 @@ document.getElementById("stop-recording").onclick = function () {
                     link.click();
                     */
                 }
-                document.getElementById("exe_result").innerHTML = "録音した音声を登録するには、<br>登録ボタンをタップしてください。";
+                document.getElementById("exe_result").innerHTML = "<p>録音した音声を登録するには、<br>登録ボタンをタップしてください。</p>";
             },
             function (error) {
                 rec_img.src = "./img/rec_on.png";
