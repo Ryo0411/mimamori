@@ -63,7 +63,6 @@ rec_img.addEventListener("click", function () {
         if (!isRecording) {
             location.href = '#modal_r';
             console.log("認識用音声録音中...");
-
             isRecording = true;
             startRecording(
                 function () {

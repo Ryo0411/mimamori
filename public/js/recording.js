@@ -27,6 +27,7 @@ document.getElementById("exe_recording").onclick = function () {
                 console.log("音声サンプル録音中...");
                 btn_regist.style.display = 'none';
                 isRecording = true;
+                document.getElementById("exe_result").innerHTML = "<p>録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</p>";
                 rec_img.src = "./img/rec.gif";
             },
             function (error) {
