@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\SRSController;
 
@@ -17,27 +18,37 @@ use App\Http\Controllers\SRSController;
 |
 */
 
+Auth::routes();
+
 //ログイン前にアクセス可能
-Route::group(['middleware' => ['guest']], function () {
-    //トップページの表示
-    // Route::get('/sinin', function() {
-    //     return view('/login/login_form');
-    // })->name('index');
+//ログインページの表示
+Route::get('/', [AuthController::class, 'showLogin'])->name('login.show');
+//ログイン処理
+Route::post('login', [AuthController::class, 'login'])->name('login');
 
-    //ゲスト発見者の表示
-    // Route::get('/guest_discover', function() {
-    //     return view('/guest/guest_discover');
-    // })->name('guest_discover');
-
-    //ログインページの表示
-    Route::get('/', [AuthController::class, 'showLogin'])->name('login.show');
-
-    //ログイン処理
-    Route::post('login', [AuthController::class, 'login'])->name('login');
+//管理者ログイン前にアクセス可能
+Route::group(['prefix' => 'admin'], function () {
+    // //管理者ログインページの表示
+    Route::get('/', [LoginController::class, 'showAdmin'])->name('showAdmin');
+    //管理者ログイン処理
+    Route::post('/login', [LoginController::class, 'adminlogin'])->name('adminlogin');
 });
 
+
+//管理者ログイン後のみアクセス可能
+Route::group(['prefix' => 'admin', 'middleware' => 'auth:admin'], function () {
+    //ログイン成功時の画面遷移(home画面遷移用)
+    Route::get('/home', function () {
+        return view('/admin/home');
+    })->name('adminhome');
+    //ログアウト処理
+    Route::post('/logout', [LoginController::class, 'adminlogout'])->name('adminlogout');
+});
+
+
+
 //ログイン後のみアクセス可能
-Route::group(['middleware' => ['auth']], function () {
+Route::group(['middleware' => 'auth:user'], function () {
     //ログイン成功時の画面遷移(home画面遷移用)
     Route::get('/home', function () {
         return view('home');

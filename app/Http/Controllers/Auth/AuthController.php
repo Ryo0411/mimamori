@@ -12,6 +12,14 @@ class AuthController extends Controller
     /**
      * @return View
      */
+
+    protected $redirectTo = 'home';
+
+    public function __construct()
+    {
+        $this->middleware('guest:user')->except('logout'); //変更
+    }
+
     public function showLogin()
     {
         return view('login.login_form');
@@ -27,7 +35,7 @@ class AuthController extends Controller
         $credentials = $request->only('name', 'password');
 
         //ログイン承認
-        if (Auth::attempt($credentials)) {
+        if (Auth::guard('user')->attempt($credentials)) {
             $request->session()->regenerate();
 
             //ログイン成功時画面遷移
@@ -49,12 +57,9 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        Auth::logout();
-
+        Auth::guard('admin')->logout();  //変更
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
-
-        return redirect()->route('login.show')->with('logout', 'ログアウトしました！');
+        return redirect('/')->with('logout', 'ログアウトしました！');  //変更
     }
 }
