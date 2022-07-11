@@ -33,17 +33,9 @@
 				<div>
 					<!-- ログイン成功時のアラート表示 -->
 					<x-alert type="success" :session="session('login_success')" />
-					<!-- @if (session('login_success'))
-						<div class="alert alert-success">
-							{{ session('login_success') }}
-						</div>
-					@endif -->
-					<!-- <div class="btn">
-						<button id="button" class="btn-walk" onclick="location.href='/home_walk'">徘徊者</button>
-					</div>
 					<div class="btn">
-						<button id="button" class="btn-discover" onclick="location.href='/home_discover'">発見者</button>
-					</div> -->
+						<button id="button" class="btn-discover" onclick="location.href='/admin/view'">マッチングユーザー</button>
+					</div>
 					<div class="btn">
 						<form action="{{ route('adminlogout') }}" method="POST">
 							@csrf

@@ -22,29 +22,42 @@
 <body>
 	<wrapper class="fv">
 		<header>
-			<section>
-				<h1><img src="{{ asset('img/logo.svg') }}" alt="あんしん見守り"></h1>
-			</section>
+			<a href="/admin/home" class="arrow_s_b"></a>
+			<h1>発見者一覧</h1>
 		</header>
 
 		<section>
 			<div class="inner">
 				<!--<div class="block_50vh">-->
 				<div>
-					<!-- ログイン成功時のアラート表示 -->
-					<x-alert type="success" :session="session('login_success')" />
-					<div class="btn">
-						<button id="button" class="btn-walk" onclick="location.href='/home_walk'">徘徊者</button>
-					</div>
-					<div class="btn">
-						<button id="button" class="btn-discover" onclick="location.href='/home_discover'">発見者</button>
-					</div>
-					<div class="btn">
-						<form action="{{ route('logout') }}" method="POST">
-							@csrf
-							<button class="btn btn-walk">ログアウト</button>
-						</form>
-					</div>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>徘徊者名</th>
+								<th>緊急連絡先</th>
+								<th>発見者名</th>
+								<th>発見者日時</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach ($wanderer_lists as $wanderer_list)
+							<tr>
+								<td>{{ $wanderer_list->id }}</td>
+								<td>{{ $wanderer_list->wanderer_name }}</td>
+								<td>{{ $wanderer_list->emergency_tel }}</td>
+								<td>{{ $wanderer_list->discover_name }}</td>
+								<td>{{ $wanderer_list->wanderer_time }}</td>
+								<td><a href="/admin/discover/{{ $wanderer_list->id }}"><button type="button" class="btn btn-primary">発見</button></a></td>
+								<!-- <form method="post" action="/discover/{{ $wanderer_list->id }}">
+									@csrf
+									<input id="discover_button" class="btn btn-primary" type="submit" value="発見">
+								</form> -->
+							</tr>
+							@endforeach
+						</tbody>
+					</table>
 				</div>
 			</div>
 		</section>

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\LoginController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AppController;
 use App\Http\Controllers\SRSController;
 
@@ -43,6 +44,12 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth:admin'], function () {
     })->name('adminhome');
     //ログアウト処理
     Route::post('/logout', [LoginController::class, 'adminlogout'])->name('adminlogout');
+
+    //徘徊者一覧画面表示
+    Route::get('/view', [AdminController::class, 'adminview'])->name('adminview');
+
+    //徘徊者一覧画面発見
+    Route::get('/discover/{id}', [AdminController::class, 'discoverflg'])->name('discoverflg');
 });
 
 

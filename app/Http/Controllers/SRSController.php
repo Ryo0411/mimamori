@@ -56,6 +56,7 @@ class SRSController extends Controller
                                 'confidence' => $speaker['confidence'],
                             ];
 
+                            // 音声認識結果で認識したユーザーのフラグ変更
                             $wanderer_list = Wanderers::whereProfile_id($speakerId)->first();
                             if ($wanderer_list) {
                                 //ユーザ情報更新処理
@@ -63,6 +64,8 @@ class SRSController extends Controller
                                 $userupdate->fill([
                                     'wandering_flg' => 2,
                                     'discover_flg' => 1,
+                                    'wanderer_id' => Auth::user()->id,
+                                    'wanderer_time' => now(),
                                 ]);
                                 // dd([$userupdate]);
                                 $userupdate->save();

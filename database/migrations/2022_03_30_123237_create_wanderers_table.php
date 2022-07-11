@@ -29,6 +29,10 @@ return new class extends Migration
                 $table->tinyInteger('discover_flg')->default(0);
                 //声紋登録フラグ
                 $table->integer('voiceprint_flg')->default(0);
+                //発見者ID
+                $table->integer('wanderer_id')->default(0);
+                //発見日時
+                $table->datetime('wanderer_time')->default(date("Y-m-d H:i:s"));
                 $table->timestamps();
 
                 // 複合PK
