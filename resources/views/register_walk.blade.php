@@ -131,7 +131,6 @@
 		<div class="popup_inner">
 			<p style="font-size: 16px;">音声データがありませんでした。</p>
 			<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
-			<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/voice_test'">確認</button>
 		</div>
 	</div>
 

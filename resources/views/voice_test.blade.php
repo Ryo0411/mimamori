@@ -26,9 +26,8 @@
 <body>
 	<header>
 		<section>
-			<!-- <a href="javascript:history.go(-2)" class=" arrow_s_b"></a> -->
+			<a href="/home" class=" arrow_s_b"></a>
 			<h1>マイクテスト</h1>
-			<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 		</section>
 	</header>
 
