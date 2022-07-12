@@ -92,8 +92,9 @@
 	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
 		<h4>ERROR</h4>
 		<div class="popup_inner">
-			<p style="font-size: 16px;">マイクの使用が拒否されました。</p>
+			<p style="font-size: 16px;">音声データがありませんでした。</p>
 			<button data-remodal-action="close" class="remodal-confirm">OK</button>
+			<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/voice_test'">確認</button>
 		</div>
 	</div>
 

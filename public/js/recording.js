@@ -35,7 +35,7 @@ document.getElementById("exe_recording").onclick = function () {
                 rec_img.src = "./img/rec_on.png";
                 btn_regist.style.display = 'none';
                 isRecording = false;
-                document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
+                document.getElementById("exe_result").innerHTML = "<p>音声データがありませんでした。</p>";
                 // if ($.remodal) {
                 //     var modal = $.remodal.lookup[$('[data-remodal-id=modal_d]').data('remodal')];
                 //     modal.close();

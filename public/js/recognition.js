@@ -73,7 +73,7 @@ rec_img.addEventListener("click", function () {
                 function (error) {
                     rec_img.src = "../../img/rec_on.png";
                     isRecording = false;
-                    document.getElementById("exe_result").innerHTML = "<p>マイクの使用が拒否されました。</p>";
+                    document.getElementById("exe_result").innerHTML = "<p>音声データがありませんでした。</p>";
                     location.href = '#modal_me';
                 }
             );

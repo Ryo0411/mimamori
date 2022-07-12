@@ -102,6 +102,11 @@ Route::group(['middleware' => 'auth:user'], function () {
 
     Route::post('/voice_walk/update', [AppController::class, 'voiceUpdate'])->name('voiceupdate');
 
-    //
     Route::post('/speaker_rcognition', [SRSController::class, 'speakerRcognition'])->name('speaker_rcognition');
+
+    // マイクテスト画面
+    //発見者ホーム、情報登録ボタン選択時の画面遷移
+    Route::get('/voice_test', function () {
+        return view('/voice_test');
+    })->name('voice_test');
 });

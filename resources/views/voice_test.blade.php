@@ -26,8 +26,8 @@
 <body>
 	<header>
 		<section>
-			<a href="/home_walk" class="arrow_s_b"></a>
-			<h1>声だけ登録</h1>
+			<!-- <a href="javascript:history.go(-2)" class=" arrow_s_b"></a> -->
+			<h1>マイクテスト</h1>
 			<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 		</section>
 	</header>
@@ -39,13 +39,8 @@
 				<form method="POST" action="{{ route('voiceupdate') }}">
 					@csrf
 					<div class="block_txt mb2" id="exe_result">
-						<p>マッチング精度向上のため声紋を登録します。</p>
+						<p>マイクの使用テストを行います。</p>
 					</div>
-
-					<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
-					<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
-					<input name="audio_file" type="hidden" id="audio_file" value=""></input>
-					<input name="voice_length" type="hidden" id="voice_length" value="{{ $voice_length }}"></input>
 
 					<div class="block_rec" id="voiceprint_btn">
 						<a id="exe_recording" class="btn_rec">
@@ -56,50 +51,38 @@
 						<a id="enrollmentDownload" class="soundsample"></a>
 					</div>
 
-					<div class="announce" id="result">録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</div>
+					<div class="announce" id="result"></div>
 					@if ($errors->has('audio_file'))
 					<div class="alert alert-danger">
 						{{ "音声を録音してください。" }}</li>
 					</div>
 					@endif
 
-					<div>
-						<div style="margin-top: 20px"><label for="file" style="width: 100%; font-size: 16px">推奨学習</label></div>
-						<progress id="file" max="120000" value="{{ $voice_length }}" style="width: 100%; height: 30px"> 0% </progress>
-					</div>
-
-
-					<div class="btn mt2">
-						<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
-					</div>
+					<div class="announce" id="result">マイク使用可能環境<br>Chrome 53以降<br>Edge 79以降<br>Safari 11以降<br>Chrome Android 53以降<br>Safari on iOS 11以降</div>
+					<!-- Chrome 53以降
+					Edge 79以降
+					Safari 11以降
+					Chrome Android 53以降
+					Safari on iOS 11以降 -->
 
 				</form>
 			</div>
-			<!-- 登録ポップアップ -->
-			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e">
-				<h4>完了！</h4>
-				<div class="popup_inner">
-					<p id="result_pop">音声を追加学習しました。</p>
-					<div class="btn_popup">
-						<button data-remodal-action="close" class="remodal-confirm" id="okbtn">OK</button>
-						<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/home'">TOPへ</button>
-					</div>
-				</div>
+
+		</div>
+		<!-- マイクERROR -->
+		<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
+			<h4>ERROR</h4>
+			<div class="popup_inner">
+				<p style="font-size: 16px;">マイクが使用できませんでした、端末の設定を確認してください。</p>
+				<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
+				<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/home'">TOPへ</button>
 			</div>
-			<!-- マイクERROR -->
-			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
-				<h4>ERROR</h4>
-				<div class="popup_inner">
-					<p style="font-size: 16px;">音声データがありませんでした。</p>
-					<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
-					<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/voice_test'">確認</button>
-				</div>
-			</div>
+		</div>
 		</div>
 	</section>
 
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_d" data-remodal-options="closeOnOutsideClick: false">
-		<h3>読み上げる文書</h3>
+		<h3>マイクテスト</h3>
 		<div class="popup_inner">
 			<p id="text_pop" style="font-size: 18px;"></p>
 			<div class="btn_popup" style="margin-top: 10px">
@@ -107,7 +90,6 @@
 			</div>
 		</div>
 	</div>
-
 
 	<footer class="footer">
 		<div class="footer_ver">Ver. 1.0</div>
@@ -119,17 +101,11 @@
 		if (document.getElementById("alertfadeout") != null) {
 			location.href = '#modal_e';
 		}
-
-		document.getElementById("okbtn").onclick = function() {
-			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
-		};
 	</script>
 
 	<!-- Speech SDK reference sdk. -->
-	<!-- <script src="{{ asset('js/SpeechSDK/microsoft.cognitiveservices.speech.sdk.bundle.js') }}"></script> -->
 	<!-- 音声データ学習用 -->
-	<script src="{{ asset('js/recorder.js') }}"></script>
-	<script src="{{ asset('js/recording.js') }}"></script>
+	<script src="{{ asset('js/voice_test.js') }}"></script>
 
 </body>
 
