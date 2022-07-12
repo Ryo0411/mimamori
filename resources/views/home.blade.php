@@ -40,7 +40,7 @@
 						<button id="button" class="btn-discover" onclick="location.href='/home_discover'">発見者</button>
 					</div>
 					<div class="btn">
-						<button id="button" class="btn-walk" onclick="location.href='/voice_test'">徘徊者</button>
+						<button id="button" class="btn-walk" onclick="location.href='/voice_test'">マイクテスト</button>
 					</div>
 					<div class="btn">
 						<form action="{{ route('logout') }}" method="POST">
