@@ -206,7 +206,7 @@ document.getElementById("stop-recording").onclick = function () {
                 reader.onloadend = function () {
                     // 録音した音声データの再生ボタン
                     let myURL = window.URL || window.webkitURL;
-                    enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls autoplay></audio>";
+                    enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls autoplay loop></audio>";
 
                     let base64data = reader.result;
                     isRecording = false;
