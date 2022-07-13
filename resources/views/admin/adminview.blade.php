@@ -19,7 +19,7 @@
 		<script src="{{ asset('js/fv.js') }}"></script>
 	</head>
 
-<body>
+<body class="discoverer">
 	<wrapper class="fv">
 		<header>
 			<a href="/admin/home" class="arrow_s_b"></a>
@@ -32,7 +32,7 @@
 				<div>
 					<table class="table">
 						<thead>
-							<tr>
+							<tr class="ttl">
 								<th>ID</th>
 								<th>徘徊者名</th>
 								<th>緊急連絡先</th>

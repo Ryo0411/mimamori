@@ -57,7 +57,7 @@
 					</div>
 					@endif
 
-					<div class="announce" id="result">マイク使用可能環境<br>Chrome 53以降<br>Edge 79以降<br>Safari 11以降<br>Chrome Android 53以降<br>Safari on iOS 11以降</div>
+					<div class="available">マイク使用可能環境<br>Chrome 53以降<br>Edge 79以降<br>Safari 11以降<br>Chrome Android 53以降<br>Safari on iOS 11以降</div>
 					<!-- Chrome 53以降
 					Edge 79以降
 					Safari 11以降

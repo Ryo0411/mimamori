@@ -198,7 +198,7 @@ section {
 }
 
 .inner {
-  padding: 0 1rem;
+  /*padding: 0 1rem;*/
 }
 
 a {
@@ -317,11 +317,18 @@ ul li {
   font-weight: bold;
   text-align: center;
 }
-
+.available {
+	margin: 1rem 0 0 0;
+	font-size: .88rem;
+    text-align: center;
+    background: #fff;
+    padding: 0.5rem;
+}
 /*BTN*/
 .btn {
   margin: 0 0 1rem 0;
   text-align: center;
+	
 }
 
 .btn_dl {
@@ -333,7 +340,16 @@ ul li {
   font-size: 1.1rem;
   font-weight: bold;
 }
-
+.discoverer .inner .btn {
+	margin: 0;
+	padding: 0.2rem 0.4rem;
+	line-height: 1.2;
+	background: #ECAD00;
+	border: none;
+}
+/*.discoverer .inner .btn:hover {
+	background: #f3cd66;
+}*/
 /*.btn_dl a::before {
   content: "";
   padding: 0 2rem 0 0;
@@ -381,7 +397,44 @@ ul li {
   -ms-user-select: none;
   user-select: none
 }
-
+.btn-mic {
+  width: 90%;
+  padding: 1rem 0.8rem;
+  border-radius: 40px;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  background-color: #21869b;
+  -webkit-transition: .4s;
+  transition: .4s;
+  -webkit-box-shadow: 2px 4px 4px rgba(0, 0, 0, .29);
+  box-shadow: 2px 4px 4px rgba(0, 0, 0, .29);
+  border-width: 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none
+}
+.btn-logout {
+  width: 90%;
+  padding: 1rem 0.8rem;
+  border-radius: 40px;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: bold;
+  background-color: #a3a3a3;
+  -webkit-transition: .4s;
+  transition: .4s;
+  -webkit-box-shadow: 2px 4px 4px rgba(0, 0, 0, .29);
+  box-shadow: 2px 4px 4px rgba(0, 0, 0, .29);
+  border-width: 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none
+}
 .btn-red {
   width: 90%;
   padding: 1rem 0.8rem;
@@ -535,7 +588,7 @@ table td {
 }
 
 table tr:first-child {
-  background: #00205b !important;
+  background: #00205b ;
 }
 
 table tr:first-child td {
@@ -549,7 +602,9 @@ table tr:nth-child(even) {
 table tr:nth-child(odd) {
   background: #798fb7;
 }
-
+.discoverer .inner {
+	margin: 0;
+}
 @media screen and (max-width: 640px) {
   h1 img {
     width: 70%;
