@@ -158,7 +158,7 @@ const enrollmentDownload = document.getElementById("enrollmentDownload");
 const rec_img = document.getElementById("rec_img");
 let isRecording = false;
 const fixed_text = [
-    'マイクテストを行います。本日の日付を喋ってください。',
+    '音声が録音できるかチェックします。本日の日付を声に出してお話しください。<br>話し終わりましたら、「録音終了」をタップしてください。',
 ];
 
 
@@ -207,6 +207,7 @@ document.getElementById("stop-recording").onclick = function () {
                     // 録音した音声データの再生ボタン
                     let myURL = window.URL || window.webkitURL;
                     enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls autoplay loop></audio>";
+                    document.getElementById("exe_result").innerHTML = "<p>音声録音が確認できました。</p>";
 
                     let base64data = reader.result;
                     isRecording = false;

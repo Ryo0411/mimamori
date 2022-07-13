@@ -27,7 +27,7 @@
 	<header>
 		<section>
 			<a href="/home" class=" arrow_s_b"></a>
-			<h1>マイクテスト</h1>
+			<h1>動作チェック</h1>
 		</section>
 	</header>
 
@@ -38,7 +38,7 @@
 				<form method="POST" action="{{ route('voiceupdate') }}">
 					@csrf
 					<div class="block_txt mb2" id="exe_result">
-						<p>マイクの使用テストを行います。</p>
+						<p>音声録音に対応しているかチェックを行います。<br>マイクのマークをタップしてください。</p>
 					</div>
 
 					<div class="block_rec" id="voiceprint_btn">
@@ -81,7 +81,7 @@
 	</section>
 
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_d" data-remodal-options="closeOnOutsideClick: false">
-		<h3>マイクテスト</h3>
+		<h3>音声録音チェック</h3>
 		<div class="popup_inner">
 			<p id="text_pop" style="font-size: 18px;"></p>
 			<div class="btn_popup" style="margin-top: 10px">
