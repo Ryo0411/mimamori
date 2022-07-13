@@ -32,7 +32,7 @@
 
         <label for="inputEmail" class="sr-only">名前</label>
         <input type="name" id="inputName" class="form-control" placeholder="Name" name="name" required autofocus>
-        <label for="inputPassword" class="sr-only">Password</label>
+        <label for="inputPassword" class="sr-only">パスワード</label>
         <input type="password" id="inputPassword" class="form-control" placeholder="Password" name="password" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">ログイン</button>
     </form>
