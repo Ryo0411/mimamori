@@ -76,14 +76,14 @@ class SRSController extends Controller
                             }
 
                             // DB更新後に自動メール送信
-                            $user_lists = User::whereId($wanderer_list['user_id'])->first();
-                            if ($user_lists['email'] != null) {
+                            $user_data = User::whereId($wanderer_list['user_id'])->first();
+                            if ($wanderer_list['email'] != null) {
                                 $messegedata =
-                                    $user_lists['name'] . "　様" . "\n\n" .
+                                    $user_data['name'] . "　様" . "\n\n" .
                                     $wanderer_list['wanderer_name'] . "様が発見されました。" . "\n" .
                                     "アプリを起動して確認してください。" . "\n\n" .
                                     "https://anshinm.onsei.app/";
-                                Mail::to($user_lists['email'])->send(new Maildata(
+                                Mail::to($wanderer_list['email'])->send(new Maildata(
                                     $messegedata
                                 ));
                             }

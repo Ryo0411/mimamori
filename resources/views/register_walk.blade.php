@@ -68,6 +68,15 @@
 					@endif
 				</div>
 				<div class="input">
+					<h2 class="h2_input">&#9632;Eメール</h2>
+					<input name="email" type="text" value="{{ old('email',@$wanderer_list->email) }}">
+					@if ($errors->has('email'))
+					<div class="alert alert-danger">
+						{{ $errors->first('email') }}</li>
+					</div>
+					@endif
+				</div>
+				<div class="input">
 					<h2 class="h2_input">&#9632;緊急連絡先</h2>
 					<input name="emergency_tel" type="text" value="{{ old('emergency_tel',@$wanderer_list->emergency_tel) }}">
 					@if ($errors->has('emergency_tel'))

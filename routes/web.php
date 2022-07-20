@@ -50,6 +50,9 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth:admin'], function () {
 
     //徘徊者一覧画面発見
     Route::get('/discover/{id}', [AdminController::class, 'discoverflg'])->name('discoverflg');
+
+    //email送信用クラス
+    Route::get('/email/{id}', [AdminController::class, 'emailflg'])->name('emailflg');
 });
 
 

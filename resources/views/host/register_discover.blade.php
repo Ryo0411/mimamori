@@ -60,15 +60,6 @@
 					@endif
 				</div>
 				<div class="input">
-					<h2 class="h2_input">&#9632;Eメール</h2>
-					<input name="email" type="text" value="{{ old('email',Auth::user()->email) }}">
-					@if ($errors->has('email'))
-					<div class="alert alert-danger">
-						{{ $errors->first('email') }}</li>
-					</div>
-					@endif
-				</div>
-				<div class="input">
 					<h2 class="h2_input">&#9632;名前</h2>
 					<input name="name" type="text" value="{{ old('name',Auth::user()->name) }}">
 					@if ($errors->has('name'))

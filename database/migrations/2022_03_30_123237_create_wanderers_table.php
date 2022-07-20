@@ -17,6 +17,7 @@ return new class extends Migration
             Schema::create('wanderers', function (Blueprint $table) {
                 $table->id();
                 $table->string('wanderer_name')->nullable();
+                $table->string('email')->nullable();
                 $table->tinyInteger('sex')->default(0);
                 $table->integer('age')->nullable();
                 $table->integer('user_id');

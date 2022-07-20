@@ -15,6 +15,8 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\VoiceUpdate;
 use App\Libs\MiniSRSApi;
 use Illuminate\Support\Facades\Log;
+use App\Mail\Maildata;
+use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
@@ -71,5 +73,30 @@ class AdminController extends Controller
         }
         // dd([$wanderer_list]);
         return redirect('/admin/view');
+    }
+
+    //メール送信ボタン投下時の機能
+    public function emailflg($id)
+    {
+        $user_id = $id;
+        $wanderer_list = Wanderers::whereId($user_id)->first();
+
+        // 自動メール送信
+        $user_data = User::whereId($wanderer_list['user_id'])->first();
+        if ($wanderer_list['email'] != null) {
+            $messegedata =
+                $user_data['name'] . "　様" . "\n\n" .
+                $wanderer_list['wanderer_name'] . "様が発見されました。" . "\n" .
+                "アプリを起動して確認してください。" . "\n\n" .
+                "https://anshinm.onsei.app/";
+            Mail::to($wanderer_list['email'])->send(new Maildata(
+                $messegedata
+            ));
+        } else {
+            //ユーザ情報更新処理
+            return redirect('/admin/view/#modal_me');
+        }
+        // dd([$wanderer_list]);
+        return redirect('/admin/view/#modal_ok');
     }
 }
