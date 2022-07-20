@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SRSRequest;
 use App\Libs\MiniSRSApi;
 use App\Models\Wanderers;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\Maildata;
+use Illuminate\Support\Facades\Mail;
 
 
 class SRSController extends Controller
@@ -70,6 +73,19 @@ class SRSController extends Controller
                                 // dd([$userupdate]);
                                 $userupdate->save();
                                 DB::commit();
+                            }
+
+                            // DB更新後に自動メール送信
+                            $user_lists = User::whereId($wanderer_list['user_id'])->first();
+                            if ($user_lists['email'] != null) {
+                                $messegedata =
+                                    $user_lists['name'] . "　様" . "\n\n" .
+                                    $wanderer_list['wanderer_name'] . "様が発見されました。" . "\n" .
+                                    "アプリを起動して確認してください。" . "\n\n" .
+                                    "https://anshinm.onsei.app/";
+                                Mail::to($user_lists['email'])->send(new Maildata(
+                                    $messegedata
+                                ));
                             }
                             break;
                         }

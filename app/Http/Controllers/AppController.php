@@ -201,6 +201,7 @@ class AppController extends Controller
             $userupdate->fill([
                 'sex' => $inputs['sex'],
                 'age' => $inputs['age'],
+                'email' => $inputs['email'],
                 'name' => $inputs['name'],
             ]);
             $userupdate->save();
