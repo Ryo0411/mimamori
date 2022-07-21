@@ -94,7 +94,7 @@ class SRSController extends Controller
                                         https://www.google.com/maps/search/" . $latitude . "," . $longitude;
                                 };
                                 $wanderer_time = "発見日時\n" .
-                                    $wanderer_list['wanderer_time'] . "　頃";
+                                    now()->format('Y年n月j日H時i分') . "　頃";
                                 Mail::to($wanderer_list['email'])->send(new Maildata(
                                     $messegedata,
                                     $gps_url,
