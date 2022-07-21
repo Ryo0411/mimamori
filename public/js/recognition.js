@@ -148,7 +148,7 @@ document.getElementById("stop-recording").onclick = function () {
                     var latitude = document.getElementById('latitude').value;
                     var longitude = document.getElementById('longitude').value;
                     console.log("緯度経度取得" + latitude, longitude);
-                    speakerRecognation(base64data, pulldown, latitude, longitude.value);
+                    speakerRecognation(base64data, pulldown.value, latitude, longitude);
                     rec_img.src = "../../img/rec_on.png";
                     isRecording = false;
                 }
