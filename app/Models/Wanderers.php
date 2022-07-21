@@ -16,6 +16,7 @@ class Wanderers extends Model
     protected $fillable = [
         'id',
         'wanderer_name',
+        'family_name',
         'email',
         'sex',
         'age',
