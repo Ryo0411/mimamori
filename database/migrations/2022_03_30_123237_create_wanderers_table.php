@@ -17,6 +17,7 @@ return new class extends Migration
             Schema::create('wanderers', function (Blueprint $table) {
                 $table->id();
                 $table->string('wanderer_name')->nullable();
+                $table->string('family_name')->nullable();
                 $table->string('email')->nullable();
                 $table->tinyInteger('sex')->default(0);
                 $table->integer('age')->nullable();
@@ -34,6 +35,9 @@ return new class extends Migration
                 $table->integer('wanderer_id')->default(0);
                 //発見日時
                 $table->datetime('wanderer_time')->default(date("Y-m-d H:i:s"));
+                // 発見時の緯度経度
+                $table->double('latitude', 10, 7)->nullable();
+                $table->double('longitude', 10, 7)->nullable();
                 $table->timestamps();
 
                 // 複合PK

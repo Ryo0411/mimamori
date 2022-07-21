@@ -26,6 +26,8 @@ class SRSController extends Controller
         $inputs = $request->all();
         $sex = $inputs['sex'];
         $rawfile = $inputs['audio_file'];
+        $latitude = $inputs['latitude'];
+        $longitude = $inputs['longitude'];
         try {
             $miniSRSApi = $this->getMiniSRSApi();
             $result = $miniSRSApi->speakerRcognition($this->getGroupId(), $rawfile);
@@ -69,6 +71,8 @@ class SRSController extends Controller
                                     'discover_flg' => 1,
                                     'wanderer_id' => Auth::user()->id,
                                     'wanderer_time' => now(),
+                                    'latitude' => $latitude,
+                                    'longitude' => $longitude,
                                 ]);
                                 // dd([$userupdate]);
                                 $userupdate->save();
@@ -76,15 +80,25 @@ class SRSController extends Controller
                             }
 
                             // DB更新後に自動メール送信
-                            $user_data = User::whereId($wanderer_list['user_id'])->first();
                             if ($wanderer_list['email'] != null) {
                                 $messegedata =
-                                    $user_data['name'] . "　様" . "\n\n" .
+                                    $wanderer_list['family_name'] . "　様" . "\n\n" .
                                     $wanderer_list['wanderer_name'] . "様が発見されました。" . "\n" .
                                     "アプリを起動して確認してください。" . "\n\n" .
                                     "https://anshinm.onsei.app/";
+
+                                if ($latitude == null || $longitude == null) {
+                                    $gps_url = "";
+                                } else {
+                                    $gps_url = "おおよその発見場所\n
+                                        https://www.google.com/maps/search/" . $latitude . "," . $longitude;
+                                };
+                                $wanderer_time = "発見日時\n" .
+                                    $wanderer_list['wanderer_time'] . "　頃";
                                 Mail::to($wanderer_list['email'])->send(new Maildata(
-                                    $messegedata
+                                    $messegedata,
+                                    $gps_url,
+                                    $wanderer_time
                                 ));
                             }
                             break;

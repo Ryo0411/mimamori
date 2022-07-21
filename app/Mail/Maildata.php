@@ -11,15 +11,19 @@ class Maildata extends Mailable
 {
     use Queueable, SerializesModels;
     public $maildatas;
+    public $gps_url;
+    public $wanderer_time;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($maildatas)
+    public function __construct($maildatas, $gps_url, $wanderer_time)
     {
         $this->maildatas = $maildatas;
+        $this->gps_url = $gps_url;
+        $this->wanderer_time = $wanderer_time;
     }
 
     /**
@@ -29,6 +33,7 @@ class Maildata extends Mailable
      */
     public function build()
     {
-        return $this->view('mails.template');
+        return $this->subject('発見通知')
+            ->view('mails.template');
     }
 }

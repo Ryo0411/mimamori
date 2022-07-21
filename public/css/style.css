@@ -14,15 +14,18 @@ html {
   height: 100%;
   margin: 0 auto;
   padding: 0;
-	
+
 }
+
 wrapper {
-	display: flex;
+  display: flex;
   flex-direction: column;
-	min-height: 100vh; /* カスタムプロパティ未対応ブラウザ用のフォールバック */
+  min-height: 100vh;
+  /* カスタムプロパティ未対応ブラウザ用のフォールバック */
   min-height: calc(var(--vh, 1vh) * 100);
-	
+
 }
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -119,6 +122,7 @@ h3 {
   border-bottom: 2px solid #00205b;
   font-size: 1.2rem;
 }
+
 h4 {
   color: #00205b;
   padding: 0 0 .5rem 0;
@@ -126,6 +130,7 @@ h4 {
   border-bottom: 2px solid #00205b;
   font-size: 1.2rem;
 }
+
 input[type=text] {
   width: 100%;
   padding: .5rem;
@@ -286,7 +291,7 @@ ul li {
 }
 
 .block_txt p {
-	margin: 0;
+  margin: 0;
   font-size: 1.2rem;
   font-weight: bold;
   color: #FF0000;
@@ -298,6 +303,7 @@ ul li {
   width: 60%;
   margin: 0 0 1rem 0;
 }
+
 /*@media screen and (min-width:375px) and ( max-width:415px) {
 	.logo_fujita {
 		margin: 5rem 0 0 0;
@@ -317,18 +323,20 @@ ul li {
   font-weight: bold;
   text-align: center;
 }
+
 .available {
-	margin: 1rem 0 0 0;
-	font-size: .88rem;
-    text-align: center;
-    background: #fff;
-    padding: 0.5rem;
+  margin: 1rem 0 0 0;
+  font-size: .88rem;
+  text-align: center;
+  background: #fff;
+  padding: 0.5rem;
 }
+
 /*BTN*/
 .btn {
   margin: 0 0 1rem 0;
   text-align: center;
-	
+
 }
 
 .btn_dl {
@@ -340,13 +348,15 @@ ul li {
   font-size: 1.1rem;
   font-weight: bold;
 }
+
 .discoverer .inner .btn {
-	margin: 0;
-	padding: 0.2rem 0.4rem;
-	line-height: 1.2;
-	background: #ECAD00;
-	border: none;
+  margin: 0;
+  padding: 0.2rem 0.4rem;
+  line-height: 1.2;
+  background: #ECAD00;
+  border: none;
 }
+
 /*.discoverer .inner .btn:hover {
 	background: #f3cd66;
 }*/
@@ -360,7 +370,7 @@ ul li {
 
 .btn-discover {
   width: 90%;
-  padding:1rem 0.8rem;
+  padding: 1rem 0.8rem;
   border-radius: 40px;
   color: #fff;
   font-size: 1.3rem;
@@ -397,6 +407,7 @@ ul li {
   -ms-user-select: none;
   user-select: none
 }
+
 .btn-mic {
   width: 90%;
   padding: 1rem 0.8rem;
@@ -416,6 +427,7 @@ ul li {
   -ms-user-select: none;
   user-select: none
 }
+
 .btn-logout {
   width: 90%;
   padding: 1rem 0.8rem;
@@ -435,6 +447,7 @@ ul li {
   -ms-user-select: none;
   user-select: none
 }
+
 .btn-red {
   width: 90%;
   padding: 1rem 0.8rem;
@@ -490,6 +503,7 @@ ul li {
   top: 20%;
   left: 20%;
 }
+
 .btn_home {
   position: absolute;
   width: 28px;
@@ -571,10 +585,12 @@ ul li {
 .mr1 {
   margin-right: 1rem
 }
+
 /*text align*/
 .t_c {
-	text-align: center;
+  text-align: center;
 }
+
 /*table*/
 table {
   margin: 0 0 2rem 0;
@@ -588,7 +604,7 @@ table td {
 }
 
 table tr:first-child {
-  background: #00205b ;
+  background: #00205b;
 }
 
 table tr:first-child td {
@@ -602,9 +618,11 @@ table tr:nth-child(even) {
 table tr:nth-child(odd) {
   background: #798fb7;
 }
+
 .discoverer .inner {
-	margin: 0;
+  margin: 0;
 }
+
 @media screen and (max-width: 640px) {
   h1 img {
     width: 70%;
@@ -623,8 +641,9 @@ table tr:nth-child(odd) {
     font-size: .88rem;
   }
 }
+
 /*メニュー*/
 .menu {
-    height:100vh;
-    height: -webkit-fill-available;
+  height: 100vh;
+  height: -webkit-fill-available;
 }

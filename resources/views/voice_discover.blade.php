@@ -13,6 +13,7 @@
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal-default-theme.min.css">
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.js"></script>
+
 		<title>徘徊者声掛け/あんしん見守り</title>
 		<!-- script -->
 		<script src="{{ asset('js/app.js') }}" defer></script>
@@ -57,6 +58,8 @@
 			</div>
 		</div>
 	</section>
+	<input name="latitude" type="hidden" id="latitude" value=""></input>
+	<input name="longitude" type="hidden" id="longitude" value=""></input>
 
 	<!-- 読み上げテキスト -->
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
@@ -129,6 +132,7 @@
 			}
 		});
 	</script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIO-InW0VdxktB4luJ62EoyZVZJlcfb7A" async defer></script>
 </body>
 
 </html>

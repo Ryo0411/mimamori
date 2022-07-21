@@ -27,6 +27,7 @@ class RegisterRequest extends FormRequest
             'sex' => 'required | integer | between:1,2',
             'age' => 'numeric|max:150',
             'wanderer_name' => 'required|max:255',
+            'family_name' => 'required|max:255',
             'email' => 'required|email|max:255',
             'emergency_tel' => 'required | numeric | digits_between:8,11',
             'audio_file' => 'required',

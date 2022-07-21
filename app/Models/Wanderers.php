@@ -27,5 +27,7 @@ class Wanderers extends Model
         'voiceprint_flg',
         'wanderer_id',
         'wanderer_time',
+        'latitude',
+        'longitude',
     ];
 }

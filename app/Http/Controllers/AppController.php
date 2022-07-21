@@ -224,6 +224,7 @@ class AppController extends Controller
         DB::beginTransaction();
         try {
             $wname = $inputs['wanderer_name'];
+            $family_name = $inputs['family_name'];
             $email = $inputs['email'];
             $sex = $inputs['sex'];
             $age = $inputs['age'];
@@ -245,6 +246,7 @@ class AppController extends Controller
                     'sex' => $sex,
                     'age' => $age,
                     'wanderer_name' => $wname,
+                    'family_name' => $family_name,
                     'email' => $email,
                     'emergency_tel' => $etel,
                     'profile_id' => $speakerId,
@@ -257,12 +259,13 @@ class AppController extends Controller
                     $userupdate['wanderer_name'] != $wname
                     || $userupdate['sex'] != $sex || $userupdate['age'] != $age
                 ) {
-                    $this->editSpeaker($userupdate['profile_id'], $wname, $email, $mini_sex, $age);
+                    $this->editSpeaker($userupdate['profile_id'], $wname, $family_name, $email, $mini_sex, $age);
                 }
                 $userupdate->fill([
                     'sex' => $sex,
                     'age' => $age,
                     'wanderer_name' => $wname,
+                    'family_name' => $family_name,
                     'email' => $email,
                     'emergency_tel' => $etel,
                     'voiceprint_flg' => $vflg,

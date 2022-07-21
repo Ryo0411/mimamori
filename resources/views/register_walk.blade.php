@@ -59,7 +59,7 @@
 					@endif
 				</div>
 				<div class="input">
-					<h2 class="h2_input">&#9632;名前</h2>
+					<h2 class="h2_input">&#9632;みまもり対象者氏名</h2>
 					<input name="wanderer_name" type="text" value="{{ old('wanderer_name',@$wanderer_list->wanderer_name) }}">
 					@if ($errors->has('wanderer_name'))
 					<div class="alert alert-danger">
@@ -68,7 +68,16 @@
 					@endif
 				</div>
 				<div class="input">
-					<h2 class="h2_input">&#9632;Eメール</h2>
+					<h2 class="h2_input">&#9632;ご家族氏名</h2>
+					<input name="family_name" type="text" value="{{ old('family_name',@$wanderer_list->family_name) }}">
+					@if ($errors->has('family_name'))
+					<div class="alert alert-danger">
+						{{ $errors->first('family_name') }}</li>
+					</div>
+					@endif
+				</div>
+				<div class="input">
+					<h2 class="h2_input">&#9632;連絡用Eメール</h2>
 					<input name="email" type="text" value="{{ old('email',@$wanderer_list->email) }}">
 					@if ($errors->has('email'))
 					<div class="alert alert-danger">

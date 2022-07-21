@@ -160,6 +160,8 @@ return [
         'age' => '年齢',
         'emergency_tel' => '緊急連絡先',
         'wanderer_name' => '名前',
+        'email' => '連絡用Eメール',
+        'family_name' => 'ご家族氏名',
     ],
 
 ];

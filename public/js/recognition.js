@@ -2,7 +2,37 @@ const pulldown = document.getElementById('pulldown');
 const rec_img = document.getElementById("rec_img");
 const _token = document.getElementById("token");
 
-const speakerRecognation = function (base64data, sex) {
+// var output = document.getElementById("result");
+// if (!navigator.geolocation) { //Geolocation apiがサポートされていない場合
+//     var latitude = ""; //緯度
+//     var longitude = ""; //経度
+// } else {
+//     function success(position) {
+//         var latitude = position.coords.latitude; //緯度
+//         var longitude = position.coords.longitude; //経度
+//         output.innerHTML = '<p>緯度 ' + latitude + '° <br>経度 ' + longitude + '°</p>';
+//         // 位置情報
+//         var latlng = new google.maps.LatLng(latitude, longitude);
+//         // Google Mapsに書き出し
+//         var map = new google.maps.Map(document.getElementById('map'), {
+//             zoom: 15, // ズーム値
+//             center: latlng, // 中心座標
+//         });
+//         // マーカーの新規出力
+//         new google.maps.Marker({
+//             map: map,
+//             position: latlng,
+//         });
+//     };
+//     function error() {
+//         //エラーの場合
+//         var latitude = ""; //緯度
+//         var longitude = ""; //経度
+//     };
+// }
+// navigator.geolocation.getCurrentPosition(success, error); //成功と失敗を判断
+
+const speakerRecognation = function (base64data, sex, latitude, longitude) {
     const options = {
         method: 'POST',
         headers: {
@@ -12,6 +42,8 @@ const speakerRecognation = function (base64data, sex) {
         body: new URLSearchParams({
             'audio_file': base64data,
             'sex': sex,
+            'latitude': latitude,
+            'longitude': longitude,
             '_token': _token.value
         })
     };
@@ -66,6 +98,23 @@ rec_img.addEventListener("click", function () {
             isRecording = true;
             startRecording(
                 function () {
+                    // 位置情報を取得
+                    if (!navigator.geolocation) { //Geolocation apiがサポートされていない場合
+                        document.getElementById("latitude").value = ""; //緯度
+                        document.getElementById("longitude").value = ""; //経度
+                    } else {
+                        function success(position) {
+                            document.getElementById("latitude").value = position.coords.latitude; //緯度
+                            document.getElementById("longitude").value = position.coords.longitude; //経度
+                        };
+                        function error() {
+                            //エラーの場合
+                            document.getElementById("latitude").value = ""; //緯度
+                            document.getElementById("longitude").value = ""; //経度
+                        };
+                    }
+                    navigator.geolocation.getCurrentPosition(success, error); //成功と失敗を判断
+
                     console.log("音声サンプル録音中...");
                     isRecording = true;
                     rec_img.src = "../../img/rec.gif";
@@ -96,7 +145,10 @@ document.getElementById("stop-recording").onclick = function () {
                 reader.readAsDataURL(rawfile);
                 reader.onloadend = function () {
                     let base64data = reader.result;
-                    speakerRecognation(base64data, pulldown.value);
+                    var latitude = document.getElementById('latitude').value;
+                    var longitude = document.getElementById('longitude').value;
+                    console.log("緯度経度取得" + latitude, longitude);
+                    speakerRecognation(base64data, pulldown, latitude, longitude.value);
                     rec_img.src = "../../img/rec_on.png";
                     isRecording = false;
                 }

@@ -82,15 +82,28 @@ class AdminController extends Controller
         $wanderer_list = Wanderers::whereId($user_id)->first();
 
         // 自動メール送信
-        $user_data = User::whereId($wanderer_list['user_id'])->first();
         if ($wanderer_list['email'] != null) {
             $messegedata =
-                $user_data['name'] . "　様" . "\n\n" .
+                $wanderer_list['family_name'] . "　様" . "\n\n" .
                 $wanderer_list['wanderer_name'] . "様が発見されました。" . "\n" .
                 "アプリを起動して確認してください。" . "\n\n" .
                 "https://anshinm.onsei.app/";
+
+            $latitude = $wanderer_list['latitude'];
+            $longitude = $wanderer_list['longitude'];
+            if ($latitude == null || $longitude == null) {
+                $gps_url = "";
+            } else {
+                $gps_url = "おおよその発見場所\n
+                https://www.google.com/maps/search/" . $latitude . "," . $longitude;
+            };
+            $wanderer_time = "発見日時\n" .
+                $wanderer_list['wanderer_time'] . "　頃";
+
             Mail::to($wanderer_list['email'])->send(new Maildata(
-                $messegedata
+                $messegedata,
+                $gps_url,
+                $wanderer_time
             ));
         } else {
             //ユーザ情報更新処理

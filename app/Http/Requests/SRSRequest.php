@@ -26,6 +26,9 @@ class SRSRequest extends FormRequest
         return [
             'sex' => 'required',
             'audio_file' => 'required',
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
+            'gps_url' => 'gps_url',
         ];
     }
 }
