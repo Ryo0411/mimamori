@@ -164,8 +164,8 @@ class AppController extends Controller
                     $userupdate->fill([
                         'wandering_flg' => 0,
                         'discover_flg' => 0,
-                        'latitude' => "",
-                        'longitude' => "",
+                        'latitude' => NULL,
+                        'longitude' => NULL,
                     ]);
                     $status = "";
                     $exe = "捜索対象外です。";
@@ -371,8 +371,8 @@ class AppController extends Controller
             $userupdate->fill([
                 'wandering_flg' => 0,
                 'discover_flg' => 0,
-                'latitude' => "",
-                'longitude' => "",
+                'latitude' => NULL,
+                'longitude' => NULL,
             ]);
             // dd([$userupdate]);
             $userupdate->save();
@@ -384,8 +384,8 @@ class AppController extends Controller
             $userupdate->fill([
                 'wandering_flg' => 0,
                 'discover_flg' => 0,
-                'latitude' => "",
-                'longitude' => "",
+                'latitude' => NULL,
+                'longitude' => NULL,
             ]);
             $userupdate->save();
             DB::commit();

@@ -61,6 +61,13 @@
 	<input name="latitude" type="hidden" id="latitude" value=""></input>
 	<input name="longitude" type="hidden" id="longitude" value=""></input>
 
+	<!-- ロード画面用 -->
+	<div id="loading" class="is-hide">
+		<div class="cv-spinner">
+			<span class="spinner"></span>
+		</div>
+	</div>
+
 	<!-- 読み上げテキスト -->
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
 		<h4>本日の日付を答えてください</h4>
@@ -131,6 +138,30 @@
 				rec_img_elm.src = "./img/rec_off.png";
 			}
 		});
+
+
+		// ロード画面用
+		// document.getElementsByTagName('head')[0]
+		// 	.insertAdjacentHTML('beforeend', insertCSS);
+		// document.getElementsByTagName('body')[0]
+		// 	.insertAdjacentHTML('afterbegin', insertHtml);
+
+		// let loading = document.getElementById('loading')
+		// loading.addEventListener("click", function() {
+		// 	hideLoading()
+		// })
+
+		// btn.addEventListener("click", function() {
+		// 	showLoading()
+		// })
+
+		function showLoading() {
+			document.getElementById('loading').classList.remove('is-hide')
+		}
+
+		function hideLoading() {
+			document.getElementById('loading').classList.add('is-hide')
+		}
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIO-InW0VdxktB4luJ62EoyZVZJlcfb7A" async defer></script>
 </body>

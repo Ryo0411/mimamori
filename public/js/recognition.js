@@ -68,21 +68,25 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                 document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                 // document.getElementById("probability").innerText = "認識率：" + (Math.floor(score * 100)) + "%";
                 location.href = '#modal_d';
+                hideLoading();
             } else if (response['status'] === 1) {
                 document.getElementById("exe_result").innerHTML = "<p>認識結果、該当者なし</p>";
                 document.getElementById("result_pop").innerText = "認識結果 : " + "該当者なし";
                 document.getElementById("probability").innerText = "";
                 location.href = '#modal_d';
+                hideLoading();
             } else {
                 document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました</p>";
                 document.getElementById("errorresult").innerHTML = "データ取得に失敗しました";
                 location.href = '#modal_e';
+                hideLoading();
             }
         })
         .catch(err => {
             console.error(err)
             document.getElementById("errorresult").innerHTML = err;
             location.href = '#modal_e';
+            hideLoading();
         });
 }
 
@@ -96,6 +100,7 @@ rec_img.addEventListener("click", function () {
             location.href = '#modal_r';
             console.log("認識用音声録音中...");
             isRecording = true;
+            showLoading();
             startRecording(
                 function () {
                     // 位置情報を取得
@@ -124,6 +129,7 @@ rec_img.addEventListener("click", function () {
                     isRecording = false;
                     document.getElementById("exe_result").innerHTML = "<p>音声データがありませんでした。</p>";
                     location.href = '#modal_me';
+                    hideLoading();
                 }
             );
         }
@@ -140,7 +146,6 @@ document.getElementById("stop-recording").onclick = function () {
             function (wavfile, rawfile) {
                 console.log("認識用音声録音完了");
                 console.log("音声認識中...");
-
                 let reader = new FileReader();
                 reader.readAsDataURL(rawfile);
                 reader.onloadend = function () {
@@ -156,9 +161,18 @@ document.getElementById("stop-recording").onclick = function () {
             function (error) {
                 document.getElementById("exe_result").innerHTML = "<p>" + error + "</p>";
                 rec_img.src = "../../img/rec_on.png";
-                btn_regist.style.display = 'none';
                 isRecording = false;
+                hideLoading();
+                btn_regist.style.display = 'none';
             }
         );
     }
 };
+
+function showLoading() {
+    document.getElementById('loading').classList.remove('is-hide')
+}
+
+function hideLoading() {
+    document.getElementById('loading').classList.add('is-hide')
+}

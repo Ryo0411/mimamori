@@ -56,8 +56,8 @@ class AdminController extends Controller
             $userupdate->fill([
                 'wandering_flg' => 0,
                 'discover_flg' => 0,
-                'latitude' => "",
-                'longitude' => "",
+                'latitude' => NULL,
+                'longitude' => NULL
             ]);
             // dd([$userupdate]);
             $userupdate->save();
@@ -69,8 +69,8 @@ class AdminController extends Controller
             $userupdate->fill([
                 'wandering_flg' => 0,
                 'discover_flg' => 0,
-                'latitude' => "",
-                'longitude' => "",
+                'latitude' => NULL,
+                'longitude' => NULL,
             ]);
             $userupdate->save();
             DB::commit();
