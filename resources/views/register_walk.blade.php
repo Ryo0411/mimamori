@@ -59,7 +59,7 @@
 					@endif
 				</div>
 				<div class="input">
-					<h2 class="h2_input">&#9632;みまもり対象者氏名</h2>
+					<h2 class="h2_input">&#9632;見守り対象者氏名</h2>
 					<input name="wanderer_name" type="text" value="{{ old('wanderer_name',@$wanderer_list->wanderer_name) }}">
 					@if ($errors->has('wanderer_name'))
 					<div class="alert alert-danger">
