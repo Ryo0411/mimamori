@@ -261,7 +261,7 @@ class AppController extends Controller
                     $userupdate['wanderer_name'] != $wname
                     || $userupdate['sex'] != $sex || $userupdate['age'] != $age
                 ) {
-                    $this->editSpeaker($userupdate['profile_id'], $wname, $family_name, $email, $mini_sex, $age);
+                    $this->editSpeaker($userupdate['profile_id'], $wname, $family_name, $mini_sex, $age);
                 }
                 $userupdate->fill([
                     'sex' => $sex,
