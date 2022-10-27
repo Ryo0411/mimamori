@@ -143,6 +143,8 @@ class AppController extends Controller
                 try {
                     //ユーザ情報更新処理
                     $userupdate = Wanderers::find($wanderer_list['id']);
+                    Log::info("捜索対象に選択処理、対象者");
+                    Log::info($userupdate);
                     $userupdate->fill([
                         'wandering_flg' => 1,
                     ]);
@@ -161,6 +163,8 @@ class AppController extends Controller
                 try {
                     //ユーザ情報更新処理
                     $userupdate = Wanderers::find($wanderer_list['id']);
+                    Log::info("捜索対象から外す処理、対象者");
+                    Log::info($userupdate);
                     $userupdate->fill([
                         'wandering_flg' => 0,
                         'discover_flg' => 0,
@@ -368,6 +372,8 @@ class AppController extends Controller
         if ($wanderer_list['discover_flg'] == 1) {
             //ユーザ情報更新処理
             $userupdate = Wanderers::find($wanderer_list['id']);
+            Log::info("捜索対象から外す処理、対象者");
+            Log::info($userupdate);
             $userupdate->fill([
                 'wandering_flg' => 0,
                 'discover_flg' => 0,
@@ -377,10 +383,12 @@ class AppController extends Controller
             // dd([$userupdate]);
             $userupdate->save();
             DB::commit();
-            // それ以外の場合は発見フラグを立てたままにする
+            // それ以外の場合は発見フラグを下げる
         } else {
             //ユーザ情報更新処理
             $userupdate = Wanderers::find($wanderer_list['id']);
+            Log::info("捜索対象から外す処理、対象者");
+            Log::info($userupdate);
             $userupdate->fill([
                 'wandering_flg' => 0,
                 'discover_flg' => 0,

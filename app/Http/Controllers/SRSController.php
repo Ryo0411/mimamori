@@ -74,6 +74,8 @@ class SRSController extends Controller
                                     'latitude' => $latitude,
                                     'longitude' => $longitude,
                                 ]);
+                                Log::info("ユーザー発見処理データベースの処理を下記内容に更新");
+                                Log::info($userupdate);
                                 // dd([$userupdate]);
                                 $userupdate->save();
                                 DB::commit();
@@ -101,6 +103,9 @@ class SRSController extends Controller
                                     $wanderer_time
                                 ));
                             }
+                            Log::info($messegedata);
+                            Log::info($gps_url);
+                            Log::info($wanderer_time);
                             break;
                         }
                     }
