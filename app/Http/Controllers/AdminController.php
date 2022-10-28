@@ -62,7 +62,7 @@ class AdminController extends Controller
             // dd([$userupdate]);
             $userupdate->save();
             DB::commit();
-            // それ以外の場合は発見フラグを立てたままにする
+            // それ以外の場合も発見フラグを下げる
         } else {
             //ユーザ情報更新処理
             $userupdate = Wanderers::find($wanderer_list['id']);
