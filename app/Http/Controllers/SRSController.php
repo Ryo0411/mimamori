@@ -81,6 +81,9 @@ class SRSController extends Controller
                                 DB::commit();
                             }
 
+                            $messegedata = '';
+                            $gps_url = '';
+                            $wanderer_time = '';
                             // DB更新後に自動メール送信
                             if ($wanderer_list['email'] != null) {
                                 $messegedata =
