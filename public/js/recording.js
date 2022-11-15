@@ -28,7 +28,7 @@ document.getElementById("exe_recording").onclick = function () {
         startRecording(
             function () {
                 // 偶数奇数で読み上げるポップアップの内容を変更する
-                if (Number(voiceprint_flg.value) % 2 === 0) {
+                if (Number(voiceprint_flg.value) % 2 !== 0 || Number(voiceprint_flg.value) <= 5) {
                     const index = Math.floor(Math.random() * birth_text.length);
                     document.getElementById("text_pop").innerHTML = birth_text[index];
                     document.getElementById("text_pop").style.fontWeight = "bold";
