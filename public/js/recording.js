@@ -2,6 +2,7 @@ const enrollmentDownload = document.getElementById("enrollmentDownload");
 const rec_img = document.getElementById("rec_img");
 const btn_regist = document.getElementById("btn_regist");
 const audio_file = document.getElementById("audio_file");
+const voiceprint_flg = document.getElementById("voiceprint_flg");
 let isRecording = false;
 const fixed_text = [
     '本日息子と二人で釣り船に乗り、大きなアジを3尾釣ることができました。<br/>家に帰ってアジフライにして、美味しく頂きました。',
@@ -9,6 +10,10 @@ const fixed_text = [
     '私の趣味は家庭菜園です。この間初めてナスを育てました。<br/>大きく立派に育ったので、夏野菜カレーにして頂きました。',
     'この間散歩に出かけた際に、雨が降ってきてしまいました。<br/>傘を持っていなかった為、1時間ほど雨宿りをしました。',
     '今日の夕飯はカレーです。<br/>私の家では隠し味にチョコレートを入れます。<br/>甘さとコクが増しとても美味しいです。',
+];
+
+const birth_text = [
+    'ご自身の生年月日をお教えてください。'
 ];
 
 
@@ -22,9 +27,18 @@ document.getElementById("exe_recording").onclick = function () {
         // isRecording = true;
         startRecording(
             function () {
-                const index = Math.floor(Math.random() * fixed_text.length);
-                document.getElementById("text_pop").innerHTML = fixed_text[index];
-                location.href = '#modal_d';
+                // 偶数奇数で読み上げるポップアップの内容を変更する
+                if (Number(voiceprint_flg.value) % 2 === 0) {
+                    const index = Math.floor(Math.random() * birth_text.length);
+                    document.getElementById("text_pop").innerHTML = birth_text[index];
+                    document.getElementById("text_pop").style.fontWeight = "bold";
+                    location.href = '#modal_d';
+                } else {
+                    const index = Math.floor(Math.random() * fixed_text.length);
+                    document.getElementById("text_pop").innerHTML = fixed_text[index];
+                    document.getElementById("text_pop").style.fontWeight = "normal";
+                    location.href = '#modal_d';
+                }
                 console.log("音声サンプル録音中...");
                 btn_regist.style.display = 'none';
                 isRecording = true;

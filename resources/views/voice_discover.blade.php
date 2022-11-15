@@ -70,7 +70,7 @@
 
 	<!-- 読み上げテキスト -->
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
-		<h4>本日の日付を答えてください</h4>
+		<h4>ご自身の生年月日を教えてください。</h4>
 		<div class="popup_inner">
 			<p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br />タップしてください。</p>
 			<div class="btn_popup" style="margin-top: 10px">
