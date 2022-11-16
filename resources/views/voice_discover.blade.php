@@ -41,7 +41,7 @@
 					</a>
 				</div>
 
-				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
+				<div class="announce" id="result">録音ボタンをタップして、<br>ご自身の生年月日を教えてください。</div>
 
 				<div class="input">
 					<h2 class="h2_input">&#9632;性別</h2>
@@ -96,6 +96,14 @@
 			<p id="errorresult"></p>
 
 			<button data-remodal-action="close" class="remodal-confirm">OK</button>
+		</div>
+	</div>
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e_relode">
+		<h4>ERROR</h4>
+		<div class="popup_inner">
+			<p id="errorrelode"></p>
+
+			<button class="remodal-confirm" id="errorrelodeOK">OK</button>
 		</div>
 	</div>
 	<!-- マイクERROR -->
@@ -162,6 +170,10 @@
 		function hideLoading() {
 			document.getElementById('loading').classList.add('is-hide')
 		}
+
+		document.getElementById('errorrelodeOK').addEventListener('click', function() {
+			window.location.replace('/voice_discover');
+		});
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIO-InW0VdxktB4luJ62EoyZVZJlcfb7A" async defer></script>
 </body>
