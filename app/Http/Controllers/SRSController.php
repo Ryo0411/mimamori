@@ -43,7 +43,7 @@ class SRSController extends Controller
                 $speakers = $result['response']['speaker'];
 
                 // なぜかspeakerのレスポンスが空の時はブラウザの更新を促す
-                if ($speakers) {
+                if (empty($speakers)) {
                     foreach ($speakers as $speaker) {
                         $speakerId = $speaker['speaker_id'];
                         if (empty($speakerId)) {
