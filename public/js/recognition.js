@@ -75,12 +75,18 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                 document.getElementById("probability").innerText = "";
                 location.href = '#modal_d';
                 hideLoading();
+            } else if (response['status'] === 2) {
+                document.getElementById("exe_result").innerHTML = "<p>データ取得時に問題が発生しました。</p>";
+                document.getElementById("errorrelode").innerHTML = "データ取得時に問題が発生しました。";
+                location.href = '#modal_e_relode';
+                hideLoading();
             } else {
                 document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました</p>";
                 document.getElementById("errorresult").innerHTML = "データ取得に失敗しました";
                 location.href = '#modal_e';
                 hideLoading();
             }
+
         })
         .catch(err => {
             console.error(err)

@@ -26,6 +26,7 @@ class SRSController extends Controller
         $inputs = $request->all();
         $sex = $inputs['sex'];
         $rawfile = $inputs['audio_file'];
+        Log::warning($rawfile);
         $latitude = $inputs['latitude'];
         $longitude = $inputs['longitude'];
         try {
@@ -40,6 +41,9 @@ class SRSController extends Controller
                     'status' => 1
                 ];
                 $speakers = $result['response']['speaker'];
+                Log::warning("speakersの中身");
+                Log::warning($speakers);
+
                 foreach ($speakers as $speaker) {
                     $speakerId = $speaker['speaker_id'];
                     if (empty($speakerId)) {
@@ -96,7 +100,7 @@ class SRSController extends Controller
                                     $gps_url = "";
                                 } else {
                                     $gps_url = "おおよその発見場所\n
-                                        https://www.google.com/maps/search/" . $latitude . "," . $longitude;
+                                            https://www.google.com/maps/search/" . $latitude . "," . $longitude;
                                 };
                                 $wanderer_time = "発見日時\n" .
                                     now()->format('Y年n月j日H時i分') . "　頃";
@@ -115,12 +119,14 @@ class SRSController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            Log::info($e->getMessage());
+            Log::error($e->getMessage());
             $json = [
-                'status' => -2,
+                'status' => 2,
                 'error' => $e->getMessage()
             ];
         };
+        Log::info("jsonの中身、最終的な結果");
+        Log::info($json);
         return response()->json($json);
     }
 }
