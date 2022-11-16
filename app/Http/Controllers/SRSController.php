@@ -34,7 +34,7 @@ class SRSController extends Controller
             $result = $miniSRSApi->speakerRcognition($this->getGroupId(), $rawfile);
             Log::info($result);
             $json = [
-                'status' => -1
+                'status' => 3
             ];
             if ($result) {
                 $json = [
@@ -116,20 +116,16 @@ class SRSController extends Controller
                         }
                     }
                 }
-            } else {
-                Log::info("speakerの中が空だった");
-                $json = [
-                    'status' => 3,
-                ];
             }
+            Log::info("jsonの中身、最終的な結果" + $json);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             $json = [
                 'status' => 2,
                 'error' => $e->getMessage()
             ];
+            Log::info("jsonの中身、最終的な結果" + $json);
         };
-        Log::info("jsonの中身、最終的な結果" + $json);
         return response()->json($json);
     }
 }
