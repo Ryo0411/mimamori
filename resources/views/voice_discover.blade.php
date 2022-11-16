@@ -137,7 +137,7 @@
 		}
 		pulldown_elm.addEventListener('change', function() {
 			if (pulldown_elm.selectedIndex != 0) {
-				document.getElementById('result').innerHTML = "録音ボタンをタップして、<br>本日の日付を答えてください。";
+				document.getElementById('result').innerHTML = "録音ボタンをタップして、<br>ご自身の生年月日を教えてください。";
 				document.getElementById('exe_result').innerHTML = "<p>貴方の声を認識し、<br>どなたか特定します。</p>";
 				rec_img_elm.src = "../../img/rec_on.png";
 			} else {
