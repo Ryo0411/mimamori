@@ -34,14 +34,15 @@ class SRSController extends Controller
             $result = $miniSRSApi->speakerRcognition($this->getGroupId(), $rawfile);
             Log::info($result);
             $json = [
-                'status' => 3
+                'status' => -1
             ];
             if ($result) {
                 $json = [
                     'status' => 1
                 ];
                 $speakers = $result['response']['speaker'];
-                Log::warning("speakersの中身" + $speakers);
+                Log::warning("speakersの中身");
+                Log::warning($speakers);
 
                 foreach ($speakers as $speaker) {
                     $speakerId = $speaker['speaker_id'];
@@ -117,14 +118,16 @@ class SRSController extends Controller
                     }
                 }
             }
-            Log::info("jsonの中身、最終的な結果" + $json);
+            Log::info("jsonの中身、最終的な結果");
+            Log::info($json);
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             $json = [
                 'status' => 2,
                 'error' => $e->getMessage()
             ];
-            Log::info("jsonの中身、最終的な結果" + $json);
+            Log::info("jsonの中身、最終的な結果");
+            Log::error($json);
         };
         return response()->json($json);
     }
