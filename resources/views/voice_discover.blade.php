@@ -41,7 +41,7 @@
 					</a>
 				</div>
 
-				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
+				<div class="announce" id="result">録音ボタンをタップして、<br>ご自身の生年月日を教えてください。</div>
 
 				<div class="input">
 					<h2 class="h2_input">&#9632;性別</h2>
@@ -70,7 +70,7 @@
 
 	<!-- 読み上げテキスト -->
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
-		<h4>本日の日付を答えてください</h4>
+		<h4>ご自身の生年月日を教えてください。</h4>
 		<div class="popup_inner">
 			<p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br />タップしてください。</p>
 			<div class="btn_popup" style="margin-top: 10px">
@@ -96,6 +96,14 @@
 			<p id="errorresult"></p>
 
 			<button data-remodal-action="close" class="remodal-confirm">OK</button>
+		</div>
+	</div>
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e_relode" data-remodal-options="closeOnOutsideClick: false">
+		<h4>ERROR</h4>
+		<div class="popup_inner">
+			<p id="errorrelode"></p>
+
+			<button class="remodal-confirm" id="errorrelodeOK">OK</button>
 		</div>
 	</div>
 	<!-- マイクERROR -->
@@ -129,7 +137,7 @@
 		}
 		pulldown_elm.addEventListener('change', function() {
 			if (pulldown_elm.selectedIndex != 0) {
-				document.getElementById('result').innerHTML = "録音ボタンをタップして、<br>本日の日付を答えてください。";
+				document.getElementById('result').innerHTML = "録音ボタンをタップして、<br>ご自身の生年月日を教えてください。";
 				document.getElementById('exe_result').innerHTML = "<p>貴方の声を認識し、<br>どなたか特定します。</p>";
 				rec_img_elm.src = "../../img/rec_on.png";
 			} else {
@@ -162,6 +170,10 @@
 		function hideLoading() {
 			document.getElementById('loading').classList.add('is-hide')
 		}
+
+		document.getElementById('errorrelodeOK').addEventListener('click', function() {
+			window.location.replace('/voice_discover');
+		});
 	</script>
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBIO-InW0VdxktB4luJ62EoyZVZJlcfb7A" async defer></script>
 </body>
