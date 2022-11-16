@@ -77,13 +77,14 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                 hideLoading();
             } else {
                 alert(response['status']);
+                document.getElementById("exe_result").innerHTML = "<p>" + response['status'] + "</p>";
                 if (response['status'] === 2) {
-                    document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました。<br>ブラウザを更新してください。</p>";
+                    // document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました。<br>ブラウザを更新してください。</p>";
                     document.getElementById("errorrelode").innerHTML = "データ取得に失敗しました。<br>ブラウザを更新してください。";
                     location.href = '#modal_e_relode';
                     hideLoading();
                 } else {
-                    document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました</p>";
+                    // document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました</p>";
                     document.getElementById("errorresult").innerHTML = "データ取得に失敗しました";
                     location.href = '#modal_e';
                     hideLoading();
