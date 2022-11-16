@@ -123,8 +123,7 @@ class SRSController extends Controller
         } catch (\Throwable $e) {
             Log::error($e->getMessage());
             $json = [
-                'status' => 2,
-                'error' => $e->getMessage()
+                'status' => 2
             ];
             Log::info("jsonの中身、最終的な結果");
             Log::error($json);
