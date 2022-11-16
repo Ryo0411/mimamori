@@ -41,9 +41,10 @@ class SRSController extends Controller
                     'status' => 1
                 ];
                 $speakers = $result['response']['speaker'];
+                Log::warning("speakersの中身" + $speakers);
 
                 // なぜかspeakerのレスポンスが空の時はブラウザの更新を促す
-                if (empty($speakers)) {
+                if (isset($speakers)) {
                     foreach ($speakers as $speaker) {
                         $speakerId = $speaker['speaker_id'];
                         if (empty($speakerId)) {
