@@ -76,7 +76,7 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                 location.href = '#modal_d';
                 hideLoading();
             } else {
-                window.alert(response['status']);
+                alert(response['status']);
                 if (response['status'] === 2) {
                     document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました。<br>ブラウザを更新してください。</p>";
                     document.getElementById("errorrelode").innerHTML = "データ取得に失敗しました。<br>ブラウザを更新してください。";
