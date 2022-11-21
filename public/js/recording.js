@@ -16,6 +16,10 @@ const birth_text = [
     'ご自身の生年月日をお教えてください。'
 ];
 
+const birth_text2 = [
+    '私の生年月日は○○○○年△△月××日」です。'
+];
+
 
 document.getElementById("exe_recording").onclick = function () {
     if (!isRecording) {
@@ -28,21 +32,28 @@ document.getElementById("exe_recording").onclick = function () {
         startRecording(
             function () {
                 // 偶数奇数で読み上げるポップアップの内容を変更する
-                if (Number(voiceprint_flg.value) % 2 !== 0 || Number(voiceprint_flg.value) <= 5) {
-                    const index = Math.floor(Math.random() * birth_text.length);
-                    document.getElementById("text_pop").innerHTML = birth_text[index];
-                    document.getElementById("text_pop").style.fontWeight = "bold";
-                    location.href = '#modal_d';
-                } else {
-                    const index = Math.floor(Math.random() * fixed_text.length);
-                    document.getElementById("text_pop").innerHTML = fixed_text[index];
-                    document.getElementById("text_pop").style.fontWeight = "normal";
-                    location.href = '#modal_d';
-                }
+                // if (Number(voiceprint_flg.value) % 2 !== 0 || Number(voiceprint_flg.value) <= 5) {
+                //     const index = Math.floor(Math.random() * birth_text.length);
+                //     document.getElementById("text_pop").innerHTML = birth_text[index];
+                //     document.getElementById("text_pop").style.fontWeight = "bold";
+                //     location.href = '#modal_d';
+                // } else {
+                //     const index = Math.floor(Math.random() * fixed_text.length);
+                //     document.getElementById("text_pop").innerHTML = fixed_text[index];
+                //     document.getElementById("text_pop").style.fontWeight = "normal";
+                //     location.href = '#modal_d';
+                // }
+
+                // test用221121作成
+                const index = Math.floor(Math.random() * birth_text2.length);
+                document.getElementById("text_pop").innerHTML = birth_text2[index];
+                document.getElementById("text_pop").style.fontWeight = "bold";
+                location.href = '#modal_d';
+
                 console.log("音声サンプル録音中...");
                 btn_regist.style.display = 'none';
                 isRecording = true;
-                document.getElementById("exe_result").innerHTML = "<p>録音ボタンをタップして、<br>表示される文章を読み上げて<br>音声を録音してください。</p>";
+                document.getElementById("exe_result").innerHTML = "<p>録音ボタンをタップして、<br>ご自身の生年月日を読み上げて<br>音声を録音してください。</p>";
                 rec_img.src = "./img/rec.gif";
             },
             function (error) {

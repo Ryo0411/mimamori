@@ -99,7 +99,7 @@ class AppController extends Controller
             ->first();
         if (empty($wanderer_list)) {
             $status = "hidden";
-            $exe = "";
+            $exe = "情報登録をして下さい。";
             $discoverflg = 0;
             // dd("ssss");
         } else {
@@ -122,7 +122,7 @@ class AppController extends Controller
                     $discoverflg = $userupdate["discover_flg"];
                 }
             } else {
-                $exe = "";
+                $exe = "情報登録をして下さい。";
                 $discoverflg = 0;
             }
         }
@@ -185,7 +185,7 @@ class AppController extends Controller
             }
         } else {
             $status = "";
-            $exe = "";
+            $exe = "情報登録をして下さい。";
             $discoverflg = 0;
             return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
         }
