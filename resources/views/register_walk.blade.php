@@ -98,6 +98,7 @@
 				<input name="profile_id" type="hidden" id="profile_id" value="{{ old('profile_id',@$wanderer_list->profile_id) }}"></input>
 				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ old('voiceprint_flg',@$wanderer_list->voiceprint_flg) }}"></input>
 				<input name="audio_file" type="hidden" id="audio_file" value=""></input>
+				<input name="audio_base64" type="hidden" id="audio_base64" value=""></input>
 
 				<div class="block_rec" id="voiceprint_btn">
 					<a id="exe_recording" class="btn_rec">

@@ -35,14 +35,17 @@
 			<div class="block_txt">
 				<p>{{ $exe }}</p>
 			</div>
-		
+
 			<div>
-			<!--<div class="block_50vh">-->
+				<!--<div class="block_50vh">-->
 				<div class="btn">
 					<button id="button" class="btn-walk" onclick="location.href='/register_walk'">情報登録</button>
 				</div>
 				<div class="btn" {{$status}}>
 					<button id="button" class="btn-walk" onclick="location.href='/voice_walk'">声だけ登録</button>
+				</div>
+				<div class="btn" {{$status}}>
+					<button id="button" class="btn-walk" onclick="location.href='/voice_list'">音声一覧</button>
 				</div>
 				<div class="btn" {{$status}}>
 					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">捜索アラート</button>

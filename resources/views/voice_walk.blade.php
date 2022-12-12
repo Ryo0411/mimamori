@@ -45,6 +45,7 @@
 					<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
 					<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
 					<input name="audio_file" type="hidden" id="audio_file" value=""></input>
+					<input name="audio_base64" type="hidden" id="audio_base64" value=""></input>
 					<input name="voice_length" type="hidden" id="voice_length" value="{{ $voice_length }}"></input>
 
 					<div class="block_rec" id="voiceprint_btn">
@@ -74,6 +75,12 @@
 					</div>
 
 				</form>
+			</div>
+			<!-- ロード画面用 -->
+			<div id="loading" class="is-hide">
+				<div class="cv-spinner">
+					<span class="spinner"></span>
+				</div>
 			</div>
 			<!-- 登録ポップアップ -->
 			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e">
@@ -122,6 +129,21 @@
 		document.getElementById("okbtn").onclick = function() {
 			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
 		};
+
+		function butotnClick() {
+			showLoading();
+		}
+
+		function showLoading() {
+			document.getElementById('loading').classList.remove('is-hide')
+		}
+
+		function hideLoading() {
+			document.getElementById('loading').classList.add('is-hide')
+		}
+
+		let button = document.getElementById('btn_regist');
+		button.onclick = butotnClick;
 	</script>
 
 	<!-- Speech SDK reference sdk. -->

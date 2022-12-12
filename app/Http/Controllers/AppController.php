@@ -9,12 +9,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Wanderers;
+use App\Models\Voicelist;
 use App\Http\Requests\ExeRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\VoiceUpdate;
 use App\Libs\MiniSRSApi;
+use App\Libs\DbVoicelist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Storage;
 
 class AppController extends Controller
 {
@@ -23,6 +26,11 @@ class AppController extends Controller
     private function getMiniSRSApi(): MiniSRSApi
     {
         return new MiniSRSApi($this->getApplicationId(), $this->getClientId(), $this->getClientSecret());
+    }
+
+    private function getDbVoicelist(): DbVoicelist
+    {
+        return new DbVoicelist($this->getApplicationId(), $this->getClientId(), $this->getClientSecret());
     }
 
     //徘徊者ホーム、情報登録ボタン選択時の画面遷移用メソッド
@@ -244,7 +252,7 @@ class AppController extends Controller
 
             //ユーザ情報更新処理
             if (empty($user_id)) {
-                $speakerId = $this->addSpeaker($wname, $mini_sex, $age, $rawfile);
+                list($speakerId, $result) = $this->addSpeaker($wname, $mini_sex, $age, $rawfile);
                 $vflg = intval($vflg) + 1;
                 //新規登録
                 Wanderers::create([
@@ -259,6 +267,12 @@ class AppController extends Controller
                     'voiceprint_flg' => $vflg,
                 ]);
                 DB::commit();
+                // 音声ファイルの情報をDbに登録する変数
+                $voicename = $this->addVoicelist($result);
+                // 音声ファイル復元し保存
+                $this->voiceDownload($inputs['audio_base64'], $voicename);
+
+                // ユーザー情報新規登録
             } else {
                 $userupdate = Wanderers::find($user_id['id']);
                 if (
@@ -287,7 +301,7 @@ class AppController extends Controller
         return redirect()->route('register_walk')->with('exe_msg', '登録情報を更新しました！');
     }
 
-    private function addSpeaker(string $name, int $sex, int $age, string $rawfile): string
+    private function addSpeaker(string $name, int $sex, int $age, string $rawfile)
     {
         $miniSRSApi = $this->getMiniSRSApi();
         $result = $miniSRSApi->addSpeaker($name, $sex, $age);
@@ -305,9 +319,10 @@ class AppController extends Controller
         if (!$result) {
             throw new \Exception('Speech registration failed!');
         }
-        return $speakerId;
+        return array($speakerId, $result);
     }
 
+    // 音声ファイルの追記変数
     private function addSpeech($speakerId, $rawfile)
     {
         $miniSRSApi = $this->getMiniSRSApi();
@@ -315,6 +330,39 @@ class AppController extends Controller
         if (!$result) {
             throw new \Exception('Speech registration failed!');
         }
+        return $result;
+    }
+
+    // 音声ファイルの取得変数
+    private function getSpeaker($speechId)
+    {
+        $miniSRSApi = $this->getMiniSRSApi();
+        $result = $miniSRSApi->getSpeaker($speechId);
+        if (!$result) {
+            throw new \Exception('Failed to get audio!');
+        }
+    }
+
+    // 音声ファイルの取得変数
+    private function speechId($voice_table)
+    {
+        $miniSRSApi = $this->getMiniSRSApi();
+        $result = $miniSRSApi->getSpeeches($voice_table);
+        if (!$result) {
+            throw new \Exception('Speech registration failed!');
+        }
+        return $result;
+    }
+
+    // 音声ファイルの削除
+    private function speechDelete($speakerId)
+    {
+        $miniSRSApi = $this->getMiniSRSApi();
+        $result = $miniSRSApi->deleteSpeeches($speakerId);
+        if (!$result) {
+            throw new \Exception('Speech registration failed!');
+        }
+        return $result;
     }
 
     private function editSpeaker(string $speakerId, string $name, int $sex, int $age)
@@ -331,6 +379,84 @@ class AppController extends Controller
         }
     }
 
+    // 音声ファイルの取得変数
+    private function addVoicelist($result)
+    {
+        $getDBvoicelist = $this->getDbVoicelist();
+        $result = $getDBvoicelist->updateVoicelist($result);
+        if (!$result) {
+            throw new \Exception('Voicelist to not update!');
+        }
+        return $result;
+    }
+
+    // 音声ファイルの一覧を取得
+    private function selectVoicelist()
+    {
+        $id = Auth::user()->id;
+        // $voice_table = Voicelist::whereUser_id($id)->get();
+        $voice_table = DB::table('voicelist')->where('user_id', $id)->get();
+        if (!$voice_table) {
+            throw new \Exception('Voicelist to not!');
+        }
+
+        return $voice_table;
+    }
+
+    // 音声ファイルのダウンロード
+    private function voiceDownload($request, $voicename)
+    {
+        //base64形式データをデコードして元の文字列に戻す
+        $decoded = base64_decode($request);
+
+        //ファイル名を作成
+        $filename = $voicename . ".wav";
+        // 画像ファイルの保存
+        Storage::put("audio/{$filename}", $decoded);
+    }
+
+    // 登録音声のspeakerIDを取得
+    private function selectspeechId($profile_id)
+    {
+        $getDBvoicelist = $this->getDbVoicelist();
+        $result = $getDBvoicelist->selectVoicelist($profile_id);
+        if (!$result) {
+            throw new \Exception('Voicelist to not update!');
+        }
+        return $result;
+    }
+
+    // 登録音声のspeakerIDを取得
+    private function deletespeechId($profile_id)
+    {
+        $getDBvoicelist = $this->getDbVoicelist();
+        $result = $getDBvoicelist->deleteVoicelist($profile_id);
+        if ($result) {
+            throw new \Exception('Voicelist to not update!');
+        }
+    }
+
+    // 音声ファイルを削除
+    private function voiceDelete($voicename)
+    {
+        //ファイル名を作成
+        $filename = $voicename . ".wav";
+        // ファイルの削除
+        Storage::delete("audio/{$filename}");
+    }
+
+    // 音声ファイルを取得
+    private function voiceGet($voicename)
+    {
+        //ファイル名を作成
+        $filename = $voicename . ".wav";
+        // 画像ファイルの取得
+        $file = Storage::get("audio/{$filename}");
+        //base64形式データをデコードして元の文字列に戻す
+        $decoded = base64_encode($file);
+        return $decoded;
+    }
+
     // 追加音声データ登録時の処理
     public function voiceUpdate(VoiceUpdate $request)
     {
@@ -343,7 +469,9 @@ class AppController extends Controller
             $rawfile = $inputs['audio_file'];
             $vflg = intval($inputs['voiceprint_flg']);
             $speakerId = $inputs['profile_id'];
-            $this->addSpeech($speakerId, $rawfile);
+            $result = $this->addSpeech($speakerId, $rawfile);
+            // $miniSRSApi = $this->getMiniSRSApi();
+            // $result = $miniSRSApi->addSpeech($speakerId, $rawfile);
             $vflg++;
 
             //ユーザ情報更新処理
@@ -354,6 +482,11 @@ class AppController extends Controller
             ]);
             $userupdate->save();
             DB::commit();
+
+            // 音声ファイルの情報をDbに登録する変数
+            $voicename = $this->addVoicelist($result);
+            // 音声ファイル復元し保存
+            $this->voiceDownload($inputs['audio_base64'], $voicename);
         } catch (\Throwable $e) {
             DB::rollback();
             Log::info($e->getMessage());
@@ -400,5 +533,48 @@ class AppController extends Controller
         }
         // dd([$wanderer_list]);
         return redirect('/home_walk');
+    }
+
+    //voiceListを返す変数
+    public function voiceList()
+    {
+        $user_id = Auth::user()->id;
+        $voice_table = Wanderers::whereUser_id($user_id)->first();
+
+        // APIで登録してある音声ファイル一覧を取得
+        $voicelist = $this->selectspeechId($voice_table["profile_id"]);
+        // $voicelist応答例
+        // [
+        //     "id" => "91d6b8a459cf456daf839643a0efa709"
+        //     "speakerId" => "c5d9d26662cc45a3b888b56ec99669b9"
+        //     "creationTimestamp" => 1669884577
+        //     "samplingrate" => 16000
+        //     "encoding" => "raw/pcm"
+        //     "length" => 3904
+        //     "status" => 1
+        // ]
+        // dd($voicelist);
+        for ($i = 0; $i < count($voicelist); $i++) {
+            $voice = $this->voiceGet($voicelist[$i]["speech_id"]);
+            $voicelists[] = [
+                'id' => $voicelist[$i]["id"],
+                'speaker_id' => $voicelist[$i]["speech_id"],
+                'speaker_audio' => $voice
+            ];
+        }
+        return view('voice_list', compact('voicelists'));
+    }
+
+    //voiceListを返す変数
+    public function audioDelete($request)
+    {
+        // DB、音声データ削除フラグを立てる
+        $this->deletespeechId($request);
+        // 音声ファイルの削除
+        $this->voiceDelete($request);
+        // API音声データの削除
+        $this->speechDelete($request);
+
+        return redirect('/voice_list');
     }
 }
