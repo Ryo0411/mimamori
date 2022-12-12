@@ -44,13 +44,20 @@
 						<audio src="data:audio/wav;base64,{{ $voicelist['speaker_audio'] }}" preload="metadata" controls=""></audio>
 					</div>
 					<div class="item">
-						<a id="audio_delete" class="audio_delete" value="{{ $voicelist['speaker_id'] }}" href="{{ route('audioDelete', $voicelist['speaker_id']) }}"><i class="fa-solid fa-trash"></i><span>削除</span></a>
+						<a id="audio_delete" class="audio_delete" value="{{ $voicelist['speaker_id'] }}" href="{{ route('audioDelete', $voicelist['speaker_id']) }}" onclick="js_alert();"><i class="fa-solid fa-trash"></i><span>削除</span></a>
 					</div>
 				</div>
 				@endforeach
 			</div>
 		</div>
 	</section>
+
+	<!-- ロード画面用 -->
+	<div id="loading" class="is-hide">
+		<div class="cv-spinner">
+			<span class="spinner"></span>
+		</div>
+	</div>
 
 	<footer class="footer">
 		<div class="footer_ver">Ver. 1.0</div>
@@ -61,5 +68,18 @@
 	<script src="{{ asset('js/deleteapi.js') }}"></script>
 
 </body>
+<script>
+	function showLoading() {
+		document.getElementById('loading').classList.remove('is-hide')
+	}
+
+	function hideLoading() {
+		document.getElementById('loading').classList.add('is-hide')
+	}
+
+	function js_alert() {
+		showLoading();
+	}
+</script>
 
 </html>
