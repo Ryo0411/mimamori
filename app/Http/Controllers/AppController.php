@@ -538,31 +538,43 @@ class AppController extends Controller
     //voiceListを返す変数
     public function voiceList()
     {
-        $user_id = Auth::user()->id;
-        $voice_table = Wanderers::whereUser_id($user_id)->first();
+        try {
+            $user_id = Auth::user()->id;
+            $voice_table = Wanderers::whereUser_id($user_id)->first();
 
-        // APIで登録してある音声ファイル一覧を取得
-        $voicelist = $this->selectspeechId($voice_table["profile_id"]);
-        // $voicelist応答例
-        // [
-        //     "id" => "91d6b8a459cf456daf839643a0efa709"
-        //     "speakerId" => "c5d9d26662cc45a3b888b56ec99669b9"
-        //     "creationTimestamp" => 1669884577
-        //     "samplingrate" => 16000
-        //     "encoding" => "raw/pcm"
-        //     "length" => 3904
-        //     "status" => 1
-        // ]
-        // dd($voicelist);
-        for ($i = 0; $i < count($voicelist); $i++) {
-            $voice = $this->voiceGet($voicelist[$i]["speech_id"]);
-            $voicelists[] = [
-                'id' => $voicelist[$i]["id"],
-                'speaker_id' => $voicelist[$i]["speech_id"],
-                'speaker_audio' => $voice
-            ];
+            // APIで登録してある音声ファイル一覧を取得
+            $voicelist = $this->selectspeechId($voice_table["profile_id"]);
+            // $voicelist応答例
+            // [
+            //     "id" => "91d6b8a459cf456daf839643a0efa709"
+            //     "speakerId" => "c5d9d26662cc45a3b888b56ec99669b9"
+            //     "creationTimestamp" => 1669884577
+            //     "samplingrate" => 16000
+            //     "encoding" => "raw/pcm"
+            //     "length" => 3904
+            //     "status" => 1
+            // ]
+            // dd($voicelist);
+            for ($i = 0; $i < count($voicelist); $i++) {
+                $voice = $this->voiceGet($voicelist[$i]["speech_id"]);
+                $voicelists[] = [
+                    'id' => $voicelist[$i]["id"],
+                    'speaker_id' => $voicelist[$i]["speech_id"],
+                    'speaker_audio' => $voice
+                ];
+            }
+        } catch (\Throwable $e) {
+            return redirect('/home_walk');
+        };
+
+        if (empty($voicelists)) {
+            $status = "";
+            $exe = "音声を録音してください。";
+            $discoverflg = 0;
+            return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
+        } else {
+            return view('voice_list', compact('voicelists'));
         }
-        return view('voice_list', compact('voicelists'));
     }
 
     //voiceListを返す変数
