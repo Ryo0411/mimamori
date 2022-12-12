@@ -44,10 +44,10 @@
 				<div class="btn" {{$status}}>
 					<button id="button" class="btn-walk" onclick="location.href='/voice_walk'">声だけ登録</button>
 				</div>
-				<div class="btn" {{$status}}>
+				<div class="btn" id="voice_list" {{$status}}>
 					<button id="button" class="btn-walk" onclick="location.href='/voice_list'">音声一覧</button>
 				</div>
-				<div class="btn" {{$status}}>
+				<div class="btn" id="wanderer" {{$status}}>
 					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">捜索アラート</button>
 				</div>
 				<div class="btn" {{$status}}>
