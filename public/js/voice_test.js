@@ -207,17 +207,19 @@ document.getElementById("stop-recording").onclick = function () {
                     // 録音した音声データの再生ボタン
                     let myURL = window.URL || window.webkitURL;
                     enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls autoplay loop></audio>";
+                    console.log(wavfile);
                     document.getElementById("exe_result").innerHTML = "<p>音声録音が確認できました。</p>";
 
                     let base64data = reader.result;
                     isRecording = false;
 
-                    /* raw ファイルダウンロード
+                    // raw ファイルダウンロード
                     const link = document.createElement('a');
                     link.download = 'audio.raw';
                     link.href = myURL.createObjectURL(rawfile);
                     link.click();
-                    */
+                    console.log(link);
+
                 }
             },
             function (error) {

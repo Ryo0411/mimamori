@@ -2,6 +2,7 @@ const enrollmentDownload = document.getElementById("enrollmentDownload");
 const rec_img = document.getElementById("rec_img");
 const btn_regist = document.getElementById("btn_regist");
 const audio_file = document.getElementById("audio_file");
+const audio_base64 = document.getElementById("audio_base64");
 const voiceprint_flg = document.getElementById("voiceprint_flg");
 let isRecording = false;
 const fixed_text = [
@@ -85,18 +86,32 @@ document.getElementById("stop-recording").onclick = function () {
                     // 録音した音声データの再生ボタン
                     let myURL = window.URL || window.webkitURL;
                     enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls></audio>";
+                    console.log(reader);
+                    console.log(wavfile);
+
+                    const blob = wavfile;
+                    const fr = new FileReader()
+                    fr.readAsDataURL(blob);
+                    fr.onload = () => {
+                        const r = fr.result;
+                        // base64の部分のみをvalue出力
+                        audio_base64.value = r.slice(r.indexOf(',') + 1);
+
+                    };
+                    console.log(fr);
 
                     let base64data = reader.result;
                     audio_file.value = base64data;
                     btn_regist.style.display = '';
                     isRecording = false;
 
-                    /* raw ファイルダウンロード
-                    const link = document.createElement('a');
-                    link.download = 'audio.raw';
-                    link.href = myURL.createObjectURL(rawfile);
-                    link.click();
-                    */
+                    // raw ファイルダウンロード
+                    // const link = document.createElement('a');
+                    // link.download = 'audio.raw';
+                    // link.href = myURL.createObjectURL(rawfile);
+                    // link.click();
+                    // console.log(link);
+
                 }
                 document.getElementById("exe_result").innerHTML = "<p>録音した音声を登録するには、<br>登録ボタンをタップしてください。</p>";
             },
