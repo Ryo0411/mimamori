@@ -14,7 +14,7 @@ class MiniSRSApi
 
     public function __construct(string $appId, string $clientId, string $clientSecret)
     {
-        $this->baseUrl = 'https://apis.mimi.fd.ai/v1/applications/'.$appId.'/clients/'.$clientId.'/srs/';
+        $this->baseUrl = 'https://apis.mimi.fd.ai/v1/applications/' . $appId . '/clients/' . $clientId . '/srs/';
         $this->client = new \GuzzleHttp\Client();
         $this->appId = $appId;
         $this->clientId = $clientId;
@@ -166,7 +166,7 @@ class MiniSRSApi
         return $data;
     }
 
-    public function getSpeeches(string $speakerId): array
+    public function getSpeeches($speakerId): array
     {
         $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/speeches';
         $headers = [
@@ -174,6 +174,25 @@ class MiniSRSApi
             'Authorization' => 'Bearer ' . $this->token
         ];
         $response = $this->client->request('GET', $endPoint, [
+            'headers' => $headers,
+        ]);
+        $list = [];
+        if ($response->getStatusCode() === 200) {
+            $str = $response->getBody()->getContents();
+            $list = json_decode($str, true);
+        }
+        return $list;
+    }
+
+    public function deleteSpeeches($speakerId): array
+    {
+        // https: //apis.mimi.fd.ai/v1/applications/{applicationId}/clients/{clientId}/srs/speeches/{speechId}
+        $endPoint = $this->baseUrl . 'speeches/' . $speakerId;
+        $headers = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->token
+        ];
+        $response = $this->client->request('delete', $endPoint, [
             'headers' => $headers,
         ]);
         $list = [];
