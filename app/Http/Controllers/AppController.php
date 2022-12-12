@@ -63,8 +63,12 @@ class AppController extends Controller
         $miniSRSApi = $this->getMiniSRSApi();
         $speeches = $miniSRSApi->getSpeeches($speakerId);
         $length = 0;
-        foreach ($speeches as $speech) {
-            $length += $speech['length'];
+        if (empty($speeches)) {
+            $length = 0;
+        } else {
+            foreach ($speeches as $speech) {
+                $length += $speech['length'];
+            }
         }
         return $length;
     }
@@ -569,8 +573,13 @@ class AppController extends Controller
 
         if (empty($voicelists)) {
             $status = "";
-            $exe = "音声を録音してください。";
-            $discoverflg = 0;
+            $exe = "音声ファイルがありませんでした。";
+            $user_id = Auth::user()->id;
+            $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+            $userupdate = Wanderers::find($wanderer_list['id']);
+            // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+            $discoverflg = $userupdate["discover_flg"];
+            //ユーザ情報更新処理
             return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
         } else {
             return view('voice_list', compact('voicelists'));
@@ -586,7 +595,6 @@ class AppController extends Controller
         $this->voiceDelete($request);
         // API音声データの削除
         $this->speechDelete($request);
-
         return redirect('/voice_list');
     }
 }

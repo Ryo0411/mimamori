@@ -83,7 +83,7 @@
 	var value = input.getAttribute('value');
 
 	//捜索対象に選択中にボタンを表示させる。
-	if (value == "捜索対象外です。" || value == "") {
+	if (value == "捜索対象外です。" || value == "" || value == "音声ファイルがありませんでした。") {
 		document.getElementById("discover_button").style.display = "none";
 	} else if ("{{ $discoverflg }}" == 1) {
 		location.href = '#modal_d';

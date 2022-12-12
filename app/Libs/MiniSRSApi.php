@@ -168,20 +168,27 @@ class MiniSRSApi
 
     public function getSpeeches($speakerId): array
     {
-        $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/speeches';
-        $headers = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $this->token
-        ];
-        $response = $this->client->request('GET', $endPoint, [
-            'headers' => $headers,
-        ]);
-        $list = [];
-        if ($response->getStatusCode() === 200) {
-            $str = $response->getBody()->getContents();
-            $list = json_decode($str, true);
-        }
-        return $list;
+        try {
+            $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/speeches';
+            $headers = [
+                'Accept' => 'application/json',
+                'Authorization' => 'Bearer ' . $this->token
+            ];
+            $response = $this->client->request('GET', $endPoint, [
+                'headers' => $headers,
+            ]);
+            $list = [];
+            if ($response->getStatusCode() === 200) {
+                $str = $response->getBody()->getContents();
+                $list = json_decode($str, true);
+            }
+            return $list;
+        } catch (\Throwable $e) {
+            Log::info($e->getMessage());
+            $list = [];
+
+            return $list;
+        };
     }
 
     public function deleteSpeeches($speakerId): array
