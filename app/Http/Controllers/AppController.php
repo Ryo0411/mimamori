@@ -569,7 +569,7 @@ class AppController extends Controller
 
         if (empty($voicelists)) {
             $status = "";
-            $exe = "音声を録音してください。";
+            $exe = "音声ファイルがありませんでした。";
             $discoverflg = 0;
             return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
         } else {
