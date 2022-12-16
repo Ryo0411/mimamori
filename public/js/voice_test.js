@@ -214,11 +214,11 @@ document.getElementById("stop-recording").onclick = function () {
                     isRecording = false;
 
                     // raw ファイルダウンロード
-                    const link = document.createElement('a');
-                    link.download = 'audio.raw';
-                    link.href = myURL.createObjectURL(rawfile);
-                    link.click();
-                    console.log(link);
+                    // const link = document.createElement('a');
+                    // link.download = 'audio.raw';
+                    // link.href = myURL.createObjectURL(rawfile);
+                    // link.click();
+                    // console.log(link);
 
                 }
             },
