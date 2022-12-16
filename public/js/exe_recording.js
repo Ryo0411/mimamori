@@ -32,7 +32,15 @@ document.getElementById("exe_recording").onclick = function () {
 
             // 録音した音声データの再生ボタン
             var myURL = window.URL || window.webkitURL;
-            enrollmentDownload.innerHTML = "<a href='" + myURL.createObjectURL(file) + "' target='_blank'>再生</a>";
+            enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls></audio>";
+            console.log(wavfile);
+
+            // raw ファイルダウンロード
+            // const link = document.createElement('a');
+            // link.download = 'audio.raw';
+            // link.href = myURL.createObjectURL(rawfile);
+            // link.click();
+            // console.log(link);
 
             profile_id = document.getElementById("profile_id");
             // APIに投げて処理するときにJSON形式の為、privProfileTypeは２で固定。

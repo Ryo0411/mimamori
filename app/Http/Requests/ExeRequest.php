@@ -26,7 +26,7 @@ class ExeRequest extends FormRequest
         return [
             'sex' => 'numeric|max:2',
             'age' => 'numeric|max:150',
-            'name' => 'required|max:255',
+            'name' => 'required|max:20',
         ];
     }
 }

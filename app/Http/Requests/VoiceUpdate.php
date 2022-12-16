@@ -24,7 +24,7 @@ class VoiceUpdate extends FormRequest
     public function rules()
     {
         return [
-            //
+            'audio_file' => 'required',
         ];
     }
 }

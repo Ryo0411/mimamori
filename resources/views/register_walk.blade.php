@@ -7,7 +7,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
 		<meta name=”description” content=”情報登録/あんしん見守り/ホーム” />
 		<!-- ポップアップ用UI -->
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.css">
@@ -28,6 +28,7 @@
 	<header>
 		<a href="/home_walk" class="arrow_s_b"></a>
 		<h1>情報登録</h1>
+		<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 	</header>
 
 	<section>
@@ -37,7 +38,7 @@
 				@csrf
 				<div class="input">
 					<h2 class="h2_input">&#9632;性別</h2>
-					<select id="pulldown" name="sex" value="{{ @$wanderer_list->sex }}">
+					<select id="pulldown" name="sex" value="{{ old('sex',@$wanderer_list->sex) }}">
 						<option value=0>-</option>
 						<option value=1>男性</option>
 						<option value=2>女性</option>
@@ -50,7 +51,7 @@
 				</div>
 				<div class="input">
 					<h2 class="h2_input">&#9632;年齢</h2>
-					<input name="age" type="text" class="age" value="{{ @$wanderer_list->age }}"><span class="txt_input">歳</span>
+					<input name="age" type="text" class="age" value="{{ old('age',@$wanderer_list->age) }}"><span class="txt_input">歳</span>
 					@if ($errors->has('age'))
 					<div class="alert alert-danger">
 						{{ $errors->first('age') }}</li>
@@ -58,8 +59,8 @@
 					@endif
 				</div>
 				<div class="input">
-					<h2 class="h2_input">&#9632;名前</h2>
-					<input name="wanderer_name" type="text" value="{{ @$wanderer_list->wanderer_name }}">
+					<h2 class="h2_input">&#9632;見守り対象者氏名</h2>
+					<input name="wanderer_name" type="text" value="{{ old('wanderer_name',@$wanderer_list->wanderer_name) }}">
 					@if ($errors->has('wanderer_name'))
 					<div class="alert alert-danger">
 						{{ $errors->first('wanderer_name') }}</li>
@@ -67,8 +68,26 @@
 					@endif
 				</div>
 				<div class="input">
+					<h2 class="h2_input">&#9632;ご家族氏名</h2>
+					<input name="family_name" type="text" value="{{ old('family_name',@$wanderer_list->family_name) }}">
+					@if ($errors->has('family_name'))
+					<div class="alert alert-danger">
+						{{ $errors->first('family_name') }}</li>
+					</div>
+					@endif
+				</div>
+				<div class="input">
+					<h2 class="h2_input">&#9632;連絡用Eメール</h2>
+					<input name="email" type="text" value="{{ old('email',@$wanderer_list->email) }}">
+					@if ($errors->has('email'))
+					<div class="alert alert-danger">
+						{{ $errors->first('email') }}</li>
+					</div>
+					@endif
+				</div>
+				<div class="input">
 					<h2 class="h2_input">&#9632;緊急連絡先</h2>
-					<input name="emergency_tel" type="text" value="{{ @$wanderer_list->emergency_tel }}">
+					<input name="emergency_tel" type="text" value="{{ old('emergency_tel',@$wanderer_list->emergency_tel) }}">
 					@if ($errors->has('emergency_tel'))
 					<div class="alert alert-danger">
 						{{ $errors->first('emergency_tel') }}</li>
@@ -76,39 +95,63 @@
 					@endif
 				</div>
 
-				<input name="profile_id" type="hidden" id="profile_id" value="{{ @$wanderer_list->profile_id }}"></input>
-				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ @$wanderer_list->voiceprint_flg }}"></input>
+				<input name="profile_id" type="hidden" id="profile_id" value="{{ old('profile_id',@$wanderer_list->profile_id) }}"></input>
+				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ old('voiceprint_flg',@$wanderer_list->voiceprint_flg) }}"></input>
+				<input name="audio_file" type="hidden" id="audio_file" value=""></input>
+				<input name="audio_base64" type="hidden" id="audio_base64" value=""></input>
 
 				<div class="block_rec" id="voiceprint_btn">
 					<a id="exe_recording" class="btn_rec">
 						<img id="rec_img" src="{{ asset('img/rec_on.png') }}" class="img_rec" alt="録音">
 					</a>
 				</div>
-
-				<div class="announce" id="result">録音ボタンをタップして、<br>本日の日付を答えてください。</div>
-
-				<div class="btn mt2">
-					<button type="submit" id="button" class="btn-red">登録</button>
-				</div>
-			</form>
-		</div>
-		<div id="dialog-confirm" title="タイトル" class="remodal" data-remodal-id="modal_a">
-			<h4>音声サンプル登録</h4>
-			<div class="popup_inner">
-				<p>
-					<span style="float: left; margin: 0 10px 20px 0;"></span>
-					この音声を学習してもよろしいですか？
-				</p>
 				<div class="btn_dl">
 					<a id="enrollmentDownload" class="soundsample"></a>
 				</div>
-				<div class="btn_popup">
-					<button data-remodal-action="cancel" class="remodal-cancel" id="cancel">キャンセル</button>
-					<button data-remodal-action="confirm" class="remodal-confirm" id="study">学習</button>
+
+				<div class="announce" id="exe_result">録音ボタンをタップして、<br>ご自身の生年月日を読み上げて<br>音声を録音してください。</div>
+				@if ($errors->has('audio_file'))
+				<div class="alert alert-danger">
+					{{ "音声を録音してください。" }}</li>
 				</div>
-			</div>
+				@endif
+
+				<div class="btn mt2">
+					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">更新</button>
+				</div>
+			</form>
 		</div>
 	</section>
+
+	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_d" data-remodal-options="closeOnOutsideClick: false">
+		<h3>下記のように生年月日をお答えください。</h3>
+		<div class="popup_inner">
+			<p id="text_pop" style="font-size: 18px;"></p>
+			<div class="btn_popup" style="margin-top: 10px">
+				<button id="stop-recording" data-remodal-action="close" class="remodal-confirm">録音終了</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- 登録ポップアップ -->
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e">
+		<h4>完了！</h4>
+		<div class="popup_inner">
+			<p id="result_pop">登録情報を更新しました。</p>
+			<div class="btn_popup">
+				<button data-remodal-action="close" class="remodal-confirm" id="okbtn">OK</button>
+				<button data-remodal-action="cancel" class="remodal-cancel" onclick="location.href='/home'">TOPへ</button>
+			</div>
+		</div>
+	</div>
+	<!-- マイクERROR -->
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
+		<h4>ERROR</h4>
+		<div class="popup_inner">
+			<p style="font-size: 16px;">音声データがありませんでした。</p>
+			<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
+		</div>
+	</div>
 
 	<footer class="footer">
 		<div class="footer_ver">Ver. 1.0</div>
@@ -116,11 +159,12 @@
 	</footer>
 
 	<!-- Speech SDK reference sdk. -->
-	<script src="{{ asset('js/SpeechSDK/microsoft.cognitiveservices.speech.sdk.bundle.js') }}"></script>
+	<!-- script src="{{ asset('js/SpeechSDK/microsoft.cognitiveservices.speech.sdk.bundle.js') }}"></script> -->
 	<!-- profile_id作成用 -->
-	<script src="{{ asset('js/numbering.js') }}"></script>
+	<!-- <script src="{{ asset('js/numbering.js') }}"></script> -->
 	<!-- 音声データ学習用 -->
-	<script src="{{ asset('js/exe_recording.js') }}"></script>
+	<script src="{{ asset('js/recorder.js') }}"></script>
+	<script src="{{ asset('js/recording.js') }}"></script>
 	<!-- Speech SDK USAGE -->
 	<!-- <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 	<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
@@ -128,13 +172,45 @@
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
 
 
-	<!-- 性別プルダウン初期値 -->
 	<script>
-		var select = document.getElementById("pulldown");
-		var sexnum = select.getAttribute('value');
-		select.options[sexnum].selected = true;
-	</script>
+		if (document.getElementById("alertfadeout") != null) {
+			location.href = '#modal_e';
+		}
 
+		/* bootstrap alertをx秒後に消す */
+		document.getElementById("okbtn").onclick = function() {
+			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
+		};
+
+		function initialize() {
+			// 音声登録をしていない時のみ音声登録ボタンの表示。
+			let voiceprint_flg = document.getElementById("voiceprint_flg");
+			let result = document.getElementById("exe_result");
+			let btn_regist = document.getElementById("btn_regist");
+
+			// 初回表示のみ空なので０を代入。
+			if (voiceprint_flg.value == "") {
+				voiceprint_flg.value = "0";
+				btn_regist.innerText = "登録";
+			};
+			if (voiceprint_flg.value != "0") {
+				document.querySelector('.block_rec').style.display = 'none';
+				result.style.display = 'none';
+				document.getElementById("audio_file").value = 'audio.raw';
+				document.getElementById("btn_regist").style.display = '';
+			};
+
+			// 性別プルダウン初期値
+			let select = document.getElementById("pulldown");
+			let sexnum = select.getAttribute('value');
+			if (!sexnum) {
+				sexnum = 0;
+			}
+			select.options[sexnum].selected = true;
+
+		}
+		initialize();
+	</script>
 </body>
 
 </html>

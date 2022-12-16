@@ -14,7 +14,7 @@ return [
     */
 
     'defaults' => [
-        'guard' => 'web',
+        'guard' => 'user', // webからuserに変更
         'passwords' => 'users',
     ],
 
@@ -36,9 +36,13 @@ return [
     */
 
     'guards' => [
-        'web' => [
+        'user' => [
             'driver' => 'session',
             'provider' => 'users',
+        ],
+        'admin' => [ //追加
+            'driver' => 'session', //追加
+            'provider' => 'admins', //追加
         ],
     ],
 
@@ -63,6 +67,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+        'admins' => [ //追加
+            'driver' => 'eloquent', //追加
+            'model' => App\Models\Admin::class, //追加
         ],
 
         // 'users' => [
@@ -89,9 +97,13 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'table' => 'password_resets',
+            'table' => 'users',
             'expire' => 60,
-            'throttle' => 60,
+        ],
+        'admins' => [ //追加
+            'provider' => 'admins', //追加
+            'table' => 'admins', //追加
+            'expire' => 60, //追加
         ],
     ],
 
