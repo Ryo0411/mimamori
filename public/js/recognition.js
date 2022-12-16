@@ -2,6 +2,10 @@ const pulldown = document.getElementById('pulldown');
 const rec_img = document.getElementById("rec_img");
 const _token = document.getElementById("token");
 
+const voiceprint_flg = document.getElementById("voiceprint_flg");
+const result = document.getElementById("result");
+const sex_select = document.getElementById("sex_select");
+
 // var output = document.getElementById("result");
 // if (!navigator.geolocation) { //Geolocation apiがサポートされていない場合
 //     var latitude = ""; //緯度
@@ -64,12 +68,18 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                     // recog = "中確率";
                     recog = "";
                 }
+                voiceprint_flg.style.display = "none";
+                result.style.display = "none";
+                sex_select.style.display = "none";
                 document.getElementById("exe_result").innerHTML = "<p>認識結果、「" + name + "」さん<br>である可能性があります。</p>";
                 document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                 // document.getElementById("probability").innerText = "認識率：" + (Math.floor(score * 100)) + "%";
                 location.href = '#modal_d';
                 hideLoading();
             } else if (response['status'] === 1) {
+                voiceprint_flg.style.display = "none";
+                result.style.display = "none";
+                sex_select.style.display = "none";
                 document.getElementById("exe_result").innerHTML = "<p>認識結果、該当者なし</p>";
                 document.getElementById("result_pop").innerText = "認識結果 : " + "該当者なし";
                 document.getElementById("probability").innerText = "";
@@ -81,6 +91,9 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                 location.href = '#modal_e_relode';
                 hideLoading();
             } else {
+                voiceprint_flg.style.display = "none";
+                result.style.display = "none";
+                sex_select.style.display = "none";
                 document.getElementById("exe_result").innerHTML = "<p>データ取得に失敗しました</p>";
                 document.getElementById("errorresult").innerHTML = "データ取得に失敗しました";
                 location.href = '#modal_e';
@@ -89,6 +102,9 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
 
         })
         .catch(err => {
+            voiceprint_flg.style.display = "none";
+            result.style.display = "none";
+            sex_select.style.display = "none";
             console.error(err)
             document.getElementById("errorresult").innerHTML = err;
             location.href = '#modal_e';

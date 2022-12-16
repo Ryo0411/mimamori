@@ -688,3 +688,10 @@ table tr:nth-child(odd) {
 #loading.is-hide {
   display: none;
 }
+
+.btn .container {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 0 0 1rem 0;
+}

@@ -35,16 +35,19 @@
 			<div class="block_txt">
 				<p>{{ $exe }}</p>
 			</div>
-		
+
 			<div>
-			<!--<div class="block_50vh">-->
+				<!--<div class="block_50vh">-->
 				<div class="btn">
 					<button id="button" class="btn-walk" onclick="location.href='/register_walk'">情報登録</button>
 				</div>
 				<div class="btn" {{$status}}>
 					<button id="button" class="btn-walk" onclick="location.href='/voice_walk'">声だけ登録</button>
 				</div>
-				<div class="btn" {{$status}}>
+				<div class="btn" id="voice_list" {{$status}}>
+					<button id="button" class="btn-walk" onclick="location.href='/voice_list'">音声一覧</button>
+				</div>
+				<div class="btn" id="wanderer" {{$status}}>
 					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">捜索アラート</button>
 				</div>
 				<div class="btn" {{$status}}>
@@ -80,7 +83,7 @@
 	var value = input.getAttribute('value');
 
 	//捜索対象に選択中にボタンを表示させる。
-	if (value == "捜索対象外です。" || value == "") {
+	if (value == "捜索対象外です。" || value == "" || value == "音声ファイルがありませんでした。") {
 		document.getElementById("discover_button").style.display = "none";
 	} else if ("{{ $discoverflg }}" == 1) {
 		location.href = '#modal_d';

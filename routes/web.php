@@ -106,6 +106,12 @@ Route::group(['middleware' => 'auth:user'], function () {
     Route::post('/voice_walk/update', [AppController::class, 'voiceUpdate'])->name('voiceupdate');
 
     Route::post('/speaker_rcognition', [SRSController::class, 'speakerRcognition'])->name('speaker_rcognition');
+    // Route::post('/api/photo', [AppController::class, 'voiceDownload'])->name('voiceDownload');
+
+    Route::get('/voice_list', [AppController::class, 'voiceList'])->name('voicelist');
+
+    // Audio削除用
+    Route::get('/audio/delete/{speaker_id}', [AppController::class, 'audioDelete'])->name('audioDelete');
 
     // マイクテスト画面
     //発見者ホーム、情報登録ボタン選択時の画面遷移

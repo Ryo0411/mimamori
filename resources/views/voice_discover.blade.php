@@ -35,15 +35,15 @@
 		<input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
 		<div class="inner">
 			<div class="block_70vh">
-				<div class="block_rec" id="voiceprint_flg">
+				<div class="block_rec" id="voiceprint_flg" style="display: block;">
 					<a id="exe_recording" class="btn_rec">
 						<img id="rec_img" src="{{ asset('img/rec_on.png') }}" class="img_rec" alt="録音">
 					</a>
 				</div>
 
-				<div class="announce" id="result">録音ボタンをタップして、<br>ご自身の生年月日を教えてください。</div>
+				<div class="announce" id="result" style="display: block;">録音ボタンをタップして、<br>ご自身の生年月日を教えてください。</div>
 
-				<div class="input">
+				<div class="input" id="sex_select" style="display: block;">
 					<h2 class="h2_input">&#9632;性別</h2>
 					<select id="pulldown" name="sex">
 						<option value=0>-</option>
@@ -70,9 +70,10 @@
 
 	<!-- 読み上げテキスト -->
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
-		<h4>ご自身の生年月日を教えてください。</h4>
+		<h4>下記のように生年月日をお答えください。</h4>
 		<div class="popup_inner">
-			<p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br />タップしてください。</p>
+			<!-- <p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br />タップしてください。</p> -->
+			<p id="text_pop" style="font-size: 16px; font-weight: bold;">私の生年月日は○○○○年△△月××日」です。</p>
 			<div class="btn_popup" style="margin-top: 10px">
 				<button id="stop-recording" data-remodal-action="close" class="remodal-confirm">録音終了</button>
 			</div>
