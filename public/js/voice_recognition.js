@@ -14,16 +14,6 @@ var speechConfig;
 var ansrate = 0;
 var profile = new Array(profile_count);
 
-// exe_recording = document.getElementById("exe_recording");
-// profile_id = document.getElementById("profile_id");
-// enrollmentDownload = document.getElementById("enrollmentDownload");
-// voiceprint_flg = document.getElementById("voiceprint_flg");
-// rec_img = document.getElementById("rec_img");
-// button = document.getElementById("button");
-// // APIに投げて処理するときにJSON形式の為、privProfileTypeは２で固定。
-// profile_information = { "privId": profile_id.value, "privProfileType": 2, "profileId": profile_id.value }
-
-
 verificationVoiceRecordButton = document.getElementById("verificationVoiceRecordButton");
 verificationDownload = document.getElementById("verificationDownload");
 
@@ -122,6 +112,7 @@ rec_img.addEventListener("click", function () {
                                         document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                                         document.getElementById("probability").innerText = "認識率：" + (Math.floor(high_score * 100)) + "%";
                                     } else {
+                                        document.getElementById('exe_result').innerHTML = "<p>音声認識に失敗しました。</p>";
                                         userscore = "スコアなし";
                                         location.href = '#modal_d';
                                         document.getElementById("result_pop").innerText = "認識結果 : " + "失敗";;
