@@ -70,10 +70,10 @@
 
 	<!-- 読み上げテキスト -->
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
-		<h4>下記のように生年月日をお答えください。</h4>
+		<h4>話者を識別します。</h4>
 		<div class="popup_inner">
 			<!-- <p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br />タップしてください。</p> -->
-			<p id="text_pop" style="font-size: 16px; font-weight: bold;">私の生年月日は○○○○年△△月××日」です。</p>
+			<p id="text_pop" style="font-size: 16px; font-weight: bold;">ご自身の生年月日をお答えください。</p>
 			<div class="btn_popup" style="margin-top: 10px">
 				<button id="stop-recording" data-remodal-action="close" class="remodal-confirm">録音終了</button>
 			</div>
