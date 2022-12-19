@@ -125,23 +125,6 @@ rec_img.addEventListener("click", function () {
             showLoading();
             startRecording(
                 function () {
-                    // 位置情報を取得
-                    if (!navigator.geolocation) { //Geolocation apiがサポートされていない場合
-                        document.getElementById("latitude").value = ""; //緯度
-                        document.getElementById("longitude").value = ""; //経度
-                    } else {
-                        function success(position) {
-                            document.getElementById("latitude").value = position.coords.latitude; //緯度
-                            document.getElementById("longitude").value = position.coords.longitude; //経度
-                        };
-                        function error() {
-                            //エラーの場合
-                            document.getElementById("latitude").value = ""; //緯度
-                            document.getElementById("longitude").value = ""; //経度
-                        };
-                    }
-                    navigator.geolocation.getCurrentPosition(success, error); //成功と失敗を判断
-
                     console.log("音声サンプル録音中...");
                     isRecording = true;
                     rec_img.src = "../../img/rec.gif";
