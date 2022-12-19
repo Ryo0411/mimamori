@@ -127,6 +127,26 @@
 	<script src="{{ asset('js/recorder.js') }}"></script>
 	<script src="{{ asset('js/recognition.js') }}"></script>
 	<script>
+		window.addEventListener('load', (event) => {
+			// 位置情報を取得
+			if (!navigator.geolocation) { //Geolocation apiがサポートされていない場合
+				document.getElementById("latitude").value = ""; //緯度
+				document.getElementById("longitude").value = ""; //経度
+			} else {
+				function success(position) {
+					document.getElementById("latitude").value = position.coords.latitude; //緯度
+					document.getElementById("longitude").value = position.coords.longitude; //経度
+				};
+
+				function error() {
+					//エラーの場合
+					document.getElementById("latitude").value = ""; //緯度
+					document.getElementById("longitude").value = ""; //経度
+				};
+			}
+			navigator.geolocation.getCurrentPosition(success, error); //成功と失敗を判断
+		});
+
 		let rec_img_elm = document.getElementById("rec_img");
 		let pulldown_elm = document.getElementById('pulldown');
 		pulldown_elm.selectedIndex = 0;
