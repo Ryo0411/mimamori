@@ -31,7 +31,7 @@ class SRSController extends Controller
         $longitude = $inputs['longitude'];
         try {
             $miniSRSApi = $this->getMiniSRSApi();
-            $result = $miniSRSApi->speakerRcognition($this->getGroupId(), $rawfile);
+            $result = $miniSRSApi->speakerRcognition($this->getRecGroupId(), $rawfile);
             Log::info($result);
             $json = [
                 'status' => -1
@@ -61,6 +61,7 @@ class SRSController extends Controller
                                 'wanderer_name' => $data->wanderer_name,
                                 'sex' => $data->sex,
                                 'age' => $data->age,
+                                'family_name' => $data->family_name,
                                 'emergency_tel' => $data->emergency_tel,
                                 'confidence' => $speaker['confidence'],
                             ];

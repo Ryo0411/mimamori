@@ -30,4 +30,9 @@ class Controller extends BaseController
     {
         return config('fd_mini.fd_speaker_group_id');
     }
+
+    protected function getRecGroupId(): string
+    {
+        return config('fd_mini.fd_speaker_recgroup_id');
+    }
 }

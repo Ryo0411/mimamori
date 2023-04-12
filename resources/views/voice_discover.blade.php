@@ -100,7 +100,7 @@
 		</div>
 	</div>
 	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e_relode" data-remodal-options="closeOnOutsideClick: false">
-		<h4>ERROR</h4>
+		<h4>音声認識結果</h4>
 		<div class="popup_inner">
 			<p id="errorrelode"></p>
 

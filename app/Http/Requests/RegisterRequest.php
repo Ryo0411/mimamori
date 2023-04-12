@@ -26,6 +26,7 @@ class RegisterRequest extends FormRequest
         return [
             'sex' => 'required | integer | between:1,2',
             'age' => 'numeric|max:150',
+            'address' => 'required|max:255',
             'wanderer_name' => 'required|max:255',
             'family_name' => 'required|max:255',
             'email' => 'required|email|max:255',

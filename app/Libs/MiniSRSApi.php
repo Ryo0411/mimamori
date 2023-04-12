@@ -15,6 +15,7 @@ class MiniSRSApi
     public function __construct(string $appId, string $clientId, string $clientSecret)
     {
         $this->baseUrl = 'https://apis.mimi.fd.ai/v1/applications/' . $appId . '/clients/' . $clientId . '/srs/';
+        // $this->client = new \GuzzleHttp\Client();
         $this->client = new \GuzzleHttp\Client();
         $this->appId = $appId;
         $this->clientId = $clientId;
@@ -52,6 +53,8 @@ class MiniSRSApi
             $list = json_decode($response->getBody()->getContents(), true);
             $token = $list['accessToken'];
         }
+        Log::info("↓token");
+        Log::info($token);
         return $token;
     }
 
@@ -138,6 +141,7 @@ class MiniSRSApi
         return $list;
     }
 
+    // 音声追加API
     public function addSpeech(string $speakerId, string $rawfile): array
     {
         $endPoint = $this->baseUrl . 'speakers/' . $speakerId . '/speeches';
@@ -199,7 +203,28 @@ class MiniSRSApi
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $this->token
         ];
-        $response = $this->client->request('delete', $endPoint, [
+        $response = $this->client->request('DELETE', $endPoint, [
+            'headers' => $headers,
+        ]);
+        $list = [];
+        if ($response->getStatusCode() === 200) {
+            $str = $response->getBody()->getContents();
+            $list = json_decode($str, true);
+        }
+        return $list;
+    }
+
+    public function deleteUser(string $speakerId, string $groupId): array
+    {
+        // https://apis.mimi.fd.ai/v1/applications/applicationId/clients/clientId/srs/speaker_groups/{speakerGroupId}/speakers/{speakerId}
+        $endPoint = $this->baseUrl . 'speaker_groups/' . $groupId . '/speakers/' . $speakerId;
+        Log::info("下記のspeakerId情報削除");
+        Log::info($speakerId);
+        $headers = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->token
+        ];
+        $response = $this->client->request('DELETE', $endPoint, [
             'headers' => $headers,
         ]);
         $list = [];
@@ -241,6 +266,7 @@ class MiniSRSApi
         return $status;
     }
 
+    // 話者認識API
     public function speakerRcognition(string $groupId, string $rawfile)
     {
         $endPoint = 'https://service.mimi.fd.ai';
@@ -279,6 +305,40 @@ class MiniSRSApi
         if ($response->getStatusCode() === 200) {
             $str = $response->getBody()->getContents();
             Log::info($str);
+            $list = json_decode($str, true);
+        }
+        return $list;
+    }
+
+    // 認識用のグループに話者を追加する
+    public function addSpeakegroup(string $groupId, string $speakerId)
+    {
+        // https://apis.mimi.fd.ai/v1/applications/applicationId/clients/clientId/srs/speaker_groups/speakerGroupId/speakers/speakerId
+        $endPoint = $this->baseUrl . 'speaker_groups/' . $groupId . '/speakers/' . $speakerId;
+        $headers = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->token
+        ];
+        $this->client->request('POST', $endPoint, [
+            'headers' => $headers,
+        ]);
+    }
+
+    // 認識用のグループの話者を削除する
+    public function deleteSpeakegroup(string $groupId, string $speakerId)
+    {
+        // https://apis.mimi.fd.ai/v1/applications/applicationId/clients/clientId/srs/speaker_groups/speakerGroupId/speakers/speakerId
+        $endPoint = $this->baseUrl . 'speaker_groups/' . $groupId . '/speakers/' . $speakerId;
+        $headers = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->token
+        ];
+        $response = $this->client->request('DELETE', $endPoint, [
+            'headers' => $headers,
+        ]);
+        $list = [];
+        if ($response->getStatusCode() === 200) {
+            $str = $response->getBody()->getContents();
             $list = json_decode($str, true);
         }
         return $list;

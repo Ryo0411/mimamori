@@ -20,6 +20,7 @@ class Wanderers extends Model
         'email',
         'sex',
         'age',
+        'address',
         'user_id',
         'profile_id',
         'emergency_tel',
