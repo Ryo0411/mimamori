@@ -148,7 +148,7 @@
 	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_conf">
 		<h4>同意確認</h4>
 		<div class="popup_inner">
-			<p id="result_pop">発見者の方に、ご記載された<br>連絡先に通知することに<br>同意いただけますか？
+			<p id="result_pop">発見された方へ、<br>連絡先をお知らせすることに<br>同意致しますか？
 			</p>
 			<div class="btn_popup">
 				<button data-remodal-action="close" class="remodal-confirm" id="btn">同意します</button>
