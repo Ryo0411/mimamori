@@ -148,7 +148,8 @@
 	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_conf">
 		<h4>同意確認</h4>
 		<div class="popup_inner">
-			<p id="result_pop">安心みまもりの結果、徘徊者を発見した方に対して、<br>記載の連絡先をお知らせすることに同意しますか？</p>
+			<p id="result_pop">発見者の方に、ご記載された<br>連絡先に通知することに<br>同意いただけますか？
+			</p>
 			<div class="btn_popup">
 				<button data-remodal-action="close" class="remodal-confirm" id="btn">同意します</button>
 				<button data-remodal-action="cancel" class="remodal-cancel">同意しません</button>
