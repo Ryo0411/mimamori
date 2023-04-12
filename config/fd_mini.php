@@ -5,4 +5,5 @@ return [
     'fd_client_id' => env('FD_MINI_CLIENT_ID', ''),
     'fd_client_secret' => env('FD_MINI_CLIENT_SECRET', ''),
     'fd_speaker_group_id' => env('FD_MINI_SPEAKER_GROUP_ID', ''),
+    'fd_speaker_recgroup_id' => env('FD_MINI_SPEAKER_RECGROUP_ID', ''),
 ];

@@ -110,6 +110,9 @@ Route::group(['middleware' => 'auth:user'], function () {
 
     Route::get('/voice_list', [AppController::class, 'voiceList'])->name('voicelist');
 
+    // user情報復元処理
+    Route::get('/voice_walk/reset', [AppController::class, 'userReset'])->name('userreset');
+
     // Audio削除用
     Route::get('/audio/delete/{speaker_id}', [AppController::class, 'audioDelete'])->name('audioDelete');
 

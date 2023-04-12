@@ -18,7 +18,7 @@ const birth_text = [
 ];
 
 const birth_text2 = [
-    '私の生年月日は○○○○年△△月××日」です。'
+    '私の生年月日は○○○○年△△月××日です。'
 ];
 
 
@@ -45,7 +45,7 @@ document.getElementById("exe_recording").onclick = function () {
                 //     location.href = '#modal_d';
                 // }
 
-                // test用221121作成
+                // 学習時の文章指定
                 const index = Math.floor(Math.random() * birth_text2.length);
                 document.getElementById("text_pop").innerHTML = birth_text2[index];
                 document.getElementById("text_pop").style.fontWeight = "bold";

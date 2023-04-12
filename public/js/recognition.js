@@ -56,7 +56,10 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
         .then(response => {
             console.log(response);
             if (response['status'] === 0) {
+                console.log(response);
                 const name = response['wanderer_name'];
+                const family_name = response['family_name'];
+                const tel = response['emergency_tel'];
                 const score = response['confidence'];
                 const rrate = Math.floor(score * 100);
                 // let recog = "高確率";
@@ -71,7 +74,7 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                 voiceprint_flg.style.display = "none";
                 result.style.display = "none";
                 sex_select.style.display = "none";
-                document.getElementById("exe_result").innerHTML = "<p>認識結果、「" + name + "」さん<br>である可能性があります。</p>";
+                document.getElementById("exe_result").innerHTML = "<p>声かけした方は、<br>" + name + "さんの可能性があります。<br>ご家族である" + family_name + "さんの連絡先<br> <a href='tel:" + tel + "'>" + tel + "</a></p>";
                 document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                 // document.getElementById("probability").innerText = "認識率：" + (Math.floor(score * 100)) + "%";
                 location.href = '#modal_d';
@@ -86,8 +89,8 @@ const speakerRecognation = function (base64data, sex, latitude, longitude) {
                 location.href = '#modal_d';
                 hideLoading();
             } else if (response['status'] === 2) {
-                document.getElementById("exe_result").innerHTML = "<p>データ取得時に問題が発生しました。</p>";
-                document.getElementById("errorrelode").innerHTML = "データ取得時に問題が発生しました。";
+                document.getElementById("exe_result").innerHTML = "<p>現在、対象者はいません。<br>何か問題が発生した場合はお知らせください。</p>";
+                document.getElementById("errorrelode").innerHTML = "現在、対象者はいません。<br>何か問題が発生した場合はお知らせください。";
                 location.href = '#modal_e_relode';
                 hideLoading();
             } else {
@@ -125,23 +128,6 @@ rec_img.addEventListener("click", function () {
             showLoading();
             startRecording(
                 function () {
-                    // 位置情報を取得
-                    if (!navigator.geolocation) { //Geolocation apiがサポートされていない場合
-                        document.getElementById("latitude").value = ""; //緯度
-                        document.getElementById("longitude").value = ""; //経度
-                    } else {
-                        function success(position) {
-                            document.getElementById("latitude").value = position.coords.latitude; //緯度
-                            document.getElementById("longitude").value = position.coords.longitude; //経度
-                        };
-                        function error() {
-                            //エラーの場合
-                            document.getElementById("latitude").value = ""; //緯度
-                            document.getElementById("longitude").value = ""; //経度
-                        };
-                    }
-                    navigator.geolocation.getCurrentPosition(success, error); //成功と失敗を判断
-
                     console.log("音声サンプル録音中...");
                     isRecording = true;
                     rec_img.src = "../../img/rec.gif";

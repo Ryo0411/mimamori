@@ -70,10 +70,10 @@
 
 	<!-- 読み上げテキスト -->
 	<div id="text-recording" title="タイトル" class="remodal" data-remodal-id="modal_r" data-remodal-options="closeOnOutsideClick: false">
-		<h4>下記のように生年月日をお答えください。</h4>
+		<h4>話者を識別します。</h4>
 		<div class="popup_inner">
 			<!-- <p id="text_pop" style="font-size: 16px;">録音完了後の録音完了ボタンを<br />タップしてください。</p> -->
-			<p id="text_pop" style="font-size: 16px; font-weight: bold;">私の生年月日は○○○○年△△月××日」です。</p>
+			<p id="text_pop" style="font-size: 16px; font-weight: bold;">ご自身の生年月日をお答えください。</p>
 			<div class="btn_popup" style="margin-top: 10px">
 				<button id="stop-recording" data-remodal-action="close" class="remodal-confirm">録音終了</button>
 			</div>
@@ -100,7 +100,7 @@
 		</div>
 	</div>
 	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e_relode" data-remodal-options="closeOnOutsideClick: false">
-		<h4>ERROR</h4>
+		<h4>音声認識結果</h4>
 		<div class="popup_inner">
 			<p id="errorrelode"></p>
 
@@ -127,6 +127,26 @@
 	<script src="{{ asset('js/recorder.js') }}"></script>
 	<script src="{{ asset('js/recognition.js') }}"></script>
 	<script>
+		window.addEventListener('load', (event) => {
+			// 位置情報を取得
+			if (!navigator.geolocation) { //Geolocation apiがサポートされていない場合
+				document.getElementById("latitude").value = ""; //緯度
+				document.getElementById("longitude").value = ""; //経度
+			} else {
+				function success(position) {
+					document.getElementById("latitude").value = position.coords.latitude; //緯度
+					document.getElementById("longitude").value = position.coords.longitude; //経度
+				};
+
+				function error() {
+					//エラーの場合
+					document.getElementById("latitude").value = ""; //緯度
+					document.getElementById("longitude").value = ""; //経度
+				};
+			}
+			navigator.geolocation.getCurrentPosition(success, error); //成功と失敗を判断
+		});
+
 		let rec_img_elm = document.getElementById("rec_img");
 		let pulldown_elm = document.getElementById('pulldown');
 		pulldown_elm.selectedIndex = 0;
