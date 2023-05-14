@@ -690,8 +690,32 @@ table tr:nth-child(odd) {
 }
 
 .btn .container {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin: 0 0 1rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 1rem 0;
+}
+
+.btn-red-reset {
+  width: 22%;
+  padding: 0.5rem 0.8rem;
+  border-radius: 40px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: bold;
+  background-color: #FC5959;
+  -webkit-transition: .4s;
+  transition: .4s;
+  -webkit-box-shadow: 2px 4px 4px rgba(0, 0, 0, .29);
+  box-shadow: 2px 4px 4px rgba(0, 0, 0, .29);
+  border-width: 0;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none
+}
+
+.resetbtn {
+  text-align: right;
 }

@@ -1,4 +1,5 @@
 const enrollmentDownload = document.getElementById("enrollmentDownload");
+const sampleDownload = document.getElementById("sampleDownload");
 const rec_img = document.getElementById("rec_img");
 const btn_regist = document.getElementById("btn_regist");
 const audio_file = document.getElementById("audio_file");
@@ -86,6 +87,7 @@ document.getElementById("stop-recording").onclick = function () {
                     // 録音した音声データの再生ボタン
                     let myURL = window.URL || window.webkitURL;
                     enrollmentDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls></audio>";
+                    sampleDownload.innerHTML = "<audio src='" + myURL.createObjectURL(wavfile) + "' preload='metadata' controls></audio>";
                     console.log(reader);
                     console.log(wavfile);
 
@@ -111,7 +113,7 @@ document.getElementById("stop-recording").onclick = function () {
                     // link.href = myURL.createObjectURL(rawfile);
                     // link.click();
                     // console.log(link);
-
+                    location.href = '#modal_confaudio';
                 }
                 document.getElementById("exe_result").innerHTML = "<p>録音した音声を登録するには、<br>登録ボタンをタップしてください。</p>";
             },

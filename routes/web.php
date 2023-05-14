@@ -60,17 +60,15 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth:admin'], function () {
 //ログイン後のみアクセス可能
 Route::group(['middleware' => 'auth:user'], function () {
     //ログイン成功時の画面遷移(home画面遷移用)
-    Route::get('/home', function () {
-        return view('home');
-    })->name('home');
+    // Route::get('/home', function () {
+    //     return view('home');
+    // })->name('home');
+    Route::get('/home', [AppController::class, 'homeBack'])->name('home');
 
     //ログアウト処理
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     //徘徊者ボタン選択時の画面遷移
-    // Route::get('/home_walk', function() {
-    //     return view('home_walk');
-    // })->name('home_walk');
     Route::get('/home_walk', [AppController::class, 'homeWalk'])->name('home_walk');
 
     Route::get('/home_walk/wanderer', [AppController::class, 'wandererFlg'])->name('wandererflg');
@@ -121,4 +119,12 @@ Route::group(['middleware' => 'auth:user'], function () {
     Route::get('/voice_test', function () {
         return view('/voice_test');
     })->name('voice_test');
+
+    //ログイン成功時の画面遷移(home画面遷移用)
+    Route::get('/voice_error', function () {
+        return view('voice_error');
+    })->name('voice_error');
+
+    // user情報リセット処理
+    Route::get('/wanderer/reset', [AppController::class, 'wandererReset'])->name('wandererReset');
 });

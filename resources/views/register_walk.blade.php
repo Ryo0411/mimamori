@@ -115,6 +115,7 @@
 						<img id="rec_img" src="{{ asset('img/rec_on.png') }}" class="img_rec" alt="録音">
 					</a>
 				</div>
+				<a id="sampleDownload" class="soundsample" style="display: none;"></a>
 				<div class="btn_dl">
 					<a id="enrollmentDownload" class="soundsample"></a>
 				</div>
@@ -122,7 +123,7 @@
 				<div class="announce" id="exe_result">録音ボタンをタップして、<br>ご自身の生年月日を読み上げて<br>音声を録音してください。</div>
 				@if ($errors->has('audio_file'))
 				<div class="alert alert-danger">
-					{{ "音声を録音してください。" }}</li>
+					{{ "音声の録音が確認が出来ませんでした。" }}</li>
 				</div>
 				@endif
 				<input id="eventButton" type="submit" style="display: none;">
@@ -177,7 +178,7 @@
 	</div>
 
 	<footer class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 

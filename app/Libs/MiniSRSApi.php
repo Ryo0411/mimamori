@@ -214,10 +214,10 @@ class MiniSRSApi
         return $list;
     }
 
-    public function deleteUser(string $speakerId, string $groupId): array
+    public function deleteUser(string $speakerId): array
     {
-        // https://apis.mimi.fd.ai/v1/applications/applicationId/clients/clientId/srs/speaker_groups/{speakerGroupId}/speakers/{speakerId}
-        $endPoint = $this->baseUrl . 'speaker_groups/' . $groupId . '/speakers/' . $speakerId;
+        // https://apis.mimi.fd.ai/v1/applications/applicationId/clients/clientId/srs/speakers/{speakersId}
+        $endPoint = $this->baseUrl . 'speakers/' . $speakerId;
         Log::info("下記のspeakerId情報削除");
         Log::info($speakerId);
         $headers = [

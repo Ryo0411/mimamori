@@ -27,6 +27,7 @@
 	<header>
 		<a href="/home" class="arrow_s_b"></a>
 		<h1>徘徊者ホーム</h1>
+		<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 	</header>
 
 	<section>
@@ -67,12 +68,26 @@
 						</div>
 					</div>
 				</div>
+				<!-- リセット確認ポップアップ -->
+				<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_reset">
+					<h4>リセット確認</h4>
+					<div class="popup_inner">
+						<p id="result_pop">登録頂いたご家族情報を<br>全て削除してしまってよろしいですか？</p>
+						<div class="btn_popup">
+							<button data-remodal-action="close" class="remodal-confirm" onclick="location.href='/wanderer/reset'">削除</button>
+							<button data-remodal-action="cancel" class="remodal-cancel">キャンセル</button>
+						</div>
+					</div>
+				</div>
 			</div>
+		</div>
+		<div class="resetbtn" {{$status}}>
+			<button id="exebutton" class="btn-red-reset" onclick="location.href='#modal_reset'">リセット</button>
 		</div>
 	</section>
 
 	<footer class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 

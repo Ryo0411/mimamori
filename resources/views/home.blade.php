@@ -9,6 +9,11 @@
 		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
 		<meta name=”description” content=”あんしん見守り” />
 		<title>あんしん見守り</title>
+		<!-- ポップアップ用UI -->
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.css">
+		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal-default-theme.min.css">
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.js"></script>
 		<!-- script -->
 		<script src="{{ asset('js/app.js') }}" defer></script>
 		<!-- styles -->
@@ -29,6 +34,10 @@
 
 		<section>
 			<div class="inner">
+				<h2 class="sectTit">ご家族情報</h2>
+				<div class="block_txt">
+					<p>{{ $exe }}</p>
+				</div>
 				<!--<div class="block_50vh">-->
 				<div>
 					<!-- ログイン成功時のアラート表示 -->
@@ -49,6 +58,14 @@
 						</form>
 					</div>
 				</div>
+				<!-- 復元処理完了ポップアップ -->
+				<div id="recognition-ok" title="タイトル" class="remodal" data-remodal-id="modal_error">
+					<h4>ERROR</h4>
+					<div class="popup_inner">
+						<p style="font-size: 16px;">復元処理が完了しました。</p>
+						<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
+					</div>
+				</div>
 			</div>
 		</section>
 
@@ -59,7 +76,7 @@
 		</section>
 
 		<footer class="footer">
-			<div class="footer_ver">Ver. 1.0</div>
+			<div class="footer_ver">Ver. 2.1</div>
 			<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 		</footer>
 	</wrapper>
