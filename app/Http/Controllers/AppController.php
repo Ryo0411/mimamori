@@ -18,6 +18,8 @@ use App\Libs\DbVoicelist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Storage;
+use App\Mail\Confirmmail;
+use Illuminate\Support\Facades\Mail;
 
 class AppController extends Controller
 {
@@ -318,6 +320,16 @@ class AppController extends Controller
                 // 音声ファイル復元し保存
                 $this->voiceDownload($inputs['audio_base64'], $voicename);
 
+                $messegedata = "※このメールはシステムからの自動返信です" . "\n\n" .
+                    $family_name . "　様" . "\n\n" .
+                    "このメールはご家族情報の更新に伴い、確認のためにメールを送信させていただいております。" . "\n" .
+                    "今後ご家族の発見通知などは、このメールアドレス宛に送信させて頂きます。" . "\n" .
+                    "ご家族情報などを再度更新したい場合は情報登録画面より更新をお願いいたします。";
+                // 新規登録時の確認メール
+                Mail::to($email)->send(new Confirmmail(
+                    $messegedata,
+                ));
+
                 // ユーザー情報新規登録
             } else {
                 $userupdate = Wanderers::find($user_id['id']);
@@ -339,6 +351,16 @@ class AppController extends Controller
                 ]);
                 $userupdate->save();
                 DB::commit();
+
+                $messegedata = "※このメールはシステムからの自動返信です" . "\n\n" .
+                    $family_name . "　様" . "\n\n" .
+                    "このメールは、ご登録時に確認のため送信させていただいております。" . "\n" .
+                    "今後ご家族の発見通知などは、このメールアドレス宛に送信させて頂きます。" . "\n" .
+                    "ご家族情報などを更新したい場合は情報登録画面より更新をお願いいたします。";
+                // 新規登録時の確認メール
+                Mail::to($email)->send(new Confirmmail(
+                    $messegedata,
+                ));
             }
         } catch (\Throwable $e) {
             DB::rollback();
