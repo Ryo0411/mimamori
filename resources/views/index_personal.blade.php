@@ -1,38 +1,43 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
-		<meta name=”description” content=”徘徊マッチング”/>
-    	<title>徘徊マッチング</title>
+		<meta name=”description” content=”徘徊マッチング” />
+		<title>徘徊マッチング</title>
 		<!-- script -->
-        <script src="{{ asset('js/app.js') }}" defer></script>
-        <!-- styles -->
-        <link href="{{ asset('css/app.css') }}" rel="stylesheet"></link><!-- bootsutorap用のCSS -->
-        <link href="{{ asset('css/style.css') }}" rel="stylesheet"></link>
-</head>
+		<script src="{{ asset('js/app.js') }}" defer></script>
+		<!-- styles -->
+		<link href="{{ asset('css/app.css') }}" rel="stylesheet">
+		</link><!-- bootsutorap用のCSS -->
+		<link href="{{ asset('css/style.css') }}" rel="stylesheet">
+		</link>
+	</head>
+
 <body>
 	<header>
 		<section>
 			<h1><img src="{{ asset('/img/logo.svg') }}" alt="徘徊マッチング"></h1>
 		</section>
 	</header>
-    
-	
+
+
 	<section>
 		<div class="inner">
 			<div class="block_result">
 				<img src="{{ asset('/img/result_80.png') }}">
 				<div class="txt_result">
-				<h3>ユーザ1</h3>
-				80%の確率でユーザ1と一致しました。
+					<h3>ユーザ1</h3>
+					80%の確率でユーザ1と一致しました。
 				</div>
 			</div>
 		</div>
 	</section>
-	
+
 	<section>
 		<div class="inner">
 			<h2>1.音声サンプル登録</h2>
@@ -77,7 +82,7 @@
 			</div>
 		</div>
 	</section>
-	
+
 	<section>
 		<div class="inner">
 			<h2>2.音声認識</h2>
@@ -89,7 +94,7 @@
 			</div>
 		</div>
 	</section>
-	
+
 	<section>
 		<div class="inner">
 			<h2>3.個別プロファイルリセット</h2>
@@ -98,7 +103,7 @@
 			</div>
 		</div>
 	</section>
-	
+
 	<section>
 		<div class="inner">
 			<h2>4.全プロファイルリセット</h2>
@@ -107,7 +112,7 @@
 			</div>
 		</div>
 	</section>
-	
+
 	<section>
 		<div class="inner">
 			<h2>5.ログ表示</h2>
@@ -116,12 +121,13 @@
 			</div>
 		</div>
 	</section>
-	
-	
+
+
 	<div class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</div>
-    
+
 </body>
+
 </html>

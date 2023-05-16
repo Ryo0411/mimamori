@@ -33,6 +33,35 @@ class AppController extends Controller
         return new DbVoicelist($this->getApplicationId(), $this->getClientId(), $this->getClientSecret());
     }
 
+    //徘徊者ホーム、情報未登録の場合ボタン非表示
+    public function homeBack()
+    {
+        try {
+            $user_id = Auth::user()->id;
+            $wanderer_list = DB::table('wanderers')
+                ->where('user_id', $user_id)
+                ->first();
+            $user_id = Auth::user()->id;
+            $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+            // 音声登録があるかを判定。ない場合はそのままreturn
+            if ($wanderer_list['voiceprint_flg'] >= 0) {
+                // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+                if ($wanderer_list['wandering_flg'] == 0) {
+                    $exe = "捜索対象外です。";
+                } elseif ($wanderer_list['wandering_flg'] == 1) {
+                    $exe = "捜索対象に選択中です。";
+                } else {
+                    $exe = "発見されました！";
+                }
+            } else {
+                $exe = "情報登録をして下さい。";
+            }
+            return view('home', ['exe' => $exe]);
+        } catch (\Throwable $e) {
+            return view('home', ['exe' => "ご家族情報を登録して下さい。"]);
+        };
+    }
+
     //徘徊者ホーム、情報登録ボタン選択時の画面遷移用メソッド
     public function showWanderer()
     {
@@ -153,6 +182,9 @@ class AppController extends Controller
             // 徘徊フラグが立っていない場合、徘徊フラグを立てる
             if ($wanderer_list['wandering_flg'] == 0) {
                 try {
+                    // 認識用グループに対象者を入れる処理
+                    $this->addSpeechGroupId($wanderer_list['profile_id']);
+
                     //ユーザ情報更新処理
                     $userupdate = Wanderers::find($wanderer_list['id']);
                     Log::info("捜索対象に選択処理、対象者");
@@ -172,6 +204,14 @@ class AppController extends Controller
                 };
                 // 徘徊フラグが立っている場合、徘徊フラグを下げる
             } else {
+                // 認識用グループから話者を削除
+                try {
+                    $result = $this->deleteSpeechGroupId($wanderer_list['profile_id']);
+                    Log::info("対象者グループから削除");
+                    Log::info($result);
+                } catch (\Throwable $e) {
+                    Log::info($e->getMessage());
+                };
                 try {
                     //ユーザ情報更新処理
                     $userupdate = Wanderers::find($wanderer_list['id']);
@@ -246,6 +286,7 @@ class AppController extends Controller
             $email = $inputs['email'];
             $sex = $inputs['sex'];
             $age = $inputs['age'];
+            $address = $inputs['address'];
             $etel = $inputs['emergency_tel'];
             $vflg = $inputs['voiceprint_flg'];
             $rawfile = $inputs['audio_file'];
@@ -263,6 +304,7 @@ class AppController extends Controller
                     'user_id' => $id,
                     'sex' => $sex,
                     'age' => $age,
+                    'address' => $address,
                     'wanderer_name' => $wname,
                     'family_name' => $family_name,
                     'email' => $email,
@@ -288,6 +330,7 @@ class AppController extends Controller
                 $userupdate->fill([
                     'sex' => $sex,
                     'age' => $age,
+                    'address' => $address,
                     'wanderer_name' => $wname,
                     'family_name' => $family_name,
                     'email' => $email,
@@ -358,6 +401,23 @@ class AppController extends Controller
         return $result;
     }
 
+    // 認識用グループに話者を追加API
+    private function addSpeechGroupId($speakerId)
+    {
+        $miniSRSApi = $this->getMiniSRSApi();
+        $miniSRSApi->addSpeakegroup($this->getRecGroupId(), $speakerId);
+    }
+    // 認識用グループに話者を追加API
+    private function deleteSpeechGroupId($speakerId)
+    {
+        $miniSRSApi = $this->getMiniSRSApi();
+        $result = $miniSRSApi->deleteSpeakegroup($this->getRecGroupId(), $speakerId);
+        if (!$result) {
+            throw new \Exception('Speech registration failed!');
+        }
+        return $result;
+    }
+
     // 音声ファイルの削除
     private function speechDelete($speakerId)
     {
@@ -410,7 +470,7 @@ class AppController extends Controller
     // 音声ファイルのダウンロード
     private function voiceDownload($request, $voicename)
     {
-        //base64形式データをデコードして元の文字列に戻す
+        //base64形式データをデコードして音声ファイルに変換
         $decoded = base64_decode($request);
 
         //ファイル名を作成
@@ -454,9 +514,9 @@ class AppController extends Controller
     {
         //ファイル名を作成
         $filename = $voicename . ".wav";
-        // 画像ファイルの取得
+        // ファイルの取得
         $file = Storage::get("audio/{$filename}");
-        //base64形式データをデコードして元の文字列に戻す
+        //wav形式データをエンコードして文字列に戻す
         $decoded = base64_encode($file);
         return $decoded;
     }
@@ -474,14 +534,11 @@ class AppController extends Controller
             $vflg = intval($inputs['voiceprint_flg']);
             $speakerId = $inputs['profile_id'];
             $result = $this->addSpeech($speakerId, $rawfile);
-            // $miniSRSApi = $this->getMiniSRSApi();
-            // $result = $miniSRSApi->addSpeech($speakerId, $rawfile);
             $vflg++;
 
             //ユーザ情報更新処理
             $userupdate = Wanderers::find($user_id['id']);
             $userupdate->fill([
-                // 'profile_id' => $inputs['profile_id'],
                 'voiceprint_flg' => $vflg,
             ]);
             $userupdate->save();
@@ -491,12 +548,84 @@ class AppController extends Controller
             $voicename = $this->addVoicelist($result);
             // 音声ファイル復元し保存
             $this->voiceDownload($inputs['audio_base64'], $voicename);
+
+            // 音声認識をし、レスポンスがERRORになったらcatchで初期化ポップアップの表示
+            $miniSRSApi = $this->getMiniSRSApi();
+            $miniSRSApi->speakerRcognition($this->getRecGroupId(), $rawfile);
         } catch (\Throwable $e) {
             DB::rollback();
             Log::info($e->getMessage());
-            abort(500);
+            // abort(500);
+            return redirect()->route('voice_walk')->with('err_msg', '音声学習時に何らかのエラーが発生しました。学習データを復元するか削除をして下さい。');
         };
         return redirect()->route('voice_walk')->with('exe_msg', '音声の追加学習を行いました！');
+    }
+
+    // 追加音声データ登録時の処理
+    public function userReset()
+    {
+        $user_id = Auth::user()->id;
+        $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+        DB::beginTransaction();
+        try {
+            //userをまず削除
+            $speakerId = $wanderer_list['profile_id'];
+            $miniSRSApi = $this->getMiniSRSApi();
+            $miniSRSApi->deleteUser($speakerId);
+
+            // 新しくユーザを追加
+            $wname = $wanderer_list['wanderer_name'];
+            $sex = $wanderer_list['sex'];
+            $mini_sex = intval($sex) - 1;
+            if ($mini_sex < 0) {
+                $mini_sex = 0;
+            }
+            $age = $wanderer_list['age'];
+
+            // 保存してある本姓データをbase64形式で取得
+            $voicelist = Voicelist::whereUser_id($user_id)->where('delete_flg', 0)->get();
+            $base64_data = $this->voiceGet($voicelist[0]["speech_id"]);
+            $rawfile = 'data:audio/wav;name=' . $voicelist[0]["speech_id"] . '.wav;base64,' . $base64_data;
+            Log::info($rawfile);
+
+            // 新規にユーザを登録
+            list($speakerId, $result) = $this->addSpeaker($wname, $mini_sex, $age, $rawfile);
+            Log::info("新しいspeakerId↓");
+            Log::info($speakerId);
+            Log::info($result);
+
+            Voicelist::where('speech_id', $voicelist[0]["speech_id"])
+                ->update(['speech_id' => $result["id"]]);
+            Storage::move("audio/" . $voicelist[0]["speech_id"] . '.wav', "audio/" . $result["id"] . '.wav');
+
+            // 登録してある音声データを全て再学習
+            for ($i = 1; $i < count($voicelist); $i++) {
+                $base64_data = $this->voiceGet($voicelist[$i]["speech_id"]);
+                $voice = 'data:audio/wav;name=' . $voicelist[$i]["speech_id"] . '.wav;base64,' . $base64_data;
+                $result = $this->addSpeech($speakerId, $voice);
+                Log::info("新しい音声ID↓");
+                Log::info($result);
+
+                Voicelist::where('speech_id', $voicelist[$i]["speech_id"])
+                    ->update(['speech_id' => $result["id"]]);
+                Storage::move("audio/" . $voicelist[$i]["speech_id"] . '.wav', "audio/" . $result["id"] . '.wav');
+            }
+
+            // profile_idを新規の物に更新
+            Voicelist::where('user_id', $user_id)
+                ->update(['speaker_id' => $speakerId]);
+            Wanderers::where('user_id', $user_id)
+                ->update(['profile_id' => $speakerId]);
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            Log::info($e->getMessage());
+            // abort(500);
+            // return redirect()->route('')->with('err_msg', '学習データを復元出来ませんでした。管理者にお問い合わせください。');
+            return redirect('/voice_error');
+        };
+        return redirect()->route('voice_walk')->with('exe_msg', '復元処理が完了しました!');
     }
 
     // 発見フラグの更新
@@ -504,6 +633,15 @@ class AppController extends Controller
     {
         $user_id = Auth::user()->id;
         $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+
+        // 認識用グループにから話者を削除
+        try {
+            $result = $this->deleteSpeechGroupId($wanderer_list['profile_id']);
+            Log::info("対象者グループから削除");
+            Log::info($result);
+        } catch (\Throwable $e) {
+            Log::info($e->getMessage());
+        };
 
         // 発見フラグが立っている場合下げる
         if ($wanderer_list['discover_flg'] == 1) {
@@ -520,7 +658,7 @@ class AppController extends Controller
             // dd([$userupdate]);
             $userupdate->save();
             DB::commit();
-            // それ以外の場合は発見フラグを下げる
+            // それ以外の場合も発見フラグを下げる
         } else {
             //ユーザ情報更新処理
             $userupdate = Wanderers::find($wanderer_list['id']);
@@ -584,6 +722,34 @@ class AppController extends Controller
         } else {
             return view('voice_list', compact('voicelists'));
         }
+    }
+
+    // 追加音声データ登録時の処理
+    public function wandererReset()
+    {
+        $user_id = Auth::user()->id;
+        $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+        DB::beginTransaction();
+        try {
+            //userをまず削除
+            $speakerId = $wanderer_list['profile_id'];
+            $miniSRSApi = $this->getMiniSRSApi();
+            $miniSRSApi->deleteUser($speakerId);
+
+            // profile_idを新規の物に更新
+            Voicelist::where('user_id', $user_id)
+                ->delete();
+            Wanderers::where('user_id', $user_id)
+                ->delete();
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            Log::info($e->getMessage());
+            // abort(500);
+            // return redirect()->route('')->with('err_msg', '学習データを復元出来ませんでした。管理者にお問い合わせください。');
+            return redirect('/voice_error');
+        };
+        return redirect('/home_walk');
     }
 
     //voiceListを返す変数

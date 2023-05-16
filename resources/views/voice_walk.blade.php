@@ -35,7 +35,8 @@
 	<section>
 		<div class="inner">
 			<div>
-				<x-alert type="success" :session="session('exe_msg')" />
+				<x-alert id="success" type="success" :session="session('exe_msg')" />
+				<x-alert id="danger" type="danger" :session="session('err_msg')" />
 				<form method="POST" action="{{ route('voiceupdate') }}">
 					@csrf
 					<div class="block_txt mb2" id="exe_result">
@@ -69,7 +70,6 @@
 						<progress id="file" max="120000" value="{{ $voice_length }}" style="width: 100%; height: 30px"> 0% </progress>
 					</div>
 
-
 					<div class="btn mt2">
 						<button type="submit" id="btn_regist" class="btn-red" style="display: none;">登録</button>
 					</div>
@@ -82,7 +82,7 @@
 					<span class="spinner"></span>
 				</div>
 			</div>
-			<!-- 登録ポップアップ -->
+			<!-- 登録完了ポップアップ -->
 			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e">
 				<h4>完了！</h4>
 				<div class="popup_inner">
@@ -94,11 +94,38 @@
 				</div>
 			</div>
 			<!-- マイクERROR -->
-			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_me">
+			<div id="recognition-micerror" title="タイトル" class="remodal" data-remodal-id="modal_me">
 				<h4>ERROR</h4>
 				<div class="popup_inner">
 					<p style="font-size: 16px;">音声データがありませんでした。</p>
 					<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
+				</div>
+			</div>
+			<!-- ERROR結果 -->
+			<div id="recognition-error" title="タイトル" class="remodal" data-remodal-id="modal_reset" data-remodal-options="closeOnOutsideClick: false, closeOnEscape: false">
+				<h4 style="color:red;">ERROR</h4>
+				<div class="popup_inner">
+					<p style="font-size: 16px; font-weight:bold">音声学習に問題が発生しました。<br>回復処理をしますので、暫くお待ちください。</p>
+				</div>
+			</div>
+			<!-- 復元処理完了ポップアップ -->
+			<div id="recognition-ok" title="タイトル" class="remodal" data-remodal-id="modal_ok">
+				<h4>ERROR</h4>
+				<div class="popup_inner">
+					<p style="font-size: 16px;">復元処理が完了しました。</p>
+					<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
+				</div>
+			</div>
+			<!-- 登録ポップアップ -->
+			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_confaudio">
+				<h4>登録確認</h4>
+				<div class="popup_inner">
+					<a id="sampleDownload" class="soundsample"></a>
+					<p id="result_pop">録音した音声を学習してもよろしいですか？</p>
+					<div class="btn_popup">
+						<button data-remodal-action="close" class="remodal-confirm" id="remodal-confirm">確認</button>
+						<button data-remodal-action="confirm" class="remodal-cancel">キャンセル</button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -116,16 +143,36 @@
 
 
 	<footer class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 
 	<script>
-		/* bootstrap alertをx秒後に消す */
 		if (document.getElementById("alertfadeout") != null) {
-			location.href = '#modal_e';
+			console.log(document.getElementById("alertfadeout").textContent);
+			if (document.getElementById("alertfadeout").textContent == "音声の追加学習を行いました！") {
+				location.href = '#modal_e';
+				// location.href = '#modal_reset';
+
+			} else if (document.getElementById("alertfadeout").textContent == "復元処理が完了しました!") {
+				location.href = '#modal_ok';
+			} else {
+				location.href = '#modal_reset';
+			}
 		}
 
+		if (window.location.hash === '#modal_reset') {
+			window.onload = function() {
+				// ページが読み込まれた後に実行する処理を記述する
+				var form = document.createElement('form');
+				form.action = "{{ route('userreset') }}";
+				form.method = 'GET';
+				document.body.appendChild(form);
+				form.submit();
+			};
+		}
+
+		/* bootstrap alertをx秒後に消す */
 		document.getElementById("okbtn").onclick = function() {
 			window.setTimeout("$('#alertfadeout').fadeOut()", 1500);
 		};
@@ -144,6 +191,11 @@
 
 		let button = document.getElementById('btn_regist');
 		button.onclick = butotnClick;
+
+		// 音声登録確認用ポップアップ
+		document.getElementById('remodal-confirm').addEventListener('click', function() {
+			document.getElementById('btn_regist').click();
+		});
 	</script>
 
 	<!-- Speech SDK reference sdk. -->

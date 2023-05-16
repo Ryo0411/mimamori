@@ -22,7 +22,7 @@
 	<header>
 		<a href="/home" class="arrow_s_b"></a>
 		<h1>発見者ホーム</h1>
-
+		<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 	</header>
 
 	<section>
@@ -41,7 +41,7 @@
 
 
 	<footer class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 

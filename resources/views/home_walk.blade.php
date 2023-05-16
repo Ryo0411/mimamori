@@ -27,6 +27,7 @@
 	<header>
 		<a href="/home" class="arrow_s_b"></a>
 		<h1>徘徊者ホーム</h1>
+		<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 	</header>
 
 	<section>
@@ -48,15 +49,15 @@
 					<button id="button" class="btn-walk" onclick="location.href='/voice_list'">音声一覧</button>
 				</div>
 				<div class="btn" id="wanderer" {{$status}}>
-					<button id="button" class="btn-red" onclick="location.href='/home_walk/wanderer'">捜索アラート</button>
+					<button id="exebutton" class="btn-red" onclick="location.href='/home_walk/wanderer'">捜索開始</button>
 				</div>
-				<div class="btn" {{$status}}>
+				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ $exe }}"></input>
+				<!-- <div class="btn" {{$status}}>
 					<form method="post" action="/home_walk/discover">
 						@csrf
 						<input id="discover_button" class="btn-red" type="submit" value="発見">
 					</form>
-					<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ $exe }}"></input>
-				</div>
+				</div> -->
 				<!-- 発見ポップアップ -->
 				<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_d">
 					<h4>発見されました！</h4>
@@ -67,12 +68,26 @@
 						</div>
 					</div>
 				</div>
+				<!-- リセット確認ポップアップ -->
+				<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_reset">
+					<h4>リセット確認</h4>
+					<div class="popup_inner">
+						<p id="result_pop">登録頂いたご家族情報を<br>全て削除してしまってよろしいですか？</p>
+						<div class="btn_popup">
+							<button data-remodal-action="close" class="remodal-confirm" onclick="location.href='/wanderer/reset'">削除</button>
+							<button data-remodal-action="cancel" class="remodal-cancel">キャンセル</button>
+						</div>
+					</div>
+				</div>
 			</div>
+		</div>
+		<div class="resetbtn" {{$status}}>
+			<button id="exebutton" class="btn-red-reset" onclick="location.href='#modal_reset'">リセット</button>
 		</div>
 	</section>
 
 	<footer class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 
@@ -83,10 +98,11 @@
 	var value = input.getAttribute('value');
 
 	//捜索対象に選択中にボタンを表示させる。
-	if (value == "捜索対象外です。" || value == "" || value == "音声ファイルがありませんでした。") {
-		document.getElementById("discover_button").style.display = "none";
-	} else if ("{{ $discoverflg }}" == 1) {
+	if ("{{ $discoverflg }}" == 1) {
 		location.href = '#modal_d';
+	}
+	if (value == "捜索対象に選択中です。" || value == "発見されました！") {
+		document.getElementById("exebutton").innerText = "捜索解除";
 	}
 </script>
 

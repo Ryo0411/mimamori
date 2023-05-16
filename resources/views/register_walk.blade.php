@@ -34,7 +34,7 @@
 	<section>
 		<div class="inner">
 			<x-alert type="success" :session="session('exe_msg')" />
-			<form method="POST" action="{{ route('registerupdate') }}">
+			<form id="registerUpdateForm" method="POST" action="{{ route('registerupdate') }}">
 				@csrf
 				<div class="input">
 					<h2 class="h2_input">&#9632;性別</h2>
@@ -94,6 +94,16 @@
 					</div>
 					@endif
 				</div>
+				<div class="input">
+					<h2 class="h2_input">&#9632;住所</h2>
+					<input name="address" type="text" value="{{ old('address',@$wanderer_list->address) }}">
+					@if ($errors->has('address'))
+					<div class="alert alert-danger">
+						{{ $errors->first('address') }}</li>
+					</div>
+					@endif
+				</div>
+
 
 				<input name="profile_id" type="hidden" id="profile_id" value="{{ old('profile_id',@$wanderer_list->profile_id) }}"></input>
 				<input name="voiceprint_flg" type="hidden" id="voiceprint_flg" value="{{ old('voiceprint_flg',@$wanderer_list->voiceprint_flg) }}"></input>
@@ -105,6 +115,7 @@
 						<img id="rec_img" src="{{ asset('img/rec_on.png') }}" class="img_rec" alt="録音">
 					</a>
 				</div>
+				<a id="sampleDownload" class="soundsample" style="display: none;"></a>
 				<div class="btn_dl">
 					<a id="enrollmentDownload" class="soundsample"></a>
 				</div>
@@ -112,12 +123,13 @@
 				<div class="announce" id="exe_result">録音ボタンをタップして、<br>ご自身の生年月日を読み上げて<br>音声を録音してください。</div>
 				@if ($errors->has('audio_file'))
 				<div class="alert alert-danger">
-					{{ "音声を録音してください。" }}</li>
+					{{ "音声の録音が確認が出来ませんでした。" }}</li>
 				</div>
 				@endif
+				<input id="eventButton" type="submit" style="display: none;">
 
 				<div class="btn mt2">
-					<button type="submit" id="btn_regist" class="btn-red" style="display: none;">更新</button>
+					<button type="button" id="btn_regist" class="btn-red" style="display: none;" onclick="location.href='#modal_conf'">更新</button>
 				</div>
 			</form>
 		</div>
@@ -133,6 +145,18 @@
 		</div>
 	</div>
 
+	<!-- 同意のポップアップ -->
+	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_conf">
+		<h4>同意確認</h4>
+		<div class="popup_inner">
+			<p id="result_pop">発見された方へ、<br>連絡先をお知らせすることに<br>同意致しますか？
+			</p>
+			<div class="btn_popup">
+				<button data-remodal-action="close" class="remodal-confirm" id="btn">同意します</button>
+				<button data-remodal-action="cancel" class="remodal-cancel">同意しません</button>
+			</div>
+		</div>
+	</div>
 	<!-- 登録ポップアップ -->
 	<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e">
 		<h4>完了！</h4>
@@ -154,7 +178,7 @@
 	</div>
 
 	<footer class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 
@@ -173,6 +197,12 @@
 
 
 	<script>
+		// 同意ボタンをクリックした際の処理
+		document.getElementById("btn").onclick = function() {
+			var button = document.getElementById('eventButton');
+			button.click();
+		};
+
 		if (document.getElementById("alertfadeout") != null) {
 			location.href = '#modal_e';
 		}
@@ -207,7 +237,6 @@
 				sexnum = 0;
 			}
 			select.options[sexnum].selected = true;
-
 		}
 		initialize();
 	</script>
