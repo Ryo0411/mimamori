@@ -121,9 +121,9 @@
 				<h4>登録確認</h4>
 				<div class="popup_inner">
 					<a id="sampleDownload" class="soundsample"></a>
-					<p id="result_pop">録音した音声を学習してもよろしいですか？</p>
+					<p id="result_pop">▶を押すと音声が再生されます。<br>音声に問題がなければ「登録」<br>を押してください。</p>
 					<div class="btn_popup">
-						<button data-remodal-action="close" class="remodal-confirm" id="remodal-confirm">確認</button>
+						<button data-remodal-action="close" class="remodal-confirm" id="remodal-confirm">登録</button>
 						<button data-remodal-action="confirm" class="remodal-cancel">キャンセル</button>
 					</div>
 				</div>
