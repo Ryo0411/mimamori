@@ -297,7 +297,7 @@ class AppController extends Controller
                 $mini_sex = 0;
             }
 
-            //ユーザ情報更新処理
+            //ユーザ情報新規登録
             if (empty($user_id)) {
                 list($speakerId, $result) = $this->addSpeaker($wname, $mini_sex, $age, $rawfile);
                 $vflg = intval($vflg) + 1;
@@ -322,15 +322,15 @@ class AppController extends Controller
 
                 $messegedata = "※このメールはシステムからの自動返信です" . "\n\n" .
                     $family_name . "　様" . "\n\n" .
-                    "このメールはご家族情報の更新に伴い、確認のためにメールを送信させていただいております。" . "\n" .
+                    "このメールは、ご登録時に確認のため送信させていただいております。" . "\n" .
                     "今後ご家族の発見通知などは、このメールアドレス宛に送信させて頂きます。" . "\n" .
-                    "ご家族情報などを再度更新したい場合は情報登録画面より更新をお願いいたします。";
+                    "ご家族情報などを更新したい場合は情報登録画面より更新をお願いいたします。";
                 // 新規登録時の確認メール
                 Mail::to($email)->send(new Confirmmail(
                     $messegedata,
                 ));
 
-                // ユーザー情報新規登録
+                // ユーザー情報更新
             } else {
                 $userupdate = Wanderers::find($user_id['id']);
                 if (
@@ -354,9 +354,9 @@ class AppController extends Controller
 
                 $messegedata = "※このメールはシステムからの自動返信です" . "\n\n" .
                     $family_name . "　様" . "\n\n" .
-                    "このメールは、ご登録時に確認のため送信させていただいております。" . "\n" .
+                    "このメールはご家族情報の更新に伴い、確認のためにメールを送信させていただいております。" . "\n" .
                     "今後ご家族の発見通知などは、このメールアドレス宛に送信させて頂きます。" . "\n" .
-                    "ご家族情報などを更新したい場合は情報登録画面より更新をお願いいたします。";
+                    "ご家族情報などを再度更新したい場合は情報登録画面より更新をお願いいたします。";
                 // 新規登録時の確認メール
                 Mail::to($email)->send(new Confirmmail(
                     $messegedata,
