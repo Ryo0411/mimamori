@@ -7,8 +7,8 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
-		<meta name=”description” content=”徘徊マッチング” />
-		<title>徘徊マッチング</title>
+		<meta name=”description” content=”迷子者マッチング” />
+		<title>迷子者マッチング</title>
 		<!-- script -->
 		<script src="{{ asset('js/app.js') }}" defer></script>
 		<!-- styles -->
@@ -21,7 +21,7 @@
 <body>
 	<header>
 		<section>
-			<h1><img src="{{ asset('/img/logo.svg') }}" alt="徘徊マッチング"></h1>
+			<h1><img src="{{ asset('/img/logo.svg') }}" alt="迷子者マッチング"></h1>
 		</section>
 	</header>
 

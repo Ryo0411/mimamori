@@ -39,7 +39,7 @@
 						<thead>
 							<tr class="ttl">
 								<th>ID</th>
-								<th>徘徊者名</th>
+								<th>迷子者名</th>
 								<th>緊急連絡先</th>
 								<th>発見者名</th>
 								<th>発見者日時</th>

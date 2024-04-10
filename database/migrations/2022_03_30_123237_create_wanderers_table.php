@@ -25,7 +25,7 @@ return new class extends Migration
                 $table->string('profile_id')->default(0);
                 //緊急連絡先
                 $table->string('emergency_tel')->nullable();
-                //徘徊者フラグ
+                //迷子者フラグ
                 $table->tinyInteger('wandering_flg')->default(0);
                 //発見フラグ
                 $table->tinyInteger('discover_flg')->default(0);

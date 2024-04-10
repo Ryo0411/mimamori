@@ -35,7 +35,7 @@ class AppController extends Controller
         return new DbVoicelist($this->getApplicationId(), $this->getClientId(), $this->getClientSecret());
     }
 
-    //徘徊者ホーム、情報未登録の場合ボタン非表示
+    //迷子者ホーム、情報未登録の場合ボタン非表示
     public function homeBack()
     {
         try {
@@ -47,7 +47,7 @@ class AppController extends Controller
             $wanderer_list = Wanderers::whereUser_id($user_id)->first();
             // 音声登録があるかを判定。ない場合はそのままreturn
             if ($wanderer_list['voiceprint_flg'] >= 0) {
-                // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+                // 迷子者フラグが立っていない場合、迷子者フラグを立てる
                 if ($wanderer_list['wandering_flg'] == 0) {
                     $exe = "捜索対象外です。";
                 } elseif ($wanderer_list['wandering_flg'] == 1) {
@@ -64,7 +64,7 @@ class AppController extends Controller
         };
     }
 
-    //徘徊者ホーム、情報登録ボタン選択時の画面遷移用メソッド
+    //迷子者ホーム、情報登録ボタン選択時の画面遷移用メソッド
     public function showWanderer()
     {
         $user_id = Auth::user()->id;
@@ -119,7 +119,7 @@ class AppController extends Controller
         return view('voice_discover', ['wanderer_list' => $wanderer_list]);
     }
 
-    // 徘徊者声掛けページにて性別を選択したときユーザを選定する処理。
+    // 迷子者声掛けページにて性別を選択したときユーザを選定する処理。
     public function voiceSelect($sex)
     {
         $wanderer_list = Wanderers::whereSex($sex)->where('wandering_flg', '!=', 0)->get();
@@ -133,7 +133,7 @@ class AppController extends Controller
         return view('voice_discover', ['wanderer_list' => $wanderer_list]);
     }
 
-    //徘徊者ホーム、情報未登録の場合ボタン非表示
+    //迷子者ホーム、情報未登録の場合ボタン非表示
     public function homeWalk()
     {
         $user_id = Auth::user()->id;
@@ -153,7 +153,7 @@ class AppController extends Controller
             if ($wanderer_list['voiceprint_flg'] >= 0) {
                 //ユーザ情報更新処理
                 $userupdate = Wanderers::find($wanderer_list['id']);
-                // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+                // 迷子者フラグが立っていない場合、迷子者フラグを立てる
                 if ($wanderer_list['wandering_flg'] == 0) {
                     $exe = "捜索対象外です。";
                     $discoverflg = $userupdate["discover_flg"];
@@ -173,7 +173,7 @@ class AppController extends Controller
         // dd([$status]);
         return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);
     }
-    //徘徊者ホーム、情報未登録の場合ボタン非表示
+    //迷子者ホーム、情報未登録の場合ボタン非表示
     public function wandererFlg()
     {
         $user_id = Auth::user()->id;
@@ -181,7 +181,7 @@ class AppController extends Controller
         $id = Auth::user()->id;
         // 音声登録があるかを判定。ない場合はそのままreturn
         if ($wanderer_list['voiceprint_flg'] >= 0) {
-            // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+            // 迷子者フラグが立っていない場合、迷子者フラグを立てる
             if ($wanderer_list['wandering_flg'] == 0) {
                 try {
                     // 認識用グループに対象者を入れる処理
@@ -204,7 +204,7 @@ class AppController extends Controller
                     Log::info($e->getMessage());
                     abort(500);
                 };
-                // 徘徊フラグが立っている場合、徘徊フラグを下げる
+                // 迷子者フラグが立っている場合、迷子者フラグを下げる
             } else {
                 // 認識用グループから話者を削除
                 try {
@@ -737,7 +737,7 @@ class AppController extends Controller
             $user_id = Auth::user()->id;
             $wanderer_list = Wanderers::whereUser_id($user_id)->first();
             $userupdate = Wanderers::find($wanderer_list['id']);
-            // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+            // 迷子者フラグが立っていない場合、迷子者フラグを立てる
             $discoverflg = $userupdate["discover_flg"];
             //ユーザ情報更新処理
             return view('home_walk')->with(['status' => $status, 'exe' => $exe, 'discoverflg' => $discoverflg]);

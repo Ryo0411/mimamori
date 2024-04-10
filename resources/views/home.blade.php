@@ -43,7 +43,7 @@
 					<!-- ログイン成功時のアラート表示 -->
 					<x-alert type="success" :session="session('login_success')" />
 					<div class="btn">
-						<button id="button" class="btn-walk" onclick="location.href='/home_walk'">徘徊者</button>
+						<button id="button" class="btn-walk" onclick="location.href='/home_walk'">迷子者</button>
 					</div>
 					<div class="btn">
 						<button id="button" class="btn-discover" onclick="location.href='/home_discover'">発見者</button>

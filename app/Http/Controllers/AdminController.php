@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Mail;
 
 class AdminController extends Controller
 {
-    //徘徊者ホーム、情報登録ボタン選択時の画面遷移用メソッド
+    //迷子者ホーム、情報登録ボタン選択時の画面遷移用メソッド
     public function adminview()
     {
         // マッチングしたユーザーの一覧を取得
@@ -42,7 +42,7 @@ class AdminController extends Controller
         return view('admin.adminview', ['wanderer_lists' => $wanderer_lists]);
     }
 
-    //徘徊者ホーム、情報未登録の場合ボタン非表示
+    //迷子者ホーム、情報未登録の場合ボタン非表示
     // 発見フラグの更新
     public function discoverflg($id)
     {

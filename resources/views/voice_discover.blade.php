@@ -7,14 +7,14 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width,initial-scale=1" viewport-fit="cover">
-		<meta name=”description” content=”徘徊者声掛け/あんしん見守り” />
+		<meta name=”description” content=”迷子者声掛け/あんしん見守り” />
 		<!-- ポップアップ用UI -->
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.css">
 		<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal-default-theme.min.css">
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/remodal/1.0.5/remodal.min.js"></script>
 
-		<title>徘徊者声掛け/あんしん見守り</title>
+		<title>迷子者声掛け/あんしん見守り</title>
 		<!-- script -->
 		<script src="{{ asset('js/app.js') }}" defer></script>
 		<!-- styles -->
@@ -27,7 +27,7 @@
 <body>
 	<header>
 		<a href="/home_discover" class="arrow_s_b"></a>
-		<h1>徘徊者声掛け</h1>
+		<h1>迷子者声掛け</h1>
 		<a href="/home" class=""><img src="{{ asset('img/ico_home.svg') }}" class="btn_home" alt="TOPへ戻る"></a>
 	</header>
 

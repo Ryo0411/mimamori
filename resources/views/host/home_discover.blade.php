@@ -32,7 +32,7 @@
 					<button id="button" class="btn-discover" onclick="location.href='/register_discover'">情報登録</button>
 				</div>
 				<div class="btn">
-					<button id="voicebutton" class="btn-discover" onclick="location.href='/voice_discover'">徘徊者声掛け</button>
+					<button id="voicebutton" class="btn-discover" onclick="location.href='/voice_discover'">迷子者声掛け</button>
 				</div>
 				<input name="age" type="hidden" class="age" id="age" value="{{ old('age',Auth::user()->age) }}">
 			</div>

@@ -122,13 +122,13 @@ rec_img.addEventListener("click", function () {
 
                                     //ポップアップメニュー個別ユーザーリセット
                                     // if (high_score_no == select_user) {
-                                    //     // ログインユーザーの徘徊者だ合った場合。
+                                    //     // ログインユーザーの迷子者だ合った場合。
                                     //     // alert("認識結果 : " + "正解" + "\n" + "認識率："　+ (Math.floor(high_score * 100)) + "%");
                                     //     location.href = '#modal_d';
                                     //     document.getElementById("result_pop").innerText = "認識結果 : " + "成功";
                                     //     document.getElementById("probability").innerText = "認識率：" + (Math.floor(high_score * 100)) + "%";
                                     // } else {
-                                    //     // ログインユーザー以外徘徊者だ合った場合。
+                                    //     // ログインユーザー以外迷子者だ合った場合。
                                     //     if (onsei_score[select_user - 1] != null) {
                                     //         userscore = (Math.floor(onsei_score[select_user - 1] * 100)) + "%";
                                     //         location.href = '#modal_d';
