@@ -53,7 +53,7 @@
 		</section>
 
 		<footer class="footer">
-			<div class="footer_ver">Ver. 1.0</div>
+			<div class="footer_ver">Ver. 2.1</div>
 			<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 		</footer>
 	</wrapper>

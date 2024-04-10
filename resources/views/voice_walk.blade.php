@@ -82,7 +82,7 @@
 					<span class="spinner"></span>
 				</div>
 			</div>
-			<!-- 登録ポップアップ -->
+			<!-- 登録完了ポップアップ -->
 			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_e">
 				<h4>完了！</h4>
 				<div class="popup_inner">
@@ -116,6 +116,18 @@
 					<button data-remodal-action="close" class="remodal-confirm" id="micerr">OK</button>
 				</div>
 			</div>
+			<!-- 登録ポップアップ -->
+			<div id="recognition-result" title="タイトル" class="remodal" data-remodal-id="modal_confaudio">
+				<h4>登録確認</h4>
+				<div class="popup_inner">
+					<a id="sampleDownload" class="soundsample"></a>
+					<p id="result_pop">▶を押すと音声が再生されます。<br>音声に問題がなければ「登録」<br>を押してください。</p>
+					<div class="btn_popup">
+						<button data-remodal-action="close" class="remodal-confirm" id="remodal-confirm">登録</button>
+						<button data-remodal-action="confirm" class="remodal-cancel">キャンセル</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	</section>
 
@@ -131,7 +143,7 @@
 
 
 	<footer class="footer">
-		<div class="footer_ver">Ver. 1.0</div>
+		<div class="footer_ver">Ver. 2.1</div>
 		<div class="footer_copy">Provided by Nippontect Systems Co.,Ltd</div>
 	</footer>
 
@@ -179,6 +191,11 @@
 
 		let button = document.getElementById('btn_regist');
 		button.onclick = butotnClick;
+
+		// 音声登録確認用ポップアップ
+		document.getElementById('remodal-confirm').addEventListener('click', function() {
+			document.getElementById('btn_regist').click();
+		});
 	</script>
 
 	<!-- Speech SDK reference sdk. -->

@@ -18,6 +18,8 @@ use App\Libs\DbVoicelist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Storage;
+use App\Mail\Confirmmail;
+use Illuminate\Support\Facades\Mail;
 
 class AppController extends Controller
 {
@@ -31,6 +33,35 @@ class AppController extends Controller
     private function getDbVoicelist(): DbVoicelist
     {
         return new DbVoicelist($this->getApplicationId(), $this->getClientId(), $this->getClientSecret());
+    }
+
+    //徘徊者ホーム、情報未登録の場合ボタン非表示
+    public function homeBack()
+    {
+        try {
+            $user_id = Auth::user()->id;
+            $wanderer_list = DB::table('wanderers')
+                ->where('user_id', $user_id)
+                ->first();
+            $user_id = Auth::user()->id;
+            $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+            // 音声登録があるかを判定。ない場合はそのままreturn
+            if ($wanderer_list['voiceprint_flg'] >= 0) {
+                // 徘徊フラグが立っていない場合、徘徊フラグを立てる
+                if ($wanderer_list['wandering_flg'] == 0) {
+                    $exe = "捜索対象外です。";
+                } elseif ($wanderer_list['wandering_flg'] == 1) {
+                    $exe = "捜索対象に選択中です。";
+                } else {
+                    $exe = "発見されました！";
+                }
+            } else {
+                $exe = "情報登録をして下さい。";
+            }
+            return view('home', ['exe' => $exe]);
+        } catch (\Throwable $e) {
+            return view('home', ['exe' => "ご家族情報を登録して下さい。"]);
+        };
     }
 
     //徘徊者ホーム、情報登録ボタン選択時の画面遷移用メソッド
@@ -175,11 +206,15 @@ class AppController extends Controller
                 };
                 // 徘徊フラグが立っている場合、徘徊フラグを下げる
             } else {
+                // 認識用グループから話者を削除
                 try {
                     $result = $this->deleteSpeechGroupId($wanderer_list['profile_id']);
                     Log::info("対象者グループから削除");
                     Log::info($result);
-
+                } catch (\Throwable $e) {
+                    Log::info($e->getMessage());
+                };
+                try {
                     //ユーザ情報更新処理
                     $userupdate = Wanderers::find($wanderer_list['id']);
                     Log::info("捜索対象から外す処理、対象者");
@@ -262,7 +297,7 @@ class AppController extends Controller
                 $mini_sex = 0;
             }
 
-            //ユーザ情報更新処理
+            //ユーザ情報新規登録
             if (empty($user_id)) {
                 list($speakerId, $result) = $this->addSpeaker($wname, $mini_sex, $age, $rawfile);
                 $vflg = intval($vflg) + 1;
@@ -285,7 +320,17 @@ class AppController extends Controller
                 // 音声ファイル復元し保存
                 $this->voiceDownload($inputs['audio_base64'], $voicename);
 
-                // ユーザー情報新規登録
+                $messegedata = "※このメールはシステムからの自動返信です" . "\n\n" .
+                    $family_name . "　様" . "\n\n" .
+                    "このメールは、ご登録時に確認のため送信させていただいております。" . "\n" .
+                    "今後ご家族の発見通知などは、このメールアドレス宛に送信させて頂きます。" . "\n" .
+                    "ご家族情報などを更新したい場合は情報登録画面より更新をお願いいたします。";
+                // 新規登録時の確認メール
+                Mail::to($email)->send(new Confirmmail(
+                    $messegedata,
+                ));
+
+                // ユーザー情報更新
             } else {
                 $userupdate = Wanderers::find($user_id['id']);
                 if (
@@ -306,6 +351,16 @@ class AppController extends Controller
                 ]);
                 $userupdate->save();
                 DB::commit();
+
+                $messegedata = "※このメールはシステムからの自動返信です" . "\n\n" .
+                    $family_name . "　様" . "\n\n" .
+                    "このメールはご家族情報の更新に伴い、確認のためにメールを送信させていただいております。" . "\n" .
+                    "今後ご家族の発見通知などは、このメールアドレス宛に送信させて頂きます。" . "\n" .
+                    "ご家族情報などを再度更新したい場合は情報登録画面より更新をお願いいたします。";
+                // 新規登録時の確認メール
+                Mail::to($email)->send(new Confirmmail(
+                    $messegedata,
+                ));
             }
         } catch (\Throwable $e) {
             DB::rollback();
@@ -538,7 +593,7 @@ class AppController extends Controller
             //userをまず削除
             $speakerId = $wanderer_list['profile_id'];
             $miniSRSApi = $this->getMiniSRSApi();
-            $miniSRSApi->deleteUser($speakerId, $this->getGroupId());
+            $miniSRSApi->deleteUser($speakerId);
 
             // 新しくユーザを追加
             $wname = $wanderer_list['wanderer_name'];
@@ -590,7 +645,7 @@ class AppController extends Controller
             Log::info($e->getMessage());
             // abort(500);
             // return redirect()->route('')->with('err_msg', '学習データを復元出来ませんでした。管理者にお問い合わせください。');
-            return redirect('/home_walk');
+            return redirect('/voice_error');
         };
         return redirect()->route('voice_walk')->with('exe_msg', '復元処理が完了しました!');
     }
@@ -607,9 +662,7 @@ class AppController extends Controller
             Log::info("対象者グループから削除");
             Log::info($result);
         } catch (\Throwable $e) {
-            DB::rollback();
             Log::info($e->getMessage());
-            abort(500);
         };
 
         // 発見フラグが立っている場合下げる
@@ -691,6 +744,34 @@ class AppController extends Controller
         } else {
             return view('voice_list', compact('voicelists'));
         }
+    }
+
+    // 追加音声データ登録時の処理
+    public function wandererReset()
+    {
+        $user_id = Auth::user()->id;
+        $wanderer_list = Wanderers::whereUser_id($user_id)->first();
+        DB::beginTransaction();
+        try {
+            //userをまず削除
+            $speakerId = $wanderer_list['profile_id'];
+            $miniSRSApi = $this->getMiniSRSApi();
+            $miniSRSApi->deleteUser($speakerId);
+
+            // profile_idを新規の物に更新
+            Voicelist::where('user_id', $user_id)
+                ->delete();
+            Wanderers::where('user_id', $user_id)
+                ->delete();
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollback();
+            Log::info($e->getMessage());
+            // abort(500);
+            // return redirect()->route('')->with('err_msg', '学習データを復元出来ませんでした。管理者にお問い合わせください。');
+            return redirect('/voice_error');
+        };
+        return redirect('/home_walk');
     }
 
     //voiceListを返す変数
